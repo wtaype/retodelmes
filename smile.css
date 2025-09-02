@@ -509,6 +509,11 @@ a {
     animation: shake 0.5s ease-in-out;
 }
 
+.form-field input:disabled, .form-field select:disabled{
+  background-color: var(--bg-primary); /* gris claro */
+  color: #888;              /* texto gris */
+}
+
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
@@ -760,6 +765,7 @@ a {
     display: block;
     margin-top: 4px;
 }
+
 
 .worker-stats {
     display: flex;
@@ -1109,6 +1115,7 @@ a {
     border: 1px solid var(--border-color);
     transition: all var(--transition-normal);
     animation: fadeInUp 0.8s ease-out;
+    position:relative;
 }
 
 .sales-table-section:hover {
@@ -1133,6 +1140,10 @@ a {
     align-items: center;
     gap: var(--space-sm);
     margin: 0;
+}
+#salesTable .btn-view,#salesTable .btn-edit,#salesTable .btn-delete{
+    padding: .7vh 1vh;
+    border-radius: 1vh;
 }
 
 .table-header h2 i {
@@ -2172,34 +2183,7 @@ a {
     border-color: var(--warning) !important;
 }
 
-/* ===== TOOLTIPS PERSONALIZADOS ===== */
-[title]:hover::after {
-    content: attr(title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--black);
-    color: var(--white);
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius-sm);
-    font-size: var(--fz_xs);
-    white-space: nowrap;
-    z-index: 1000;
-    opacity: 0;
-    animation: tooltipShow 0.3s ease-out forwards;
-}
 
-@keyframes tooltipShow {
-    from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(5px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-}
 
 /* ===== ACCESIBILIDAD ===== */
 @media (prefers-reduced-motion: reduce) {
