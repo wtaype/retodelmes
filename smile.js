@@ -39,858 +39,700 @@ $(document).on('click','.bt_cargar',()=>{
   Mensaje('Actualizado'); setTimeout(()=>location.reload(),800);
 }); // Actualizar la parte de imagen 
 
-// ...existing code...
-
-// VARIABLES GLOBALES
-let currentMonth = '2025-09';
-let currentPage = 1;
-const ventasPorPagina = 5;
-let todasLasVentas = [];
-let todosLosEmpleados = [];
+// FUNCIONES MUY UTILES[END]
 
 // DIOS SIEMPRE ES BUENO Y YO AMO A DIOS [START]
 function smileContenido(wi){
-    console.log(wi.nombre); 
-    Mensaje('Bienvenido ' + wi.nombre + '!');
 
-    // HTML CONTENIDO [Start] 
-    $('.app').html(`
-        <!-- HEADER SUPERIOR -->
-        <header class="top-header">
-            <div class="header-container">
-                <div class="header-left">
-                    <h1 class="main-title">
-                        <i class="fas fa-trophy"></i>
-                        RETO DEL MES
-                    </h1>
-                    <select id="monthSelector" class="month-selector">
-                        <option value="2025-09">Septiembre 2025</option>
-                        <option value="2025-10">Octubre 2025</option>
-                        <option value="2025-11">Noviembre 2025</option>
-                        <option value="2025-12">Diciembre 2025</option>
-                    </select>
-                </div>
-                <div class="header-right">
-                    <div class="witemas"></div>
-                    <div class="user-section">
-                        <div class="user-info">
-                            <img src="${wi.imagen}" alt="${wi.nombre}" class="user-avatar">
-                            <span class="user-name">${wi.nombre}</span>
-                        </div>
-                        <button class="logout-btn bt_salir">
-                            <i class="fas fa-sign-out-alt"></i>
-                            Salir
-                        </button>
-                    </div>
-                </div>
+  console.log(wi.nombre); 
+  Mensaje('Bienvenido ' + wi.nombre + '!'); // Bievenida como ejemplo 
+
+// HTML CONTENIDO [Start] 
+  $('.app').html(`
+    <!-- HEADER SUPERIOR -->
+    <header class="top-header">
+        <div class="header-container">
+            <!-- TITULO IZQUIERDA -->
+            <div class="header-left">
+                <h1 class="main-title">
+                    <i class="fas fa-trophy"></i>
+                    RETO DEL MES
+                </h1>
+                <select id="monthSelector" class="month-selector">
+                    <option value="2025-09">Septiembre 2025</option>
+                    <option value="2025-10">Octubre 2025</option>
+                    <option value="2025-11">Noviembre 2025</option>
+                    <option value="2025-12">Diciembre 2025</option>
+                </select>
             </div>
-        </header>
 
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="main-container">
-            <div class="dashboard-layout">
+            <!-- DERECHA: TEMAS + USUARIO -->
+            <div class="header-right">
+                <!-- SELECTOR DE TEMAS -->
+                <div class="witemas"></div>
                 
-                <!-- SECCION NUEVA VENTA -->
-                <section class="new-sale-panel">
-                    <div class="panel-header">
-                        <h2><i class="fas fa-plus-circle"></i> Nueva Venta</h2>
-                        <div class="bt_add_exportar">
-                            <button class="btn-add" id="addNewSale">
-                                <i class="fas fa-plus"></i> Agregar
-                            </button>
-                        </div>
+                <!-- USUARIO Y SALIR -->
+                <div class="user-section">
+                    <div class="user-info">
+                        <img src="https://i.postimg.cc/HWMY74kP/image.png" alt="RUBI" class="user-avatar">
+                        <span class="user-name">${wi.nombre}</span>
                     </div>
-
-                    ${getFormularioHTML()}
-                </section>
-
-                <!-- SECCION COMPETENCIA -->
-                <section class="competition-panel">
-                    <div class="panel-header">
-                        <h2><i class="fas fa-fire"></i> Competencia del Mes</h2>
-                        <span class="subtitle">¡Quien venda más gana!</span>
-                    </div>
-
-                    <ul class="descripcion_com">
-                        <li>La competencia del mes es una oportunidad para motivarnos y dar lo mejor en nuestras ventas.</li>
-                        <li>¡Recuerda que quien logre más ventas durante este periodo será el ganador!</li>
-                    </ul>
-
-                    <!-- TRABAJADORES DINÁMICOS -->
-                    <div class="workers-grid" id="workersGrid">
-                        <div class="loading-workers">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            Cargando empleados...
-                        </div>
-                    </div>
-
-                    <!-- ULTIMO GANADOR DEL MES -->
-                    <div class="last-winner" id="lastWinner">
-                        <div class="loading-workers">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            Cargando ganador...
-                        </div>
-                    </div>
-
-                    <!-- RESUMEN COMPETENCIA -->
-                    <div class="competition-summary" id="competitionSummary">
-                        <div class="summary-stat">
-                            <span class="summary-label">Total Tours</span>
-                            <span class="summary-value" id="totalTours">0</span>
-                        </div>
-                        <div class="summary-stat">
-                            <span class="summary-label">Puntos Totales</span>
-                            <span class="summary-value" id="totalPuntos">0</span>
-                        </div>
-                        <div class="summary-stat">
-                            <span class="summary-label">Tours de Hoy</span>
-                            <span class="summary-value" id="toursHoy">0</span>
-                        </div>
-                        <div class="summary-stat">
-                            <span class="summary-label">Meta del Mes</span>
-                            <span class="summary-value">50</span>
-                        </div>
-                    </div>
-                </section>
+                    <button class="logout-btn bt_salir" >
+                        <i class="fas fa-sign-out-alt"></i>
+                        Salir
+                    </button>
+                </div>
             </div>
+        </div>
+    </header>
 
-            <!-- TABLA DE VENTAS -->
-            <section class="sales-table-section">
-                <div class="table-header">
-                    <h2><i class="fas fa-clipboard-list"></i> Registro de Ventas</h2>
-                    <div class="table-filters">
-                        <select id="filterEmployee" class="filter-select">
-                            <option value="">Todos los vendedores</option>
-                        </select>
-                        <button class="filter-btn" id="todayFilter">
-                            <i class="fas fa-calendar-day"></i> Hoy
-                        </button>
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-container">
+        <!-- GRID DE DASHBOARD -->
+        <div class="dashboard-layout">
+            
+            <!-- SECCION NUEVA VENTA -->
+            <section class="new-sale-panel">
+                <div class="panel-header">
+                    <h2>
+                        <i class="fas fa-plus-circle"></i>
+                        Nueva Venta
+                    </h2>
+                    <div class="bt_add_exportar">
+                    <button class="btn-add" id="addNewSale">
+                    <i class="fas fa-plus"></i>
+                    Agregar
+                    </button>
                     </div>
                 </div>
 
-                <div class="table-container">
-                    <table class="sales-table" id="salesTable">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-route"></i> Tour</th>
-                                <th><i class="fas fa-user"></i> Cliente</th>
-                                <th><i class="fas fa-users"></i> PAX</th>
-                                <th><i class="fas fa-calendar-clock"></i> Fecha/Hora</th>
-                                <th><i class="fas fa-user-tie"></i> Vendedor</th>
-                                <th><i class="fas fa-dollar-sign"></i> Importe</th>
-                                <th><i class="fas fa-star"></i> Puntos</th>
-                                <th><i class="fas fa-info-circle"></i> Estado</th>
-                                <th><i class="fas fa-cogs"></i> Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="salesTableBody">
-                            <tr><td colspan="9" class="loading-cell">
-                                <i class="fas fa-spinner fa-spin"></i> Cargando ventas...
-                            </td></tr>
-                        </tbody>
-                    </table>
-                </div>
 
-                <!-- PAGINACIÓN -->
-                <div class="pagination-container" id="paginationContainer">
-                    <!-- Se llena dinámicamente -->
-                </div>
+
+<form id="formularioVenta" class="sale-form">
+<div class="form-grid">
+<!-- TIPO DE TOUR -->
+<div class="form-field">
+<label>
+<i class="fas fa-route"></i>
+Tipo de Tour *
+</label>
+<select id="tipoTour" required>
+<option value="">Seleccionar tour...</option>
+
+<!-- 1. PARAPENTE -->
+<option value="Parapente" data-points="50" data-price="330">
+1. 🪂 Parapente (50 pts)
+</option>
+
+<!-- 2. BUGGIE TOURS -->
+<option value="Buggie 1 Hora - Sonia" data-points="25" data-price="25">
+2. 🏜️ Buggie 1 Hora - Sonia (25 pts)
+</option>
+<option value="Buggie 2 Horas - Sonia" data-points="35" data-price="35">
+3. 🏜️ Buggie 2 Horas - Sonia (35 pts)
+</option>
+<option value="Buggie Privado - Sonia" data-points="40" data-price="200">
+4. 🏜️ Buggie Privado - Sonia (40 pts)
+</option>
+
+<!-- 5. TOURS DE BODEGAS -->
+<option value="Tour de bodegas" data-points="15" data-price="30">
+5. 🍷 Tour de bodegas (15 pts)
+</option>
+<option value="Tour de bodegas - Jackson" data-points="20" data-price="30">
+6. 🍷 Tour de bodegas - Jackson (20 pts)
+</option>
+<option value="Tour de bodegas Privado - Jackson" data-points="40" data-price="150">
+7. 🍷 Tour de bodegas Privado - Jackson (40 pts)
+</option>
+
+<!-- 8. CITY TOUR -->
+<option value="City Tour - Jackson" data-points="40" data-price="200">
+8. 🏛️ City Tour - Jackson (40 pts)
+</option>
+
+<!-- 9. OTROS TOURS -->
+<option value="Tour de Paracas" data-points="10" data-price="70">
+9. 🏝️ Tour de Paracas (10 pts)
+</option>
+<option value="Cañón de los perdidos" data-points="10" data-price="70">
+10. 🏔️ Cañón de los perdidos (10 pts)
+</option>
+<option value="Cuatrimotos" data-points="10" data-price="70">
+11. 🏍️ Cuatrimotos (10 pts)
+</option>
+<option value="Sobrevuelo" data-points="10" data-price="200">
+12. ✈️ Sobrevuelo (10 pts)
+</option>
+<option value="Nazca Terrestre" data-points="10" data-price="150">
+13. 🗿 Nazca Terrestre (10 pts)
+</option>
+<option value="Tablas Profesional" data-points="15" data-price="150">
+14. 🏄 Tablas Profesional (15 pts)
+</option>
+<option value="Polaris" data-points="10" data-price="380">
+15. 🚙 Polaris (10 pts)
+</option>
+</select>
+
+</div>
+
+<!-- REGISTRO EN -->
+<div class="form-field">
+<label>
+<i class="fas fa-hotel"></i>
+Registro en:
+</label>
+<select id="registroEn">
+<option value="hawka">Hawka</option>
+<option value="hclaudia">HClaudia</option>
+</select>
+</div>
+
+<!-- NOMBRE CLIENTE -->
+<div class="form-field">
+<label>
+<i class="fas fa-user"></i>
+Nombre del Cliente *
+</label>
+<input type="text" id="nombreCliente" required placeholder="Nombre de cliente / calle">
+</div>
+
+<!-- HABITACION -->
+<div class="form-field">
+<label>
+<i class="fas fa-bed"></i>
+N° Habitación(Opcional)
+</label>
+<input type="text" id="numeroHabitacion" placeholder="Ej: 205">
+</div>
+
+<!-- Tipo de documento -->
+<div class="form-field">
+<label>
+<i class="fas fa-id-card"></i>
+Tipo de Documento (opcional)
+</label>
+<select id="tipoDocumento">
+<option value="dni">DNI</option>
+<option value="pasaporte">Pasaporte</option>
+<option value="ce">Carnet Extranjería</option>
+</select>
+</div>
+
+<!-- INGRESE DNI -->
+<div class="form-field">
+<label>
+<i class="fas fa-hashtag"></i>
+N° DNI/Pasaporte/CE
+</label>
+<input type="text" id="numeroDocumento" placeholder="78964523">
+</div>
+
+<!-- PAX -->
+<div class="form-field">
+<label>
+<i class="fas fa-users"></i>
+PAX *
+</label>
+<input type="number" id="cantidadPax" required min="1" value="1">
+</div>
+
+<!-- IMPORTE INDIVIDUAL -->
+<div class="form-field">
+<label>
+<i class="fas fa-user-tag"></i>
+Importe Individual
+</label>
+<input type="number" id="precioUnitario" step="0.01" placeholder="S/ 0.00">
+</div>
+
+<!-- METODO PAGO -->
+<div class="form-field">
+<label>
+<i class="fas fa-credit-card"></i>
+Método de Pago
+</label>
+<select id="metodoPago">
+<option value="">Seleccionar...</option>
+<option value="Efectivo">Efectivo</option>
+<option value="Tarjeta">Tarjeta</option>
+<option value="Transferencia">Transferencia</option>
+<option value="Yape">Yape</option>
+<option value="Plin">Plin</option>
+</select>
+</div>
+
+<!-- IMPORTE TOTAL -->
+<div class="form-field">
+<label>
+<i class="fas fa-calculator"></i>
+Importe x Cobrar
+</label>
+<input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00">
+</div>
+
+<!-- COBRO PROVEEDOR -->
+<div class="form-field">
+<label>
+<i class="fas fa-handshake"></i>
+Cobro Proveedor
+</label>
+<input type="number" id="cobroProveedor" step="0.01" placeholder="S/ 0.00">
+</div>
+
+<!-- HORA DE SALIDA -->
+<div class="form-field">
+<label>
+<i class="fas fa-clock"></i>
+Hora de salida *
+</label>
+<input type="text" id="horaSalida" required="">
+</div>
+
+<!-- FECHA -->
+<div class="form-field">
+<label>
+<i class="fas fa-calendar-day"></i>
+Fecha *
+</label>
+<input type="date" id="fechaTour" required>
+</div>
+
+<!-- Pagado? -->
+<div class="form-field">
+<label>
+<i class="fas fa-money-check-alt"></i>
+Pagado?
+</label>
+<select id="estadoPago">
+<option value="pagado">Pagado</option>
+<option value="debe">Debe</option>
+</select>
+</div>
+</div>
+
+<!-- ACCIONES DEL FORMULARIO -->
+<div class="form-actions">
+<button type="submit" class="btn-save">
+<i class="fas fa-save"></i>
+Guardar Venta
+</button>
+
+<!-- PREVIEW DE PUNTOS -->
+<div class="points-preview">
+<div class="points-info">
+<i class="fas fa-star"></i>
+<span>Puntos a ganar: <strong id="vistaPreviaLaPuntos">0</strong></span>
+</div>
+</div>
+</div>
+</form>
             </section>
 
-            ${getInfoTabsHTML()}
-        </main>
-
-        <div id="notifications-container"></div>
-        <div id="modal-container"></div>
-    `);
-
-    // Inicializar datos
-    inicializarDashboard(wi);
-}
-
-// FUNCIÓN PRINCIPAL DE INICIALIZACIÓN
-async function inicializarDashboard(wi) {
-    try {
-        // Cargar datos en paralelo para optimizar
-        await Promise.all([
-            cargarEmpleados(),
-            cargarVentas(),
-            cargarUltimoGanador()
-        ]);
-        
-        // Actualizar filtros y resumen
-        actualizarFiltroEmpleados();
-        actualizarResumenCompetencia();
-        
-    } catch (error) {
-        console.error('Error inicializando dashboard:', error);
-        Notificacion('Error cargando datos del dashboard', 'error');
-    }
-}
-
-// CARGAR EMPLEADOS OPTIMIZADO
-async function cargarEmpleados() {
-    try {
-        // Verificar cache primero
-        const empleadosCache = getls('empleadosSmile');
-        if (empleadosCache) {
-            todosLosEmpleados = empleadosCache;
-            renderizarEmpleados();
-        }
-
-        // Obtener empleados que participan
-        const empleadosQuery = query(collection(db, 'smiles'), where('participa', '==', 'si'));
-        const empleadosSnapshot = await getDocs(empleadosQuery);
-        
-        todosLosEmpleados = empleadosSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-
-        // Guardar en cache
-        savels('empleadosSmile', todosLosEmpleados, 300);
-        
-        await calcularPuntosEmpleados();
-        renderizarEmpleados();
-        
-    } catch (error) {
-        console.error('Error cargando empleados:', error);
-        $('#workersGrid').html(`
-            <div class="error-workers">
-                <i class="fas fa-exclamation-triangle"></i>
-                Error cargando empleados
-            </div>
-        `);
-    }
-}
-
-// CALCULAR PUNTOS DE EMPLEADOS
-async function calcularPuntosEmpleados() {
-    try {
-        // Obtener ventas del mes actual
-        const ventasSnapshot = await getDocs(collection(db, 'registrosdb'));
-        
-        // Filtrar por mes actual
-        const ventasDelMes = ventasSnapshot.docs.filter(doc => {
-            const venta = doc.data();
-            return venta.fechaTour && venta.fechaTour.startsWith(currentMonth);
-        });
-
-        // Calcular puntos por empleado
-        todosLosEmpleados.forEach(empleado => {
-            const ventasEmpleado = ventasDelMes.filter(doc => 
-                doc.data().vendedor === empleado.usuario
-            );
-            
-            empleado.totalPuntos = ventasEmpleado.reduce((sum, doc) => 
-                sum + (doc.data().puntos || 0), 0
-            );
-            empleado.totalVentas = ventasEmpleado.reduce((sum, doc) => 
-                sum + (doc.data().qventa || 0), 0
-            );
-        });
-
-        // Ordenar por puntos
-        todosLosEmpleados.sort((a, b) => b.totalPuntos - a.totalPuntos);
-        
-    } catch (error) {
-        console.error('Error calculando puntos:', error);
-    }
-}
-
-// RENDERIZAR EMPLEADOS
-function renderizarEmpleados() {
-    const workersHTML = todosLosEmpleados.map((empleado, index) => {
-        const rank = index + 1;
-        const isChampion = rank === 1;
-        const isRunnerUp = rank === 2;
-        
-        return `
-            <div class="worker-card ${isChampion ? 'champion' : isRunnerUp ? 'runner-up' : ''}" data-employee="${empleado.usuario}">
-                <div class="rank-badge">
-                    <i class="fas fa-${isChampion ? 'crown' : isRunnerUp ? 'medal' : 'user'}"></i>
-                    #${rank}
+            <!-- SECCION COMPETENCIA -->
+            <section class="competition-panel">
+                <div class="panel-header">
+                    <h2>
+                        <i class="fas fa-fire"></i>
+                        Competencia del Mes
+                    </h2>
+                    <span class="subtitle">¡Quien venda más gana!</span>
                 </div>
-                <div class="worker-avatar">
-                    <img src="${empleado.imagen}" alt="${empleado.nombre}">
-                    <div class="status-online"></div>
-                </div>
-                <div class="worker-info">
-                    <h3>${empleado.nombre}</h3>
-                    <p>${empleado.descripcion}</p>
-                </div>
-                <div class="worker-points">
-                    <span class="points-number">${empleado.totalPuntos || 0}</span>
-                    <span class="points-label">puntos</span>
-                </div>
-                <div class="worker-stats">
-                    <div class="stat">
-                        <span class="stat-value">${empleado.totalVentas || 0}</span>
-                        <span class="stat-label">Tours Vendidos</span>
+
+<ul class="descripcion_com">
+  <li>La competencia del mes es una oportunidad para motivarnos y dar lo mejor en nuestras ventas. Cada esfuerzo suma puntos y nos acerca a ser reconocidos como el mejor del equipo.<//li>
+  <li>¡Recuerda que quien logre más ventas durante este periodo será el ganador! Es momento de demostrar constancia, dedicación y pasión por lo que hacemos.</li>
+</ul>
+
+                <!-- TRABAJADORES -->
+                <div class="workers-grid">
+                    <!-- RUBI -->
+                    <div class="worker-card champion" data-employee="RUBI">
+                        <div class="rank-badge">
+                            <i class="fas fa-crown"></i>
+                            #1
+                        </div>
+                        <div class="worker-avatar">
+                            <img src="https://i.postimg.cc/HWMY74kP/image.png" alt="RUBI">
+                            <div class="status-online"></div>
+                        </div>
+                        <div class="worker-info">
+                            <h3>RUBI</h3>
+                            <p>Especialista en Tours</p>
+                        </div>
+                        <div class="worker-points">
+                            <span class="points-number">10</span>
+                            <span class="points-label">puntos</span>
+                        </div>
+                        <div class="worker-stats">
+                            <div class="stat">
+                                <span class="stat-value">1</span>
+                                <span class="stat-label">Tours Vendidos</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PIERO -->
+                    <div class="worker-card runner-up" data-employee="PIERO">
+                        <div class="rank-badge">
+                            <i class="fas fa-medal"></i>
+                            #2
+                        </div>
+                        <div class="worker-avatar">
+                            <img src="https://i.postimg.cc/GmmnzkbR/image.png" alt="PIERO">
+                            <div class="status-online"></div>
+                        </div>
+                        <div class="worker-info">
+                            <h3>PIERO</h3>
+                            <p>Especialista en Tours</p>
+                        </div>
+                        <div class="worker-points">
+                            <span class="points-number">50</span>
+                            <span class="points-label">puntos</span>
+                        </div>
+                        <div class="worker-stats">
+                            <div class="stat">
+                                <span class="stat-value">1</span>
+                                <span class="stat-label">Tours Vendidos</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
-    }).join('');
-    
-    $('#workersGrid').html(workersHTML);
-}
 
-// CARGAR VENTAS
-async function cargarVentas() {
-    try {
-        const ventasSnapshot = await getDocs(collection(db, 'registrosdb'));
-        todasLasVentas = ventasSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        
-        // Ordenar por fecha más reciente
-        todasLasVentas.sort((a, b) => {
-            const fechaA = new Date(a.fechaTour || '1970-01-01');
-            const fechaB = new Date(b.fechaTour || '1970-01-01');
-            return fechaB - fechaA;
-        });
-        
-        renderizarTablaVentas();
-        
-    } catch (error) {
-        console.error('Error cargando ventas:', error);
-        $('#salesTableBody').html(`
-            <tr><td colspan="9" class="error-cell">
-                <i class="fas fa-exclamation-triangle"></i> Error cargando ventas
-            </td></tr>
-        `);
-    }
-}
-
-// RENDERIZAR TABLA DE VENTAS CON PAGINACIÓN
-function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
-    let ventasFiltradas = [...todasLasVentas];
-    
-    // Filtrar por mes actual
-    ventasFiltradas = ventasFiltradas.filter(venta => 
-        venta.fechaTour && venta.fechaTour.startsWith(currentMonth)
-    );
-    
-    // Filtrar por empleado
-    if (filtroEmpleado) {
-        ventasFiltradas = ventasFiltradas.filter(venta => 
-            venta.vendedor === filtroEmpleado
-        );
-    }
-    
-    // Filtrar por hoy
-    if (soloHoy) {
-        const hoy = new Date().toISOString().split('T')[0];
-        ventasFiltradas = ventasFiltradas.filter(venta => 
-            venta.fechaTour === hoy
-        );
-    }
-    
-    // Paginación
-    const totalPaginas = Math.ceil(ventasFiltradas.length / ventasPorPagina);
-    const inicio = (currentPage - 1) * ventasPorPagina;
-    const ventasPagina = ventasFiltradas.slice(inicio, inicio + ventasPorPagina);
-    
-    // Renderizar filas
-    const filas = ventasPagina.map(venta => `
-        <tr>
-            <td><span class="tour-badge">${venta.tipoTour}</span></td>
-            <td>
-                <strong>${venta.nombreCliente}</strong>
-                ${venta.numeroHabitacion ? `<small>Hab: ${venta.numeroHabitacion}</small>` : ''}
-            </td>
-            <td><span class="pax-badge"><i class="fas fa-users"></i> ${venta.cantidadPax}</span></td>
-            <td>
-                <div class="datetime-info">
-                    <span><i class="fas fa-calendar"></i> ${venta.fechaTour}</span>
-                    <span><i class="fas fa-clock"></i> ${venta.horaSalida}</span>
+                <!-- ULTIMO GANADOR DEL MES -->
+                <div class="last-winner">
+                    <div class="winner-header">
+                        <i class="fas fa-trophy"></i>
+                        <h3>Último Ganador del Mes</h3>
+                    </div>
+                    <div class="winner-info">
+                        <img src="https://i.postimg.cc/HWMY74kP/image.png" alt="RUBI">
+                        <div class="winner-details">
+                            <h4>RUBI</h4>
+                            <p>Febrero 2025</p>
+                            <span class="winner-points">150 puntos</span>
+                        </div>
+                        <div class="winner-achievement">
+                            <i class="fas fa-star"></i>
+                            <span>¡Excelente trabajo!</span>
+                        </div>
+                    </div>
                 </div>
-            </td>
-            <td>
-                <div class="seller-info">
-                    <strong>${venta.vendedor}</strong>
-                    <i class="fas fa-user-tie"></i>
-                </div>
-            </td>
-            <td><strong class="price">S/ ${(venta.importeTotal || 0).toFixed(2)}</strong></td>
-            <td><span class="points-badge"><i class="fas fa-star"></i> ${venta.puntos || 0}</span></td>
-            <td><span class="status-badge ${venta.estadoPago === 'pagado' ? 'paid' : 'pending'}">
-                <i class="fas fa-${venta.estadoPago === 'pagado' ? 'check-circle' : 'clock'}"></i> 
-                ${venta.estadoPago?.toUpperCase() || 'PENDIENTE'}
-            </span></td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-view" onclick="verDetalleVenta('${venta.id}')" title="Ver detalles">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn-edit" onclick="editarVenta('${venta.id}')" title="Editar">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-delete" onclick="eliminarVenta('${venta.id}')" title="Eliminar">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
-    
-    $('#salesTableBody').html(filas || `
-        <tr><td colspan="9" class="empty-cell">
-            <i class="fas fa-inbox"></i> No hay ventas para mostrar
-        </td></tr>
-    `);
-    
-    // Renderizar paginación
-    renderizarPaginacion(totalPaginas);
-}
 
-// RENDERIZAR PAGINACIÓN
-function renderizarPaginacion(totalPaginas) {
-    if (totalPaginas <= 1) {
-        $('#paginationContainer').html('');
-        return;
-    }
-    
-    let paginationHTML = '<div class="pagination">';
-    
-    // Botón anterior
-    if (currentPage > 1) {
-        paginationHTML += `<button class="page-btn" onclick="cambiarPagina(${currentPage - 1})">
-            <i class="fas fa-chevron-left"></i>
-        </button>`;
-    }
-    
-    // Números de página
-    for (let i = 1; i <= totalPaginas; i++) {
-        if (i === currentPage) {
-            paginationHTML += `<button class="page-btn active">${i}</button>`;
-        } else {
-            paginationHTML += `<button class="page-btn" onclick="cambiarPagina(${i})">${i}</button>`;
-        }
-    }
-    
-    // Botón siguiente
-    if (currentPage < totalPaginas) {
-        paginationHTML += `<button class="page-btn" onclick="cambiarPagina(${currentPage + 1})">
-            <i class="fas fa-chevron-right"></i>
-        </button>`;
-    }
-    
-    paginationHTML += '</div>';
-    $('#paginationContainer').html(paginationHTML);
-}
-
-// CARGAR ÚLTIMO GANADOR
-async function cargarUltimoGanador() {
-    try {
-        const ganadorCache = getls('ultimoGanador');
-        if (ganadorCache) {
-            renderizarUltimoGanador(ganadorCache);
-        }
-
-        // Calcular mes anterior
-        const mesAnterior = calcularMesAnterior(currentMonth);
-        const docId = `${mesAnterior.replace('-', '')}`;
-        
-        const ganadorDoc = await getDoc(doc(db, 'ganadores', docId));
-        
-        if (ganadorDoc.exists()) {
-            const ganadorData = ganadorDoc.data();
-            savels('ultimoGanador', ganadorData, 3600); // Cache por 1 hora
-            renderizarUltimoGanador(ganadorData);
-        } else {
-            // Si no hay ganador, mostrar mensaje
-            $('#lastWinner').html(`
-                <div class="winner-header">
-                    <i class="fas fa-trophy"></i>
-                    <h3>Último Ganador del Mes</h3>
+                <!-- RESUMEN COMPETENCIA -->
+                <div class="competition-summary">
+                    <div class="summary-stat">
+                        <span class="summary-label">Total Tours</span>
+                        <span class="summary-value">2</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="summary-label">Puntos Totales</span>
+                        <span class="summary-value">60</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="summary-label">Tours de Hoy</span>
+                        <span class="summary-value">0</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="summary-label">Meta del Mes</span>
+                        <span class="summary-value">50</span>
+                    </div>
                 </div>
-                <div class="no-winner">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Aún no hay ganador registrado</span>
-                </div>
-            `);
-        }
-        
-    } catch (error) {
-        console.error('Error cargando último ganador:', error);
-        $('#lastWinner').html(`
-            <div class="winner-header">
-                <i class="fas fa-trophy"></i>
-                <h3>Último Ganador del Mes</h3>
-            </div>
-            <div class="error-winner">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>Error cargando ganador</span>
-            </div>
-        `);
-    }
-}
-
-// RENDERIZAR ÚLTIMO GANADOR
-function renderizarUltimoGanador(ganadorData) {
-    // Buscar datos del empleado ganador
-    const empleadoGanador = todosLosEmpleados.find(emp => 
-        emp.usuario === ganadorData.ganador || emp.nombre === ganadorData.ganador
-    );
-    
-    const imagenGanador = empleadoGanador?.imagen || 'https://i.postimg.cc/HWMY74kP/image.png';
-    const nombreGanador = empleadoGanador?.nombre || ganadorData.ganador;
-    
-    $('#lastWinner').html(`
-        <div class="winner-header">
-            <i class="fas fa-trophy"></i>
-            <h3>Último Ganador del Mes</h3>
+            </section>
         </div>
-        <div class="winner-info">
-            <img src="${imagenGanador}" alt="${nombreGanador}">
-            <div class="winner-details">
-                <h4>${nombreGanador}</h4>
-                <p>${ganadorData.mes} ${ganadorData.year}</p>
-                <span class="winner-points">${ganadorData.puntosGanados} puntos</span>
-            </div>
-            <div class="winner-achievement">
-                <i class="fas fa-star"></i>
-                <span>¡Excelente trabajo!</span>
-            </div>
-        </div>
-    `);
-}
 
-// ACTUALIZAR RESUMEN DE COMPETENCIA
-function actualizarResumenCompetencia() {
-    const ventasDelMes = todasLasVentas.filter(venta => 
-        venta.fechaTour && venta.fechaTour.startsWith(currentMonth)
-    );
-    
-    const hoy = new Date().toISOString().split('T')[0];
-    const ventasHoy = ventasDelMes.filter(venta => venta.fechaTour === hoy);
-    
-    const totalTours = ventasDelMes.reduce((sum, venta) => sum + (venta.qventa || 0), 0);
-    const totalPuntos = ventasDelMes.reduce((sum, venta) => sum + (venta.puntos || 0), 0);
-    const toursHoy = ventasHoy.reduce((sum, venta) => sum + (venta.qventa || 0), 0);
-    
-    $('#totalTours').text(totalTours);
-    $('#totalPuntos').text(totalPuntos);
-    $('#toursHoy').text(toursHoy);
-}
-
-// ACTUALIZAR FILTRO DE EMPLEADOS
-function actualizarFiltroEmpleados() {
-    const empleadosOptions = todosLosEmpleados.map(emp => 
-        `<option value="${emp.usuario}">${emp.nombre}</option>`
-    ).join('');
-    
-    $('#filterEmployee').html(`
-        <option value="">Todos los vendedores</option>
-        ${empleadosOptions}
-    `);
-}
-
-// EVENTOS Y FUNCIONES AUXILIARES
-$(document).on('change', '#monthSelector', function() {
-    currentMonth = $(this).val();
-    currentPage = 1;
-    
-    // Recargar datos para el nuevo mes
-    calcularPuntosEmpleados().then(() => {
-        renderizarEmpleados();
-        renderizarTablaVentas();
-        actualizarResumenCompetencia();
-        cargarUltimoGanador();
-    });
-});
-
-$(document).on('change', '#filterEmployee', function() {
-    currentPage = 1;
-    renderizarTablaVentas($(this).val());
-});
-
-$(document).on('click', '#todayFilter', function() {
-    currentPage = 1;
-    renderizarTablaVentas($('#filterEmployee').val(), true);
-});
-
-// FUNCIONES GLOBALES PARA PAGINACIÓN Y ACCIONES
-window.cambiarPagina = function(pagina) {
-    currentPage = pagina;
-    renderizarTablaVentas($('#filterEmployee').val());
-};
-
-window.verDetalleVenta = function(ventaId) {
-    const venta = todasLasVentas.find(v => v.id === ventaId);
-    console.log('Ver detalle:', venta);
-    // Implementar modal de detalle
-};
-
-window.editarVenta = function(ventaId) {
-    const venta = todasLasVentas.find(v => v.id === ventaId);
-    console.log('Editar venta:', venta);
-    // Implementar edición
-};
-
-window.eliminarVenta = function(ventaId) {
-    if (confirm('¿Estás seguro de eliminar esta venta?')) {
-        console.log('Eliminar venta:', ventaId);
-        // Implementar eliminación
-    }
-};
-
-// ...existing code...
-
-// FUNCIONES AUXILIARES
-function calcularMesAnterior(mesActual) {
-    const [year, month] = mesActual.split('-');
-    const fecha = new Date(parseInt(year), parseInt(month) - 2); // -2 porque mes es 0-indexed
-    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function getFormularioHTML() {
-    return `
-        <form id="formularioVenta" class="sale-form">
-            <div class="form-grid">
-                <!-- TIPO DE TOUR -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-route"></i>
-                        Tipo de Tour *
-                    </label>
-                    <select id="tipoTour" required>
-                        <option value="">Seleccionar tour...</option>
-                        <option value="Parapente" data-points="50" data-price="330">1. 🪂 Parapente (50 pts)</option>
-                        <option value="Buggie 1 Hora - Sonia" data-points="25" data-price="25">2. 🏜️ Buggie 1 Hora - Sonia (25 pts)</option>
-                        <option value="Buggie 2 Horas - Sonia" data-points="35" data-price="35">3. 🏜️ Buggie 2 Horas - Sonia (35 pts)</option>
-                        <option value="Buggie Privado - Sonia" data-points="40" data-price="200">4. 🏜️ Buggie Privado - Sonia (40 pts)</option>
-                        <option value="Tour de bodegas" data-points="15" data-price="30">5. 🍷 Tour de bodegas (15 pts)</option>
-                        <option value="Tour de bodegas - Jackson" data-points="20" data-price="30">6. 🍷 Tour de bodegas - Jackson (20 pts)</option>
-                        <option value="Tour de bodegas Privado - Jackson" data-points="40" data-price="150">7. 🍷 Tour de bodegas Privado - Jackson (40 pts)</option>
-                        <option value="City Tour - Jackson" data-points="40" data-price="200">8. 🏛️ City Tour - Jackson (40 pts)</option>
-                        <option value="Tour de Paracas" data-points="10" data-price="70">9. 🏝️ Tour de Paracas (10 pts)</option>
-                        <option value="Cañón de los perdidos" data-points="10" data-price="70">10. 🏔️ Cañón de los perdidos (10 pts)</option>
-                        <option value="Cuatrimotos" data-points="10" data-price="70">11. 🏍️ Cuatrimotos (10 pts)</option>
-                        <option value="Sobrevuelo" data-points="10" data-price="200">12. ✈️ Sobrevuelo (10 pts)</option>
-                        <option value="Nazca Terrestre" data-points="10" data-price="150">13. 🗿 Nazca Terrestre (10 pts)</option>
-                        <option value="Tablas Profesional" data-points="15" data-price="150">14. 🏄 Tablas Profesional (15 pts)</option>
-                        <option value="Polaris" data-points="10" data-price="380">15. 🚙 Polaris (10 pts)</option>
+        <!-- TABLA DE VENTAS -->
+        <section class="sales-table-section">
+            <div class="table-header">
+                <h2>
+                    <i class="fas fa-clipboard-list"></i>
+                    Registro de Ventas
+                </h2>
+                <div class="table-filters">
+                    <select id="filterEmployee" class="filter-select">
+                        <option value="">Todos los vendedores</option>
+                        <option value="RUBI">RUBI</option>
+                        <option value="PIERO">PIERO</option>
                     </select>
-                </div>
-
-                <!-- REGISTRO EN -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-hotel"></i>
-                        Registro en:
-                    </label>
-                    <select id="registroEn">
-                        <option value="hawka">Hawka</option>
-                        <option value="hclaudia">HClaudia</option>
-                    </select>
-                </div>
-
-                <!-- NOMBRE CLIENTE -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-user"></i>
-                        Nombre del Cliente *
-                    </label>
-                    <input type="text" id="nombreCliente" required placeholder="Nombre de cliente / calle">
-                </div>
-
-                <!-- HABITACION -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-bed"></i>
-                        N° Habitación(Opcional)
-                    </label>
-                    <input type="text" id="numeroHabitacion" placeholder="Ej: 205">
-                </div>
-
-                <!-- Tipo de documento -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-id-card"></i>
-                        Tipo de Documento (opcional)
-                    </label>
-                    <select id="tipoDocumento">
-                        <option value="dni">DNI</option>
-                        <option value="pasaporte">Pasaporte</option>
-                        <option value="ce">Carnet Extranjería</option>
-                    </select>
-                </div>
-
-                <!-- INGRESE DNI -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-hashtag"></i>
-                        N° DNI/Pasaporte/CE
-                    </label>
-                    <input type="text" id="numeroDocumento" placeholder="78964523">
-                </div>
-
-                <!-- PAX -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-users"></i>
-                        PAX *
-                    </label>
-                    <input type="number" id="cantidadPax" required min="1" value="1">
-                </div>
-
-                <!-- IMPORTE INDIVIDUAL -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-user-tag"></i>
-                        Importe Individual
-                    </label>
-                    <input type="number" id="precioUnitario" step="0.01" placeholder="S/ 0.00">
-                </div>
-
-                <!-- METODO PAGO -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-credit-card"></i>
-                        Método de Pago
-                    </label>
-                    <select id="metodoPago">
-                        <option value="">Seleccionar...</option>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Tarjeta">Tarjeta</option>
-                        <option value="Transferencia">Transferencia</option>
-                        <option value="Yape">Yape</option>
-                        <option value="Plin">Plin</option>
-                    </select>
-                </div>
-
-                <!-- IMPORTE TOTAL -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-calculator"></i>
-                        Importe x Cobrar
-                    </label>
-                    <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00">
-                </div>
-
-                <!-- COBRO PROVEEDOR -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-handshake"></i>
-                        Cobro Proveedor
-                    </label>
-                    <input type="number" id="cobroProveedor" step="0.01" placeholder="S/ 0.00">
-                </div>
-
-                <!-- HORA DE SALIDA -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-clock"></i>
-                        Hora de salida *
-                    </label>
-                    <input type="text" id="horaSalida" required>
-                </div>
-
-                <!-- FECHA -->
-                <div class="form-field">
-                    <label>
+                    <button class="filter-btn" id="todayFilter">
                         <i class="fas fa-calendar-day"></i>
-                        Fecha *
-                    </label>
-                    <input type="date" id="fechaTour" required>
-                </div>
-
-                <!-- Pagado? -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-money-check-alt"></i>
-                        Pagado?
-                    </label>
-                    <select id="estadoPago">
-                        <option value="pagado">Pagado</option>
-                        <option value="debe">Debe</option>
-                    </select>
+                        Hoy
+                    </button>
                 </div>
             </div>
 
-            <!-- ACCIONES DEL FORMULARIO -->
-            <div class="form-actions">
-                <button type="submit" class="btn-save">
-                    <i class="fas fa-save"></i>
-                    Guardar Venta
-                </button>
-
-                <!-- PREVIEW DE PUNTOS -->
-                <div class="points-preview">
-                    <div class="points-info">
-                        <i class="fas fa-star"></i>
-                        <span>Puntos a ganar: <strong id="vistaPreviaLaPuntos">0</strong></span>
-                    </div>
-                </div>
+            <div class="table-container">
+                <table class="sales-table" id="salesTable">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-route"></i> Tour</th>
+                            <th><i class="fas fa-user"></i> Cliente</th>
+                            <th><i class="fas fa-users"></i> PAX</th>
+                            <th><i class="fas fa-calendar-clock"></i> Fecha/Hora</th>
+                            <th><i class="fas fa-user-tie"></i> Vendedor</th>
+                            <th><i class="fas fa-dollar-sign"></i> Importe</th>
+                            <th><i class="fas fa-star"></i> Puntos</th>
+                            <th><i class="fas fa-info-circle"></i> Estado</th>
+                            <th><i class="fas fa-cogs"></i> Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- DATOS DE EJEMPLO -->
+                        <tr>
+                            <td><span class="tour-badge">Parapente</span></td>
+                            <td>
+                                <strong>CARLOS MENDOZA LOPEZ</strong>
+                                <small>Hab: 301</small>
+                            </td>
+                            <td><span class="pax-badge"><i class="fas fa-users"></i> 1</span></td>
+                            <td>
+                                <div class="datetime-info">
+                                    <span><i class="fas fa-calendar"></i> Invalid Date</span>
+                                    <span><i class="fas fa-clock"></i> undefined</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="seller-info">
+                                    <strong>PIERO</strong>
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                            </td>
+                            <td><strong class="price">S/ 330.00</strong></td>
+                            <td><span class="points-badge"><i class="fas fa-star"></i> 50</span></td>
+                            <td><span class="status-badge paid"><i class="fas fa-check-circle"></i> PAGADO</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-view" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-edit" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-delete" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="tour-badge">Tour de Paracas</span></td>
+                            <td>
+                                <strong>MIGUEL ANGEL ROJAS GONZALEZ</strong>
+                                <small>Hab: 205</small>
+                            </td>
+                            <td><span class="pax-badge"><i class="fas fa-users"></i> 2</span></td>
+                            <td>
+                                <div class="datetime-info">
+                                    <span><i class="fas fa-calendar"></i> Invalid Date</span>
+                                    <span><i class="fas fa-clock"></i> undefined</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="seller-info">
+                                    <strong>RUBI</strong>
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                            </td>
+                            <td><strong class="price">S/ 140.00</strong></td>
+                            <td><span class="points-badge"><i class="fas fa-star"></i> 10</span></td>
+                            <td><span class="status-badge paid"><i class="fas fa-check-circle"></i> PAGADO</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-view" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-edit" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-delete" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-        </form>
-    `;
-}
+        </section>
 
-function getInfoTabsHTML() {
-    return `
-        <section class="info-tabs-section">
-            <div class="tabs-header">
-                <button class="tab-btn active" data-tab="info">
-                    <i class="fas fa-info-circle"></i>
-                    Información
+        <!-- INFORMACION DE SERVICIOS -->
+        <section class="info-section">
+            <div class="info-tabs">
+                <button class="tab-btn active" data-tab="points">
+                    <i class="fas fa-star"></i>
+                    Puntos
                 </button>
                 <button class="tab-btn" data-tab="rules">
-                    <i class="fas fa-trophy"></i>
+                    <i class="fas fa-list-ul"></i>
                     Reglas
                 </button>
-                <button class="tab-btn" data-tab="prizes">
-                    <i class="fas fa-gift"></i>
-                    Premios
+                <button class="tab-btn" data-tab="prices">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Precios
                 </button>
             </div>
 
-            <div class="tabs-content">
-                <div id="info-tab" class="tab-content active">
-                    <h3><i class="fas fa-info-circle"></i> Información General</h3>
-                    <p>Sistema de competencia mensual para motivar las ventas del equipo.</p>
-                    <ul>
-                        <li>Cada tour vendido suma puntos según su tipo</li>
-                        <li>Los puntos se acumulan durante todo el mes</li>
-                        <li>Al final del mes se determina el ganador</li>
-                    </ul>
+            <div class="tab-content active" id="points-tab">
+                <h3><i class="fas fa-chart-bar"></i> Asignación de Puntos por Servicio</h3>
+                <div class="points-grid">
+                    <div class="point-item">
+                        <span class="service-name">🪂 Parapente</span>
+                        <span class="point-value">50</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">🏜️ Buggie Privado</span>
+                        <span class="point-value">30</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">🏛️ City Tour</span>
+                        <span class="point-value">20</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">🏜️ Buggie Grupal</span>
+                        <span class="point-value">15</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">🍷 Tour de bodegas</span>
+                        <span class="point-value">15</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">🏄 Tablas Profesional</span>
+                        <span class="point-value">15</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">🏝️ Tour de Paracas</span>
+                        <span class="point-value">10</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">🏔️ Cañón de los perdidos</span>
+                        <span class="point-value">10</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">🏍️ Cuatrimotos</span>
+                        <span class="point-value">10</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">✈️ Sobrevuelo</span>
+                        <span class="point-value">10</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">🗿 Nazca Terrestre</span>
+                        <span class="point-value">10</span>
+                    </div>
+                    <div class="point-item">
+                        <span class="service-name">🚙 Polaris</span>
+                        <span class="point-value">10</span>
+                    </div>
                 </div>
+            </div>
 
-                <div id="rules-tab" class="tab-content">
-                    <h3><i class="fas fa-trophy"></i> Reglas de la Competencia</h3>
-                    <ul>
-                        <li>Solo se cuentan las ventas registradas en el sistema</li>
-                        <li>Los puntos se asignan automáticamente según el tipo de tour</li>
-                        <li>Las ventas deben estar marcadas como "Pagado" para ser válidas</li>
-                        <li>En caso de empate, gana quien tenga más tours vendidos</li>
-                    </ul>
+            <div class="tab-content" id="rules-tab">
+                <h3><i class="fas fa-gavel"></i> Reglas del Sistema de Puntos</h3>
+                <div class="rules-list">
+                    <div class="rule-item">
+                        <span class="rule-number">1</span>
+                        <span>EN LOS PRECIOS BRINDADOS NO ESTÁ INCLUÍDO LA TASA TURÍSTICA</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-number">2</span>
+                        <span>EN EL CASO DEL BUGGIE/BODEGAS Y CITY TOUR EL PUNTAJE SERÁ MAYOR SIEMPRE Y CUANDO SALGAN CON EL BUGGIE DE LA SEÑORA SONIA O CAMIONETA</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-number">3</span>
+                        <!-- <span>LOS PUNTOS APLICAN PARA HUÉSPEDES DE PLATAFORMAS DE RESERVAS O CLIENTES DIRECTOS</span> -->
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-number">4</span>
+                        <!-- <span>NO APLICA PARA PASAJEROS QUE SON PASADOS POR TERCIARIOS COMO JALADORES O CHOFERES</span> -->
+                    </div>
+                    <div class="rule-item bonus">
+                        <span class="rule-number">5</span>
+                        <span>SE ANULARÁN LOS PUNTOS POR ALGÚN RECLAMO. SI EL CLIENTE DEJA COMENTARIO A FAVOR HAY BONUS DE +10 PUNTOS. MAL COMENTARIO = -10 PUNTOS</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-number">6</span>
+                        <span>SI SE REALIZA ANULACIÓN DE TOUR O DEVOLUCIÓN DE DINERO NO SE DARÁN PUNTAJES</span>
+                    </div>
+                    <div class="rule-item">
+                        <span class="rule-number">7</span>
+                        <span>PARA QUE LOS PUNTOS SEAN VÁLIDOS SE DEBE REGISTRAR COMPLETO TODOS LOS DATOS EL MISMO DÍA</span>
+                    </div>
+                    <div class="rule-item bonus">
+                        <span class="rule-number">8</span>
+                        <span>SI EL CLIENTE TE ETIQUETA EN REDES SOCIALES = +5 PUNTOS BONUS, PERO DEJA COMENTARIO = +5 (MÁXIMO 10 POR CLIENTE) </span>
+                    </div>
                 </div>
+            </div>
 
-                <div id="prizes-tab" class="tab-content">
-                    <h3><i class="fas fa-gift"></i> Premios y Reconocimientos</h3>
-                    <ul>
-                        <li>🥇 1er lugar: Reconocimiento especial + Premio</li>
-                        <li>🥈 2do lugar: Mención honorífica</li>
-                        <li>🥉 3er lugar: Certificado de participación</li>
-                        <li>Todos los participantes reciben reconocimiento por su esfuerzo</li>
-                    </ul>
+            <div class="tab-content" id="prices-tab">
+                <h3><i class="fas fa-tags"></i> Precios de Tours - Venta Mínima</h3>
+                <div class="prices-grid">
+                    <div class="price-item">
+                        <span class="service-name">🏜️ Buggie 1 Hora</span>
+                        <span class="service-price">S/ 25.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="service-name">🏜️ Buggie 2 Horas</span>
+                        <span class="service-price">S/ 35.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="service-name">🏜️ Buggie Privado</span>
+                        <span class="service-price">S/ 200.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="service-name">🏝️ Paracas</span>
+                        <span class="service-price">S/ 70.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="service-name">🏔️ Cañón de los Perdidos</span>
+                        <span class="service-price">S/ 70.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="service-name">🪂 Parapente</span>
+                        <span class="service-price">S/ 330.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="service-name">🏍️ Cuatrimotos</span>
+                        <span class="service-price">S/ 70.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="service-name">🍷 Bodegas</span>
+                        <span class="service-price">S/ 30.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="service-name">🏛️ City Tour</span>
+                        <span class="service-price">S/ 200.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="service-name">🚙 Polaris</span>
+                        <span class="service-price">S/ 380.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="service-name">🏄 Tablas Profesionales</span>
+                        <span class="service-price">S/ 150.00</span>
+                    </div>
+                </div>
+                <div class="price-note">
+                    <p><i class="fas fa-info-circle"></i> <strong>Nota:</strong> City Tour incluye S/ 10.00 por persona para actividad de chocotejas</p>
                 </div>
             </div>
         </section>
-    `;
-}
+    </main>
 
-// ...existing code...
+    <!-- CONTAINER DE NOTIFICACIONES -->
+    <div id="notifications-container"></div>
+
+    <!-- MODALES -->
+    <div id="modal-container"></div>
+`); // HTML CONTENIDO [End] 
 
 // JQUERY CONTENIDO JS [Start] 
 $(document).on('click', '.btn-save', async (e) => {
     e.preventDefault();
     
     try {
+        // Obtener valores del formulario
         const formData = {
             tipoTour: $('#tipoTour').val(),
             registroEn: $('#registroEn').val(),
@@ -906,29 +748,45 @@ $(document).on('click', '.btn-save', async (e) => {
             horaSalida: $('#horaSalida').val(),
             fechaTour: $('#fechaTour').val(),
             estadoPago: $('#estadoPago').val(),
+            
+            // Datos importantes
             vendedor: userAuth.displayName,
             puntos: parseInt($('#tipoTour option:selected').data('points')) || 0,
-            email: userAuth.email,
+            email: wi.email,
             qventa: 1,
             idVenta: 'venta_'+Date.now(),
+            
+            // Timestamp para Firebase
             fechaRegistro: serverTimestamp()
         };
 
-        // Validaciones
-        if (!formData.tipoTour || !formData.nombreCliente || !formData.horaSalida || !formData.fechaTour) {
-            Notificacion('Por favor completa todos los campos obligatorios', 'error');
+        // Validaciones básicas
+        if (!formData.tipoTour) {
+            Notificacion('Por favor selecciona un tipo de tour', 'error');
+            return;
+        }
+        if (!formData.nombreCliente) {
+            Notificacion('Por favor ingresa el nombre del cliente', 'error');
+            return;
+        }
+        if (!formData.horaSalida) {
+            Notificacion('Por favor ingresa la hora de salida', 'error');
+            return;
+        }
+        if (!formData.fechaTour) {
+            Notificacion('Por favor selecciona la fecha del tour', 'error');
             return;
         }
 
+        // Crear documento ID único con timestamp actual
         const timestamp = Date.now();
         const docId = `venta_${timestamp}`;
         
         // Guardar en Firebase
         await setDoc(doc(db, 'registrosdb', docId), formData);
         
-        // Guardar en localStorage por vendedor
-        const vendedorId = `vendedor_${userAuth.displayName}`;
-        savels(vendedorId, formData, 450);
+        // Guardar en localStorage
+        savels(docId, formData, 450);
         
         Notificacion('¡Venta registrada exitosamente!', 'success');
         
@@ -937,11 +795,7 @@ $(document).on('click', '.btn-save', async (e) => {
         $('#cantidadPax').val(1);
         $('#vistaPreviaLaPuntos').text('0');
         
-        // Actualizar datos dinámicamente
-        await cargarVentas();
-        await calcularPuntosEmpleados();
-        renderizarEmpleados();
-        actualizarResumenCompetencia();
+        console.log('Venta guardada:', formData);
         
     } catch (error) {
         console.error('Error al guardar venta:', error);
@@ -949,7 +803,7 @@ $(document).on('click', '.btn-save', async (e) => {
     }
 });
 
-// Resto de eventos del formulario
+// Actualizar puntos en tiempo real cuando cambie el tour
 $(document).on('change', '#tipoTour', function() {
     const puntos = $(this).find('option:selected').data('points') || 0;
     const precio = $(this).find('option:selected').data('price') || 0;
@@ -957,10 +811,12 @@ $(document).on('change', '#tipoTour', function() {
     $('#vistaPreviaLaPuntos').text(puntos);
     $('#precioUnitario').val(precio);
     
+    // Calcular total si hay PAX
     const pax = parseInt($('#cantidadPax').val()) || 1;
     $('#importeTotal').val(precio * pax);
 });
 
+// Actualizar total cuando cambie PAX o precio unitario
 $(document).on('input', '#cantidadPax, #precioUnitario', function() {
     const pax = parseInt($('#cantidadPax').val()) || 1;
     const precio = parseFloat($('#precioUnitario').val()) || 0;
@@ -968,4 +824,7 @@ $(document).on('input', '#cantidadPax, #precioUnitario', function() {
 });
 
 // JQUERY CONTENIDO JS [End] 
-// DIOS SIEMPRE ES BUENO Y YO AMO A DIOS [END]
+
+}// DIOS SIEMPRE ES BUENO Y YO AMO A DIOS [START]
+
+ 
