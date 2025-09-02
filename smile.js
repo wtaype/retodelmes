@@ -969,7 +969,7 @@ function getFormularioHTML() {
                         <i class="fas fa-clock"></i>
                         Hora de salida *
                     </label>
-                    <input type="text" id="horaSalida" required>
+                    <input type="text" id="horaSalida" placeholder="2HORAS -5PM" required>
                 </div>
 
                 <!-- FECHA -->
@@ -1032,59 +1032,71 @@ function getInfoTabsHTML() {
                 </button>
             </div>
 
-            <div class="tab-content active" id="points-tab">
-                <h3><i class="fas fa-chart-bar"></i> Asignación de Puntos por Servicio</h3>
-                <div class="points-grid">
-                    <div class="point-item">
-                        <span class="service-name">🪂 Parapente</span>
-                        <span class="point-value">50</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">🏜️ Buggie Privado</span>
-                        <span class="point-value">30</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">🏛️ City Tour</span>
-                        <span class="point-value">20</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">🏜️ Buggie Grupal</span>
-                        <span class="point-value">15</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">🍷 Tour de bodegas</span>
-                        <span class="point-value">15</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">🏄 Tablas Profesional</span>
-                        <span class="point-value">15</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">🏝️ Tour de Paracas</span>
-                        <span class="point-value">10</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">🏔️ Cañón de los perdidos</span>
-                        <span class="point-value">10</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">🏍️ Cuatrimotos</span>
-                        <span class="point-value">10</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">✈️ Sobrevuelo</span>
-                        <span class="point-value">10</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">🗿 Nazca Terrestre</span>
-                        <span class="point-value">10</span>
-                    </div>
-                    <div class="point-item">
-                        <span class="service-name">🚙 Polaris</span>
-                        <span class="point-value">10</span>
-                    </div>
-                </div>
-            </div>
+<div class="tab-content active" id="points-tab">
+    <h3><i class="fas fa-chart-bar"></i> Asignación de Puntos por Servicio</h3>
+    <div class="points-grid">
+        <div class="point-item">
+            <span class="service-name">🪂 Parapente</span>
+            <span class="point-value">50</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏜️ Buggie Privado - Sonia</span>
+            <span class="point-value">40</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏛️ City Tour - Jackson</span>
+            <span class="point-value">40</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🍷 Tour de bodegas Privado - Jackson</span>
+            <span class="point-value">40</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏜️ Buggie 2 Horas - Sonia</span>
+            <span class="point-value">35</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏜️ Buggie 1 Hora - Sonia</span>
+            <span class="point-value">25</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🍷 Tour de bodegas - Jackson</span>
+            <span class="point-value">20</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🍷 Tour de bodegas</span>
+            <span class="point-value">15</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏄 Tablas Profesional</span>
+            <span class="point-value">15</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏝️ Tour de Paracas</span>
+            <span class="point-value">10</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏔️ Cañón de los perdidos</span>
+            <span class="point-value">10</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏍️ Cuatrimotos</span>
+            <span class="point-value">10</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">✈️ Sobrevuelo</span>
+            <span class="point-value">10</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🗿 Nazca Terrestre</span>
+            <span class="point-value">10</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🚙 Polaris</span>
+            <span class="point-value">10</span>
+        </div>
+    </div>
+</div>
 
             <div class="tab-content" id="rules-tab">
                 <h3><i class="fas fa-gavel"></i> Reglas del Sistema de Puntos</h3>
