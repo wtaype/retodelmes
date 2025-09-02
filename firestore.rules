@@ -13,8 +13,20 @@ service cloud.firestore {
       //allow create, delete: if true; 
       //allow update: if request.auth != null; 
     } // Consulta para validar, crear, eliminar publico.Actualizar solo Autenticados
+
+    match /registrosdb/{document} {
+      allow read: if true; 
+      allow write: if true; 
+      //allow create, delete: if true; 
+      //allow update: if request.auth != null; 
+    } // Consulta para validar, crear, eliminar publico.Actualizar solo Autenticados
          
     match /publico/{document} {
+      allow read: if true;
+      allow write: if true; 
+    } // Acceso lectura general 
+
+    match /configuracion/{document} {
       allow read: if true;
       allow write: if true; 
     } // Acceso lectura general 

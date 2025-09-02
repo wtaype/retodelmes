@@ -325,7 +325,7 @@ export function witip(el, texto, pos = 'top', tiempo = 1800) {
   const $tip = $('<div>', {
     class: `witip ${posicion} ${tipo || ''}`,
     'data-for': elId,
-    text: texto,
+    html: texto,
     css: { 'border-color': tipo ? `var(${tipoColor[tipo]})` : 'var(--mco)' }
   });
   
