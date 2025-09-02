@@ -842,9 +842,9 @@ function getFormularioHTML() {
                     <select id="tipoTour" required>
                         <option value="">Seleccionar tour...</option>
                         <option value="Parapente" data-points="50" data-price="330">1. 🪂 Parapente (50 pts)</option>
-                        <option value="Buggie 1 Hora - Sonia" data-points="25" data-price="25">2. 🏜️ Buggie 1 Hora - Sonia (25 pts)</option>
-                        <option value="Buggie 2 Horas - Sonia" data-points="35" data-price="35">3. 🏜️ Buggie 2 Horas - Sonia (35 pts)</option>
-                        <option value="Buggie Privado - Sonia" data-points="40" data-price="200">4. 🏜️ Buggie Privado - Sonia (40 pts)</option>
+                        <option value="Buggy 1 Hora - Sonia" data-points="25" data-price="25">2. 🏜️ Buggy 1 Hora - Sonia (25 pts)</option>
+                        <option value="Buggy 2 Horas - Sonia" data-points="35" data-price="35">3. 🏜️ Buggy 2 Horas - Sonia (35 pts)</option>
+                        <option value="Buggy Privado - Sonia" data-points="40" data-price="200">4. 🏜️ Buggy Privado - Sonia (40 pts)</option>
                         <option value="Tour de bodegas" data-points="15" data-price="30">5. 🍷 Tour de bodegas (15 pts)</option>
                         <option value="Tour de bodegas - Jackson" data-points="20" data-price="30">6. 🍷 Tour de bodegas - Jackson (20 pts)</option>
                         <option value="Tour de bodegas Privado - Jackson" data-points="40" data-price="150">7. 🍷 Tour de bodegas Privado - Jackson (40 pts)</option>
@@ -1040,7 +1040,7 @@ function getInfoTabsHTML() {
             <span class="point-value">50</span>
         </div>
         <div class="point-item">
-            <span class="service-name">🏜️ Buggie Privado - Sonia</span>
+            <span class="service-name">🏜️ Buggy Privado - Sonia</span>
             <span class="point-value">40</span>
         </div>
         <div class="point-item">
@@ -1052,11 +1052,11 @@ function getInfoTabsHTML() {
             <span class="point-value">40</span>
         </div>
         <div class="point-item">
-            <span class="service-name">🏜️ Buggie 2 Horas - Sonia</span>
+            <span class="service-name">🏜️ Buggy 2 Horas - Sonia</span>
             <span class="point-value">35</span>
         </div>
         <div class="point-item">
-            <span class="service-name">🏜️ Buggie 1 Hora - Sonia</span>
+            <span class="service-name">🏜️ Buggy 1 Hora - Sonia</span>
             <span class="point-value">25</span>
         </div>
         <div class="point-item">
@@ -1132,15 +1132,15 @@ function getInfoTabsHTML() {
                 <h3><i class="fas fa-tags"></i> Precios de Tours - Venta Mínima</h3>
                 <div class="prices-grid">
                     <div class="price-item">
-                        <span class="service-name">🏜️ Buggie 1 Hora</span>
+                        <span class="service-name">🏜️ Buggy 1 Hora</span>
                         <span class="service-price">S/ 25.00</span>
                     </div>
                     <div class="price-item">
-                        <span class="service-name">🏜️ Buggie 2 Horas</span>
+                        <span class="service-name">🏜️ Buggy 2 Horas</span>
                         <span class="service-price">S/ 35.00</span>
                     </div>
                     <div class="price-item">
-                        <span class="service-name">🏜️ Buggie Privado</span>
+                        <span class="service-name">🏜️ Buggy Privado</span>
                         <span class="service-price">S/ 200.00</span>
                     </div>
                     <div class="price-item">
