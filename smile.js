@@ -418,7 +418,7 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
             <td><span class="points-badge"><i class="fas fa-star"></i> ${venta.puntos || 0}</span></td>
             <td><span class="status-badge ${venta.estadoPago === 'pagado' ? 'paid' : 'pending'}">
                 <i class="fas fa-${venta.estadoPago === 'pagado' ? 'check-circle' : 'clock'}"></i> 
-                ${venta.estadoPago?.toUpperCase() || 'PENDIENTE'}
+                ${venta.estadoPago?.toUpperCase()}
             </span></td>
             <td>
                 <div class="action-buttons">
@@ -842,20 +842,26 @@ function getFormularioHTML() {
                     <select id="tipoTour" required>
                         <option value="">Seleccionar tour...</option>
                         <option value="Parapente" data-points="50" data-price="330">1. 🪂 Parapente (50 pts)</option>
-                        <option value="Buggy 1 Hora - Sonia" data-points="25" data-price="25">2. 🏜️ Buggy 1 Hora - Sonia (25 pts)</option>
-                        <option value="Buggy 2 Horas - Sonia" data-points="35" data-price="35">3. 🏜️ Buggy 2 Horas - Sonia (35 pts)</option>
-                        <option value="Buggy Privado - Sonia" data-points="40" data-price="200">4. 🏜️ Buggy Privado - Sonia (40 pts)</option>
-                        <option value="Tour de bodegas" data-points="15" data-price="30">5. 🍷 Tour de bodegas (15 pts)</option>
-                        <option value="Tour de bodegas - Jackson" data-points="20" data-price="30">6. 🍷 Tour de bodegas - Jackson (20 pts)</option>
-                        <option value="Tour de bodegas Privado - Jackson" data-points="40" data-price="150">7. 🍷 Tour de bodegas Privado - Jackson (40 pts)</option>
-                        <option value="City Tour - Jackson" data-points="40" data-price="200">8. 🏛️ City Tour - Jackson (40 pts)</option>
-                        <option value="Tour de Paracas" data-points="10" data-price="70">9. 🏝️ Tour de Paracas (10 pts)</option>
-                        <option value="Cañón de los perdidos" data-points="10" data-price="70">10. 🏔️ Cañón de los perdidos (10 pts)</option>
-                        <option value="Cuatrimotos" data-points="10" data-price="70">11. 🏍️ Cuatrimotos (10 pts)</option>
-                        <option value="Sobrevuelo" data-points="10" data-price="200">12. ✈️ Sobrevuelo (10 pts)</option>
-                        <option value="Nazca Terrestre" data-points="10" data-price="150">13. 🗿 Nazca Terrestre (10 pts)</option>
-                        <option value="Tablas Profesional" data-points="15" data-price="150">14. 🏄 Tablas Profesional (15 pts)</option>
-                        <option value="Polaris" data-points="10" data-price="380">15. 🚙 Polaris (10 pts)</option>
+                        <option value="Buggy 1 Hora" data-points="15" data-price="20">2. 🏜️ Buggy 1 Hora (15 pts)</option>
+                        <option value="Buggy 2 Horas" data-points="25" data-price="25">3. 🏜️ Buggy 2 Horas (25 pts)</option>
+                        <option value="Buggy Privado" data-points="30" data-price="180">4. 🏜️ Buggy Privado (30 pts)</option>
+                        <option value="Buggy 1 Hora - Sonia" data-points="25" data-price="20">5. 🏜️ Buggy 1 Hora - Sonia (25 pts)</option>
+                        <option value="Buggy 2 Horas - Sonia" data-points="35" data-price="25">6. 🏜️ Buggy 2 Horas - Sonia (35 pts)</option>
+                        <option value="Buggy Privado - Sonia" data-points="50" data-price="180">7. 🏜️ Buggy Privado - Sonia (40 pts)</option>
+                        <option value="Tour de bodegas" data-points="10" data-price="20">8. 🍷 Tour de bodegas (10 pts)</option>
+                        <option value="Tour de bodegas - Jackson" data-points="20" data-price="20">9. 🍷 Tour de bodegas - Jackson (20 pts)</option>
+                        <option value="Tour de bodegas Privado" data-points="30" data-price="150">10. 🍷 Tour de bodegas Privado (30 pts)</option>
+                        <option value="Tour de bodegas Privado - Jackson" data-points="40" data-price="150">11. 🍷 Tour de bodegas Privado - Jackson (40 pts)</option>
+                        <option value="City Tour - Jackson" data-points="50" data-price="200">12. 🏛️ City Tour - Jackson (50 pts)</option>
+                        <option value="Tour de Paracas" data-points="20" data-price="60">13. 🏝️ Tour de Paracas (20 pts)</option>
+                        <option value="Cañón de los perdidos" data-points="20" data-price="60">14. 🏔️ Cañón de los perdidos (20 pts)</option>
+                        <option value="Cuatrimotos" data-points="20" data-price="70">15. 🏍️ Cuatrimotos (20 pts)</option>
+                        <option value="Sobrevuelo" data-points="30" data-price="494">16. ✈️ Sobrevuelo (30 pts)</option>
+                        <option value="Nazca Terrestre" data-points="10" data-price="150">17. 🗿 Nazca Terrestre (10 pts)</option>
+                        <option value="Renta Tablas Profesional" data-points="10" data-price="50">18. 🏄 Renta Tablas Profesional (10 pts)</option>
+                        <option value="Tablas Profesional - Sonia" data-points="15" data-price="150">19. 🏄 Tablas Profesional - Sonia (15 pts)</option>
+                        <option value="Tablas Profesional + Buggy" data-points="10" data-price="150">20. 🏄 Tablas Profesional + Buggy (10 pts)</option>
+                        <option value="Polaris" data-points="20" data-price="380">21. 🚙 Polaris (20 pts)</option>
                     </select>
                 </div>
 
@@ -915,7 +921,7 @@ function getFormularioHTML() {
                 <div class="form-field">
                     <label>
                         <i class="fas fa-users"></i>
-                        PAX *
+                        PAX (Cantidad Personas)
                     </label>
                     <input type="number" id="cantidadPax" required min="1" value="1">
                 </div>
@@ -951,7 +957,7 @@ function getFormularioHTML() {
                         <i class="fas fa-calculator"></i>
                         Importe x Cobrar
                     </label>
-                    <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00">
+                    <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00" disabled>
                 </div>
 
                 <!-- COBRO PROVEEDOR -->
@@ -987,10 +993,11 @@ function getFormularioHTML() {
                         <i class="fas fa-money-check-alt"></i>
                         Pagado?
                     </label>
-                    <select id="estadoPago">
-                        <option value="pagado">Pagado</option>
-                        <option value="debe">Debe</option>
-                    </select>
+<select id="estadoPago">
+<option value="cobrar">Cobrar saldo pendiente</option>
+<option value="pagar">Falta pagar a proveedor</option>
+<option value="pagado">Pagado a proveedor</option>
+</select>
                 </div>
             </div>
 
@@ -1056,7 +1063,19 @@ function getInfoTabsHTML() {
             <span class="point-value">35</span>
         </div>
         <div class="point-item">
+            <span class="service-name">🍷 Tour de bodegas Privado</span>
+            <span class="point-value">30</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏜️ Buggy Privado</span>
+            <span class="point-value">30</span>
+        </div>
+        <div class="point-item">
             <span class="service-name">🏜️ Buggy 1 Hora - Sonia</span>
+            <span class="point-value">25</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏜️ Buggy 2 Horas</span>
             <span class="point-value">25</span>
         </div>
         <div class="point-item">
@@ -1064,11 +1083,15 @@ function getInfoTabsHTML() {
             <span class="point-value">20</span>
         </div>
         <div class="point-item">
+            <span class="service-name">🏜️ Buggy 1 Hora</span>
+            <span class="point-value">15</span>
+        </div>
+        <div class="point-item">
             <span class="service-name">🍷 Tour de bodegas</span>
             <span class="point-value">15</span>
         </div>
         <div class="point-item">
-            <span class="service-name">🏄 Tablas Profesional</span>
+            <span class="service-name">🏄 Tablas Profesional - Sonia</span>
             <span class="point-value">15</span>
         </div>
         <div class="point-item">
@@ -1089,6 +1112,14 @@ function getInfoTabsHTML() {
         </div>
         <div class="point-item">
             <span class="service-name">🗿 Nazca Terrestre</span>
+            <span class="point-value">10</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏄 Renta Tablas Profesional</span>
+            <span class="point-value">10</span>
+        </div>
+        <div class="point-item">
+            <span class="service-name">🏄 Tablas Profesional + Buggy</span>
             <span class="point-value">10</span>
         </div>
         <div class="point-item">
@@ -1128,57 +1159,99 @@ function getInfoTabsHTML() {
                 </div>
             </div>
 
-            <div class="tab-content" id="prices-tab">
-                <h3><i class="fas fa-tags"></i> Precios de Tours - Venta Mínima</h3>
-                <div class="prices-grid">
-                    <div class="price-item">
-                        <span class="service-name">🏜️ Buggy 1 Hora</span>
-                        <span class="service-price">S/ 25.00</span>
-                    </div>
-                    <div class="price-item">
-                        <span class="service-name">🏜️ Buggy 2 Horas</span>
-                        <span class="service-price">S/ 35.00</span>
-                    </div>
-                    <div class="price-item">
-                        <span class="service-name">🏜️ Buggy Privado</span>
-                        <span class="service-price">S/ 200.00</span>
-                    </div>
-                    <div class="price-item">
-                        <span class="service-name">🏝️ Paracas</span>
-                        <span class="service-price">S/ 70.00</span>
-                    </div>
-                    <div class="price-item">
-                        <span class="service-name">🏔️ Cañón de los Perdidos</span>
-                        <span class="service-price">S/ 70.00</span>
-                    </div>
-                    <div class="price-item">
-                        <span class="service-name">🪂 Parapente</span>
-                        <span class="service-price">S/ 330.00</span>
-                    </div>
-                    <div class="price-item">
-                        <span class="service-name">🏍️ Cuatrimotos</span>
-                        <span class="service-price">S/ 70.00</span>
-                    </div>
-                    <div class="price-item">
-                        <span class="service-name">🍷 Bodegas</span>
-                        <span class="service-price">S/ 30.00</span>
-                    </div>
-                    <div class="price-item">
-                        <span class="service-name">🏛️ City Tour</span>
-                        <span class="service-price">S/ 200.00</span>
-                    </div>
-                    <div class="price-item">
-                        <span class="service-name">🚙 Polaris</span>
-                        <span class="service-price">S/ 380.00</span>
-                    </div> 
-                    <div class="price-item">
-                        <span class="service-name">🏄 Tablas Profesionales</span>
-                        <span class="service-price">S/ 150.00</span>
-                    </div>
-                </div>
-                <div class="price-note">
-                    <p><i class="fas fa-info-circle"></i> <strong>Nota:</strong> City Tour incluye S/ 10.00 por persona para actividad de chocotejas</p>
-                </div>
+   <div class="tab-content" id="prices-tab">
+    <h3><i class="fas fa-tags"></i> Precios de Tours - Venta Mínima</h3>
+    <div class="prices-grid">
+        <div class="price-item">
+            <span class="service-name">🪂 Parapente</span>
+            <span class="service-price">S/ 330.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏜️ Buggy 1 Hora</span>
+            <span class="service-price">S/ 20.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏜️ Buggy 2 Horas</span>
+            <span class="service-price">S/ 25.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏜️ Buggy Privado</span>
+            <span class="service-price">S/ 180.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏜️ Buggy 1 Hora - Sonia</span>
+            <span class="service-price">S/ 25.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏜️ Buggy 2 Horas - Sonia</span>
+            <span class="service-price">S/ 35.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏜️ Buggy Privado - Sonia</span>
+            <span class="service-price">S/ 200.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🍷 Tour de bodegas</span>
+            <span class="service-price">S/ 30.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🍷 Tour de bodegas - Jackson</span>
+            <span class="service-price">S/ 30.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🍷 Tour de bodegas Privado</span>
+            <span class="service-price">S/ 150.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🍷 Tour de bodegas Privado - Jackson</span>
+            <span class="service-price">S/ 150.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏛️ City Tour - Jackson</span>
+            <span class="service-price">S/ 200.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏝️ Tour de Paracas</span>
+            <span class="service-price">S/ 70.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏔️ Cañón de los perdidos</span>
+            <span class="service-price">S/ 70.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏍️ Cuatrimotos</span>
+            <span class="service-price">S/ 70.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">✈️ Sobrevuelo</span>
+            <span class="service-price">S/ 200.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🗿 Nazca Terrestre</span>
+            <span class="service-price">S/ 150.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏄 Renta Tablas Profesional</span>
+            <span class="service-price">S/ 50.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏄 Tablas Profesional - Sonia</span>
+            <span class="service-price">S/ 150.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🏄 Tablas Profesional + Buggy</span>
+            <span class="service-price">S/ 150.00</span>
+        </div>
+        <div class="price-item">
+            <span class="service-name">🚙 Polaris</span>
+            <span class="service-price">S/ 380.00</span>
+        </div>
+    </div>
+    <div class="price-note">
+        <p><i class="fas fa-info-circle"></i> <strong>Nota:</strong> City Tour incluye S/ 10.00 por persona para actividad de chocotejas</p>
+    </div>
+</div>
+
             </div>
         </section>
     `;
@@ -1187,12 +1260,18 @@ function getInfoTabsHTML() {
 // ...existing code...
 
 // JQUERY CONTENIDO JS [Start] 
+// FUNCIONES UTILES [START]
+// $('#importeTotal').attr('disabled','disabled');
+// FUNCIONES UTILES [END]
+
 $(document).on('click', '.btn-save', async (e) => {
     e.preventDefault();
     
     try {
         const editId = $('.btn-save').attr('data-edit-id');
         const isEditing = !!editId;
+        const pax = parseInt($('#cantidadPax').val()) || 1;
+        const puntosBase = parseInt($('#tipoTour option:selected').data('points')) || 0;
         
         const formData = {
             tipoTour: $('#tipoTour').val(),
@@ -1201,7 +1280,7 @@ $(document).on('click', '.btn-save', async (e) => {
             numeroHabitacion: $('#numeroHabitacion').val(),
             tipoDocumento: $('#tipoDocumento').val(),
             numeroDocumento: $('#numeroDocumento').val(),
-            cantidadPax: parseInt($('#cantidadPax').val()) || 1,
+            cantidadPax: pax,
             precioUnitario: parseFloat($('#precioUnitario').val()) || 0,
             metodoPago: $('#metodoPago').val(),
             importeTotal: parseFloat($('#importeTotal').val()) || 0,
@@ -1210,7 +1289,7 @@ $(document).on('click', '.btn-save', async (e) => {
             fechaTour: $('#fechaTour').val(),
             estadoPago: $('#estadoPago').val(),
             vendedor: userAuth.displayName,
-            puntos: parseInt($('#tipoTour option:selected').data('points')) || 0,
+            puntos: puntosBase * pax, // Puntos multiplicados por PAX
             email: userAuth.email,
             qventa: 1,
             fechaRegistro: serverTimestamp()
@@ -1276,18 +1355,20 @@ $(document).on('click', '.btn-save', async (e) => {
 $(document).on('change', '#tipoTour', function() {
     const puntos = $(this).find('option:selected').data('points') || 0;
     const precio = $(this).find('option:selected').data('price') || 0;
-    
-    $('#vistaPreviaLaPuntos').text(puntos);
-    $('#precioUnitario').val(precio);
-    
     const pax = parseInt($('#cantidadPax').val()) || 1;
+    
+    $('#vistaPreviaLaPuntos').text(puntos * pax);
+    $('#precioUnitario').val(precio);
     $('#importeTotal').val(precio * pax);
 });
 
 $(document).on('input', '#cantidadPax, #precioUnitario', function() {
     const pax = parseInt($('#cantidadPax').val()) || 1;
     const precio = parseFloat($('#precioUnitario').val()) || 0;
+    const puntosBase = $('#tipoTour option:selected').data('points') || 0;
+    
     $('#importeTotal').val(precio * pax);
+    $('#vistaPreviaLaPuntos').text(puntosBase * pax);
 });
 
 // JQUERY CONTENIDO JS [End] 
