@@ -416,10 +416,12 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
             </td>
             <td><strong class="price">S/ ${(venta.importeTotal || 0).toFixed(2)}</strong></td>
             <td><span class="points-badge"><i class="fas fa-star"></i> ${venta.puntos || 0}</span></td>
-            <td><span class="status-badge ${venta.estadoPago === 'pagado' ? 'paid' : 'pending'}">
-                <i class="fas fa-${venta.estadoPago === 'pagado' ? 'check-circle' : 'clock'}"></i> 
+
+            <td><span class="status-badge ${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'paid' : 'pending'}">
+                <i class="fas fa-${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'check-circle' : 'clock'}"></i> 
                 ${venta.estadoPago?.toUpperCase()}
             </span></td>
+
             <td>
                 <div class="action-buttons">
                     <button class="btn-view" onclick="verDetalleVenta('${venta.id}')" title="Ver detalles">
@@ -955,7 +957,7 @@ function getFormularioHTML() {
                 <div class="form-field">
                     <label>
                         <i class="fas fa-calculator"></i>
-                        Importe x Cobrar
+                        Importe x Cobrar(Total)
                     </label>
                     <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00" disabled>
                 </div>
@@ -964,18 +966,18 @@ function getFormularioHTML() {
                 <div class="form-field">
                     <label>
                         <i class="fas fa-handshake"></i>
-                        Cobro Proveedor
+                        Pagar/Cobrar a Operador
                     </label>
                     <input type="number" id="cobroProveedor" step="0.01" placeholder="S/ 0.00">
                 </div>
 
-                <!-- HORA DE SALIDA -->
+                <!-- OPERADOR -->
                 <div class="form-field">
                     <label>
-                        <i class="fas fa-clock"></i>
-                        Hora de salida *
+                        <i class="fas fa-user"></i>
+                        Operador *
                     </label>
-                    <input type="text" id="horaSalida" placeholder="2HORAS -5PM" required>
+                    <input type="text" id="Operador" placeholder="Ejm: Jacki, Pili, William.... " required>
                 </div>
 
                 <!-- FECHA -->
@@ -987,18 +989,38 @@ function getFormularioHTML() {
                     <input type="date" id="fechaTour" required>
                 </div>
 
-                <!-- Pagado? -->
+                <!-- HORA DE SALIDA -->
+                <div class="form-field">
+                    <label>
+                        <i class="fas fa-clock"></i>
+                        Hora de salida *
+                    </label>
+                    <input type="text" id="horaSalida" placeholder="2HORAS -5PM" required>
+                </div>
+
+                <!-- PAGADO ? -->
                 <div class="form-field">
                     <label>
                         <i class="fas fa-money-check-alt"></i>
                         Pagado?
                     </label>
-<select id="estadoPago">
-<option value="cobrar">Cobrar saldo pendiente</option>
-<option value="pagar">Falta pagar a proveedor</option>
-<option value="pagado">Pagado a proveedor</option>
-</select>
+                    <select id="estadoPago">
+                    <option value="pagar">Falta pagar a proveedor</option>
+                    <option value="pagado">Pagado a proveedor</option>
+                    <option value="cobrar">Cobrar saldo pendiente</option>
+                    <option value="cobrado">Saldo pendiente cobrado</option>
+                    </select>
                 </div>
+
+                <!-- COMENTARIO -->
+                <div class="form-field">
+                    <label>
+                        <i class="fa-solid fa-comment"></i>
+                        Comentario *
+                    </label>
+                    <input type="text" id="Comentario" placeholder="Escribe notas de tu venta " required>
+                </div>
+
             </div>
 
             <!-- ACCIONES DEL FORMULARIO -->
@@ -1286,6 +1308,8 @@ $(document).on('click', '.btn-save', async (e) => {
             importeTotal: parseFloat($('#importeTotal').val()) || 0,
             cobroProveedor: parseFloat($('#cobroProveedor').val()) || 0,
             horaSalida: $('#horaSalida').val(),
+            Operador: $('#Operador').val(),
+            Comentario: $('#Comentario').val(),
             fechaTour: $('#fechaTour').val(),
             estadoPago: $('#estadoPago').val(),
             vendedor: userAuth.displayName,
