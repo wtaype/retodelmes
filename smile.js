@@ -789,7 +789,6 @@ async function eliminarVentaCompleta(ventaId) {
         
         // Remover las claves encontradas
         keysToRemove.forEach(key => localStorage.removeItem(key));
-        
         // Actualizar datos locales
         todasLasVentas = todasLasVentas.filter(v => v.id !== ventaId);
         
@@ -995,7 +994,7 @@ function getFormularioHTML() {
                         <i class="fas fa-clock"></i>
                         Hora de salida *
                     </label>
-                    <input type="text" id="horaSalida" placeholder="2HORAS -5PM" required>
+                    <input type="text" id="horaSalida" placeholder="2 HORAS -5PM" required>
                 </div>
 
                 <!-- PAGADO ? -->
