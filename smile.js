@@ -905,6 +905,7 @@ function getFormularioHTML() {
                     <select id="tipoDocumento">
                         <option value="dni">DNI</option>
                         <option value="pasaporte">Pasaporte</option>
+                        <option value="cedula">cedula</option>
                         <option value="ce">Carnet Extranjería</option>
                     </select>
                 </div>
