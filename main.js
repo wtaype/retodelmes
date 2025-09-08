@@ -34,39 +34,39 @@ $('.conCuenta').click(e => { e.preventDefault(); toggleForms('.upd-form', '.logi
 // =====================================================
 // # PARA LA AUTENTICACIÓN
 // =====================================================
-$(function(){
-  let midb = 'smiles';  //Para base de datos 
-  let miconf = 'configuracion';  //Para base de datos 
-  let wiAuthTm = 3000;  //Tiempo para guardar en firestore
-  let wiAuthIn = 'wiAuthIn';  //Para guardar auth en localstorage
-  let wiAuthRol = 'wiAuthRol';  //Para guardar auth en localstorage
-  let rol = 'smile' //Rol default
-  let temaAsignado = 'Cielo' //Rol default
+
+let midb = 'smiles';  //Para base de datos 
+let miconf = 'configuracion';  //Para base de datos 
+let wiAuthTm = 3000;  //Tiempo para guardar en firestore
+let wiAuthIn = 'wiAuthIn';  //Para guardar auth en localstorage
+let wiAuthRol = 'wiAuthRol';  //Para guardar auth en localstorage
+let rol = 'smile' //Rol default
+let temaAsignado = 'Cielo' //Rol default
 
 
-  $('.togglePass').click(function() {
-    const input = $(this).siblings('input');
-    const isPassword = input.attr('type') === 'password';
-    input.attr('type', isPassword ? 'text' : 'password');
-    $(this).toggleClass('fa-eye fa-eye-slash');
-  }); // Toggle password visibilidad
+$('.togglePass').click(function() {
+  const input = $(this).siblings('input');
+  const isPassword = input.attr('type') === 'password';
+  input.attr('type', isPassword ? 'text' : 'password');
+  $(this).toggleClass('fa-eye fa-eye-slash');
+}); // Toggle password visibilidad
 
-  $('.miauth input:not([type="checkbox"])').on('click', function() {
-    witip(this, $(this).attr('placeholder'));
-  }); //Tooltips validaciones 
+$('.miauth input:not([type="checkbox"])').on('click', function() {
+  witip(this, $(this).attr('placeholder'));
+}); //Tooltips validaciones 
 
-  $('#regUsuario, #regEmail, #email, #recEmail').on('input', function() {
-    $(this).val($(this).val().toLowerCase().trim());
-  }); // Conversión a minúsculas
+$('#regUsuario, #regEmail, #email, #recEmail').on('input', function() {
+  $(this).val($(this).val().toLowerCase().trim());
+}); // Conversión a minúsculas
 
-  [['#password','#Login'], ['#regPassword1','#Registrar'], ['#recFechaNacimiento','#Recuperar'], ['#recEmail','#Recuperar']].forEach(([input, btn]) => {
-    $(input).on('input keyup', e => {
-      $(btn).removeClass('inactivo'); // 🌟 BRILLAR COMO EL SOL
-      e.key === 'Enter' && ($(btn).click(), $(btn).addClass('inactivo')); // Click + Procesando
-    });
-  }); // Tecla Enter para login y registro
+[['#password','#Login'], ['#regPassword1','#Registrar'], ['#recFechaNacimiento','#Recuperar'], ['#recEmail','#Recuperar']].forEach(([input, btn]) => {
+  $(input).on('input keyup', e => {
+    $(btn).removeClass('inactivo'); // 🌟 BRILLAR COMO EL SOL
+    e.key === 'Enter' && ($(btn).click(), $(btn).addClass('inactivo')); // Click + Procesando
+  });
+}); // Tecla Enter para login y registro
 
-  const validacionesRegistro = {
+const validacionesRegistro = {
       regEmail: [v => v.toLowerCase(), v => /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(v) || 'Correo inválido'],
       regUsuario: [v => v.toLowerCase().replace(/[^a-z0-9_]/g, ''), v => v.length >= 3 || 'Usuario 3-20 caracteres'],
       regNombre: [v => v.trim(), v => v.length > 0 || 'Ingrese nombre'],
@@ -75,17 +75,17 @@ $(function(){
       regFechaNacimiento: [v => v, v => calcularEdad(v) >= 13 || 'Tienes que ser mayor de 13 años'],
       regPassword: [v => v, v => v.length >= 6 || 'Mínimo 6 caracteres'],
       regPassword1: [v => v, v => v === $('#regPassword').val() || 'Contraseñas no coinciden']
-  };
-  $.each(validacionesRegistro, function(id, [tis, validado]) {
+};
+$.each(validacionesRegistro, function(id, [tis, validado]) {
     $(`#${id}`).on('blur change', function() {
       const vl = tis($(this).val());  $(this).val(vl);
       const result = validado(vl);
       if (result !== true) witip(this, result, 'error');
     });
-  }); // Validaciones en tiempo real
+}); // Validaciones en tiempo real
 
-  let usuarioListo = false;
-  $('#regUsuario').on('blur focus', async function(){
+let usuarioListo = false;
+$('#regUsuario').on('blur focus', async function(){
     const usuarioVL = $(this).val();
     if(usuarioVL.length >= 3){
       try{
@@ -95,10 +95,10 @@ $(function(){
       witip(this, mensaje, existe ? 'error' : 'success','top',7000);
       }catch(e){console.error(e)}
     }
-  }); // Validaciones para el usuario disponible con firestore
+}); // Validaciones para el usuario disponible con firestore
 
-  let emailListo = false;
-  $('#regEmail').on('blur focus', async function(){
+let emailListo = false;
+$('#regEmail').on('blur focus', async function(){
     const emailVL = $(this).val();
     if(emailVL.length >= 3){
       try{
@@ -108,7 +108,7 @@ $(function(){
         witip(this, mensaje, existe ? 'error' : 'success','top',7000);
       }catch(e){console.error(e)}
     }
-  }); // Validación para email disponible con firestore
+}); // Validación para email disponible con firestore
 
 $('#Registrar').click(async function(){
   const todasValidaciones = [[usuarioListo, $('#regUsuario')[0], 'Usuario no disponible'], [emailListo, $('#regEmail')[0], 'Email no disponible'],
@@ -164,32 +164,36 @@ $('#Registrar').click(async function(){
     Mensaje('Registro completado! <i class="fa-solid fa-circle-check"></i>');
 
   }catch(e){Mensaje({'auth/email-already-in-use': 'Email ya registrado', 'auth/weak-password': 'Contraseña muy débil'}[e.code] || e.message) || console.error(e);}
-  finally{savels(wiAuthIn,'wIn',24); savels(wiAuthRol,rol,24); savels('witema',temaAsignado,72); setTimeout(()=> (accederRol(rol)), wiAuthTm);}
+  finally{savels(wiAuthIn,'wIn',24); savels(wiAuthRol,rol,24); savels('wiTema',temaAsignado,72); setTimeout(()=> (accederRol(rol)), wiAuthTm);}
 });
 
 // LOGIN CENTER APP 
 $('#Login').click(async function() {
+  showLoading(true);
+
   try {
     const [usuario, password] = ['#email', '#password'].map(id => $(id).val());
-    
-    let busq = null;
-    let email = usuario; //Para ingresar con usuario, actualizando a email 
-    if (!usuario.includes('@')){
-      try{
-        busq = await getDoc(doc(db, midb, usuario));
-        email = busq.exists() ? busq.data().email : null;
-      }catch(e){console.error('ebdUsuario', e); email = null;}
-    } // Convertir usuario a email si es necesario
-
-    await signInWithEmailAndPassword(auth, email, password); // Iniciando
-    savels(wiAuthIn,'wIn',24); savels(wiAuthRol, busq.data().rol, 24); accederRol(busq.data().rol);  //Actualizando seguridad
-  }catch(e){
+    let email = usuario, busq = null, tema = null;
+    if (!usuario.includes('@')) {
+      busq = await getDoc(doc(db, midb, usuario));
+      if (!busq.exists()) throw new Error('Usuario no encontrado');
+      email = busq.data().email;
+      try { tema = (await getDoc(doc(db, 'configuracion', usuario))).data()?.tema; } catch(e) {}
+    }
+    await signInWithEmailAndPassword(auth, email, password);
+    const rol = busq?.data()?.rol || 'smile';
+    savels(wiAuthIn,'wIn',24); savels(wiAuthRol, rol, 24);  //Para guardar el inicio sesion
+    if (tema) savels('wiTema', tema, 72); //Para guardar el tema 
+    accederRol(rol);
+  }
+  
+  catch(e){
     const errores = {
       'auth/invalid-credential': 'Contraseña incorrecta',
       'auth/invalid-email': 'Falta registrar Email',
       'auth/missing-email': 'Email o usuario no registrado'
     }; Mensaje(errores[e.code] || e.message, 'error'); console.error(e);   
-  }
+  }finally{showLoading(false)}
 });
 
 // RECUPERAR CENTER APP 
@@ -217,6 +221,4 @@ $('#Recuperar').click(async function() {
     Mensaje('Se envió correo para restablecer su contraseña, revisa en principal o spam <i class="fa-solid fa-circle-check"></i>', 'success');
     
   }catch(e){console.error(e);}
-});
-
 });

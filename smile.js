@@ -148,7 +148,7 @@ function smileContenido(wi){
                         </div>
                         <div class="summary-stat">
                             <span class="summary-label">Meta del Mes</span>
-                            <span class="summary-value">50</span>
+                            <span class="summary-value">2500</span>
                         </div>
                     </div>
                 </section>
@@ -364,7 +364,6 @@ async function cargarVentas() {
     }
 }
 
-// RENDERIZAR TABLA DE VENTAS CON PAGINACIÓN
 function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
     let ventasFiltradas = [...todasLasVentas];
     
@@ -394,57 +393,30 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
     const ventasPagina = ventasFiltradas.slice(inicio, inicio + ventasPorPagina);
     
     // Renderizar filas
-    const filas = ventasPagina.map(venta => `
-        <tr>
-            <td><span class="tour-badge">${venta.tipoTour}</span></td>
-            <td>
-                <strong>${venta.nombreCliente}</strong>
-                ${venta.numeroHabitacion ? `<small>Hab: ${venta.numeroHabitacion}</small>` : ''}
-            </td>
-            <td><span class="pax-badge"><i class="fas fa-users"></i> ${venta.cantidadPax}</span></td>
-            <td>
-                <div class="datetime-info">
-                    <span><i class="fas fa-calendar"></i> ${venta.fechaTour}</span>
-                    <span><i class="fas fa-clock"></i> ${venta.horaSalida}</span>
-                </div>
-            </td>
-            <td>
-                <div class="seller-info">
-                    <strong>${venta.vendedor}</strong>
-                    <i class="fas fa-user-tie"></i>
-                </div>
-            </td>
-            <td><strong class="price">S/ ${(venta.importeTotal || 0).toFixed(2)}</strong></td>
-            <td><span class="points-badge"><i class="fas fa-star"></i> ${venta.puntos || 0}</span></td>
-
-            <td><span class="status-badge ${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'paid' : 'pending'}">
-                <i class="fas fa-${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'check-circle' : 'clock'}"></i> 
-                ${venta.estadoPago?.toUpperCase()}
-            </span></td>
-
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-view" onclick="verDetalleVenta('${venta.id}')" title="Ver detalles">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn-edit" onclick="editarVenta('${venta.id}')" title="Editar">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-delete" onclick="eliminarVenta('${venta.id}')" title="Eliminar">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    const filas = ventasPagina.map(venta => {
+        const esPropietario = venta.vendedor === userAuth?.displayName;
+        const botones = esPropietario 
+            ? `<button class="btn-view" onclick="verDetalleVenta('${venta.id}')" title="Ver detalles"><i class="fas fa-eye"></i></button>
+               <button class="btn-edit" onclick="editarVenta('${venta.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+               <button class="btn-delete" onclick="eliminarVenta('${venta.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>`
+            : `<button class="btn-view" onclick="verDetalleVenta('${venta.id}')" title="Ver detalles"><i class="fas fa-eye"></i></button>`;
+        
+        return `
+            <tr>
+                <td><span class="tour-badge">${venta.tipoTour}</span></td>
+                <td><strong>${venta.nombreCliente}</strong>${venta.numeroHabitacion ? `<small>Hab: ${venta.numeroHabitacion}</small>` : ''}</td>
+                <td><span class="pax-badge"><i class="fas fa-users"></i> ${venta.cantidadPax}</span></td>
+                <td><div class="datetime-info"><span><i class="fas fa-calendar"></i> ${venta.fechaTour}</span><span><i class="fas fa-clock"></i> ${venta.horaSalida}</span></div></td>
+                <td><div class="seller-info"><strong>${venta.vendedor}</strong><i class="fas fa-user-tie"></i></div></td>
+                <td><strong class="price">S/ ${(venta.importeTotal || 0).toFixed(2)}</strong></td>
+                <td><span class="points-badge"><i class="fas fa-star"></i> ${venta.puntos || 0}</span></td>
+                <td><span class="status-badge ${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'paid' : 'pending'}"><i class="fas fa-${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'check-circle' : 'clock'}"></i> ${venta.estadoPago?.toUpperCase()}</span></td>
+                <td><div class="action-buttons">${botones}</div></td>
+            </tr>
+        `;
+    }).join('');
     
-    $('#salesTableBody').html(filas || `
-        <tr><td colspan="9" class="empty-cell">
-            <i class="fas fa-inbox"></i> No hay ventas para mostrar
-        </td></tr>
-    `);
-    
-    // Renderizar paginación
+    $('#salesTableBody').html(filas || `<tr><td colspan="9" class="empty-cell"><i class="fas fa-inbox"></i> No hay ventas para mostrar</td></tr>`);
     renderizarPaginacion(totalPaginas);
 }
 
@@ -702,6 +674,8 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
     $('#importeTotal').val(venta.importeTotal || 0);
     $('#cobroProveedor').val(venta.cobroProveedor || 0);
     $('#horaSalida').val(venta.horaSalida);
+    $('#Operador').val(venta.Operador);
+    $('#Comentario').val(venta.Comentario);
     $('#fechaTour').val(venta.fechaTour);
     $('#estadoPago').val(venta.estadoPago || 'pagado');
     
