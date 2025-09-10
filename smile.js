@@ -906,7 +906,7 @@ function getFormularioHTML() {
                 <div class="form-field">
                     <label>
                         <i class="fas fa-user-tag"></i>
-                        Importe Individual
+                        Importe Individual/Grupo Privado
                     </label>
                     <input type="number" id="precioUnitario" step="0.01" placeholder="S/ 0.00">
                 </div>
