@@ -897,7 +897,7 @@ function getFormularioHTML() {
                 <div class="form-field">
                     <label>
                         <i class="fas fa-users"></i>
-                        PAX (Cantidad Personas)
+                        PAX (Cantidad Personas/ Grupo privado)
                     </label>
                     <input type="number" id="cantidadPax" required min="1" value="1">
                 </div>
