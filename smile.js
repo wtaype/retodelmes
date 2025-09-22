@@ -95,6 +95,10 @@ function smileContenido(wi){
                     <div class="panel-header">
                         <h2><i class="fas fa-plus-circle"></i> Nueva Venta</h2>
                         <div class="bt_add_exportar">
+                            <p>Ventas:</p>
+                            <label for="vtJulio"><input type="checkbox" id="vtJulio"/>Julio</label>   
+                            <label for="vtSonia"><input type="checkbox" id="vtSonia"/>Sonia</label>   
+                            <label for="vtExterna"><input type="checkbox" id="vtExterna"/>Externa</label>   
                             <button class="btn-add" id="addNewSale">
                                 <i class="fas fa-plus"></i> Agregar
                             </button>
@@ -155,47 +159,48 @@ function smileContenido(wi){
             </div>
 
             <!-- TABLA DE VENTAS -->
-            <section class="sales-table-section">
-                <div class="table-header">
-                    <h2><i class="fas fa-clipboard-list"></i> Registro de Ventas</h2>
-                    <div class="table-filters">
-                        <select id="filterEmployee" class="filter-select">
-                            <option value="">Todos los vendedores</option>
-                        </select>
-                        <button class="filter-btn" id="todayFilter">
-                            <i class="fas fa-calendar-day"></i> Hoy
-                        </button>
-                    </div>
-                </div>
+<section class="sales-table-section">
+    <div class="table-header">
+        <h2><i class="fas fa-clipboard-list"></i> Registro de Ventas</h2>
+        <div class="table-filters">
+            <select id="filterEmployee" class="filter-select">
+                <option value="">Todos los vendedores</option>
+            </select>
+            <button class="filter-btn" id="todayFilter">
+                <i class="fas fa-calendar-day"></i> Hoy
+            </button>
+        </div>
+    </div>
 
-                <div class="table-container">
-                    <table class="sales-table" id="salesTable">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-route"></i> Tour</th>
-                                <th><i class="fas fa-user"></i> Cliente</th>
-                                <th><i class="fas fa-users"></i> PAX</th>
-                                <th><i class="fas fa-calendar-clock"></i> Fecha/Hora</th>
-                                <th><i class="fas fa-user-tie"></i> Vendedor</th>
-                                <th><i class="fas fa-dollar-sign"></i> Importe</th>
-                                <th><i class="fas fa-star"></i> Puntos</th>
-                                <th><i class="fas fa-info-circle"></i> Estado</th>
-                                <th><i class="fas fa-cogs"></i> Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="salesTableBody">
-                            <tr><td colspan="9" class="loading-cell">
-                                <i class="fas fa-spinner fa-spin"></i> Cargando ventas...
-                            </td></tr>
-                        </tbody>
-                    </table>
-                </div>
+    <div class="table-container">
+        <table class="sales-table" id="salesTable">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-route"></i> Tour</th>
+                    <th><i class="fas fa-user"></i> Cliente</th>
+                    <th><i class="fas fa-users"></i> PAX</th>
+                    <th><i class="fas fa-dollar-sign"></i> Importe</th>
+                    <th><i class="fas fa-calendar-clock"></i> Fecha/Hora</th>
+                    <th><i class="fas fa-star"></i> Puntos</th>
+                    <th><i class="fas fa-info-circle"></i> Registro</th>
+                    <th><i class="fas fa-user-tie"></i> Vendedor</th>
+                    <th><i class="fas fa-tag"></i> Estado</th>
+                    <th><i class="fas fa-cogs"></i> Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="salesTableBody">
+                <tr><td colspan="10" class="loading-cell">
+                    <i class="fas fa-spinner fa-spin"></i> Cargando ventas...
+                </td></tr>
+            </tbody>
+        </table>
+    </div>
 
-                <!-- PAGINACIÓN -->
-                <div class="pagination-container" id="paginationContainer">
-                    <!-- Se llena dinámicamente -->
-                </div>
-            </section>
+    <!-- PAGINACIÓN -->
+    <div class="pagination-container" id="paginationContainer">
+        <!-- Se llena dinámicamente -->
+    </div>
+</section>
 
             ${getInfoTabsHTML()}
         </main>
@@ -364,6 +369,7 @@ async function cargarVentas() {
     }
 }
 
+// FUNCIÓN ACTUALIZADA PARA RENDERIZAR TABLA DE VENTAS
 function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
     let ventasFiltradas = [...todasLasVentas];
     
@@ -392,7 +398,7 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
     const inicio = (currentPage - 1) * ventasPorPagina;
     const ventasPagina = ventasFiltradas.slice(inicio, inicio + ventasPorPagina);
     
-    // Renderizar filas
+    // Renderizar filas con nueva estructura
     const filas = ventasPagina.map(venta => {
         const esPropietario = venta.vendedor === userAuth?.displayName;
         const botones = esPropietario 
@@ -401,23 +407,62 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
                <button class="btn-delete" onclick="eliminarVenta('${venta.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>`
             : `<button class="btn-view" onclick="verDetalleVenta('${venta.id}')" title="Ver detalles"><i class="fas fa-eye"></i></button>`;
         
+        // Mostrar nombre truncado (6 caracteres + ...)
+        const nombreTruncado = venta.nombreCliente.length > 6 
+            ? venta.nombreCliente.substring(0, 6) + '...' 
+            : venta.nombreCliente;
+        
+        // Información de habitación
+        const habitacionInfo = venta.numeroHabitacion 
+            ? `<small>Hab: ${venta.numeroHabitacion}</small>` 
+            : '';
+        
+        // Mostrar etiquetas de ventas especiales
+        const etiquetasVentas = obtenerEtiquetasVentas(venta);
+        
         return `
             <tr>
                 <td><span class="tour-badge">${venta.tipoTour}</span></td>
-                <td><strong>${venta.nombreCliente}</strong>${venta.numeroHabitacion ? `<small>Hab: ${venta.numeroHabitacion}</small>` : ''}</td>
+                <td>
+                    <strong>${nombreTruncado}</strong>
+                    ${habitacionInfo}
+                </td>
                 <td><span class="pax-badge"><i class="fas fa-users"></i> ${venta.cantidadPax}</span></td>
-                <td><div class="datetime-info"><span><i class="fas fa-calendar"></i> ${venta.fechaTour}</span><span><i class="fas fa-clock"></i> ${venta.horaSalida}</span></div></td>
-                <td><div class="seller-info"><strong>${venta.vendedor}</strong><i class="fas fa-user-tie"></i></div></td>
                 <td><strong class="price">S/ ${(venta.importeTotal || 0).toFixed(2)}</strong></td>
+                <td>
+                    <div class="datetime-info">
+                        <span><i class="fas fa-calendar"></i> ${venta.fechaTour}</span>
+                        <span><i class="fas fa-clock"></i> ${venta.horaSalida}</span>
+                    </div>
+                </td>
                 <td><span class="points-badge"><i class="fas fa-star"></i> ${venta.puntos || 0}</span></td>
+                <td><div class="seller-info"><strong><i class="fas fa-user-tie"></i> ${Capi(venta.vendedor)}</strong></div></td>
+                <td>${etiquetasVentas || Capi(venta.vendedor)}</td>
                 <td><span class="status-badge ${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'paid' : 'pending'}"><i class="fas fa-${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'check-circle' : 'clock'}"></i> ${venta.estadoPago?.toUpperCase()}</span></td>
-                <td><div class="action-buttons">${botones}</div></td>
+                <td><div class="action-buttons">${botones}</div></div>
             </tr>
         `;
     }).join('');
     
-    $('#salesTableBody').html(filas || `<tr><td colspan="9" class="empty-cell"><i class="fas fa-inbox"></i> No hay ventas para mostrar</td></tr>`);
+    $('#salesTableBody').html(filas || `<tr><td colspan="10" class="empty-cell"><i class="fas fa-inbox"></i> No hay ventas para mostrar</td></tr>`);
     renderizarPaginacion(totalPaginas);
+}
+
+// FUNCIÓN PARA OBTENER ETIQUETAS DE VENTAS ESPECIALES
+function obtenerEtiquetasVentas(venta) {
+    let etiquetas = [];
+    
+    if (venta.esVentaJulio) {
+        etiquetas.push('<span class="venta-especial julio">Julio</span>');
+    }
+    if (venta.esVentaSonia) {
+        etiquetas.push('<span class="venta-especial sonia">Sonia</span>');
+    }
+    if (venta.esVentaExterna) {
+        etiquetas.push('<span class="venta-especial externa">Externa</span>');
+    }
+    
+    return etiquetas.length > 0 ? etiquetas.join(' ') : '';
 }
 
 // RENDERIZAR PAGINACIÓN
@@ -656,7 +701,8 @@ window.eliminarVenta = function(ventaId) {
     eliminarVentaCompleta(ventaId);
 };
 
-// FUNCIÓN PARA CARGAR DATOS EN EL FORMULARIO
+
+// FUNCIÓN PARA CARGAR DATOS EN EL FORMULARIO ACTUALIZADA
 function cargarDatosEnFormulario(venta, soloVista = false) {
     // Limpiar estado de edición previo
     limpiarEstadoFormulario();
@@ -679,8 +725,13 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
     $('#fechaTour').val(venta.fechaTour);
     $('#estadoPago').val(venta.estadoPago || 'pagado');
     
+    // Cargar checkboxes de ventas especiales
+    $('#vtJulio').prop('checked', venta.esVentaJulio || false);
+    $('#vtSonia').prop('checked', venta.esVentaSonia || false);
+    $('#vtExterna').prop('checked', venta.esVentaExterna || false);
+    
     // Actualizar preview de puntos
-    $('#vistaPreviaLaPuntos').text(venta.puntos || 0);
+    actualizarPuntosPreview();
     
     if (soloVista) {
         // Deshabilitar todos los campos para solo vista
@@ -713,6 +764,20 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
             `);
         }
     }
+}
+
+// FUNCIÓN PARA ACTUALIZAR PREVIEW DE PUNTOS
+function actualizarPuntosPreview() {
+    const pax = parseInt($('#cantidadPax').val()) || 1;
+    const puntosBase = parseInt($('#tipoTour option:selected').data('points')) || 0;
+    
+    // Verificar si hay checkboxes marcados (ventas especiales no dan puntos)
+    const tieneVentaEspecial = $('#vtJulio').prop('checked') || 
+                               $('#vtSonia').prop('checked') || 
+                               $('#vtExterna').prop('checked');
+    
+    const puntosFinales = tieneVentaEspecial ? 0 : (puntosBase * pax);
+    $('#vistaPreviaLaPuntos').text(puntosFinales);
 }
 
 // FUNCIÓN PARA LIMPIAR ESTADO DEL FORMULARIO
@@ -822,21 +887,22 @@ function getFormularioHTML() {
                         <option value="Buggy Privado" data-points="30" data-price="180">4. 🏜️ Buggy Privado (30 pts)</option>
                         <option value="Buggy 1 Hora - Sonia" data-points="25" data-price="20">5. 🏜️ Buggy 1 Hora - Sonia (25 pts)</option>
                         <option value="Buggy 2 Horas - Sonia" data-points="35" data-price="25">6. 🏜️ Buggy 2 Horas - Sonia (35 pts)</option>
-                        <option value="Buggy Privado - Sonia" data-points="50" data-price="180">7. 🏜️ Buggy Privado - Sonia (40 pts)</option>
-                        <option value="Tour de bodegas" data-points="10" data-price="20">8. 🍷 Tour de bodegas (10 pts)</option>
-                        <option value="Tour de bodegas - Jackson" data-points="20" data-price="20">9. 🍷 Tour de bodegas - Jackson (20 pts)</option>
-                        <option value="Tour de bodegas Privado" data-points="30" data-price="150">10. 🍷 Tour de bodegas Privado (30 pts)</option>
-                        <option value="Tour de bodegas Privado - Jackson" data-points="40" data-price="150">11. 🍷 Tour de bodegas Privado - Jackson (40 pts)</option>
-                        <option value="City Tour - Jackson" data-points="50" data-price="200">12. 🏛️ City Tour - Jackson (50 pts)</option>
-                        <option value="Tour de Paracas" data-points="20" data-price="60">13. 🏝️ Tour de Paracas (20 pts)</option>
-                        <option value="Cañón de los perdidos" data-points="20" data-price="60">14. 🏔️ Cañón de los perdidos (20 pts)</option>
-                        <option value="Cuatrimotos" data-points="20" data-price="70">15. 🏍️ Cuatrimotos (20 pts)</option>
-                        <option value="Sobrevuelo" data-points="30" data-price="494">16. ✈️ Sobrevuelo (30 pts)</option>
-                        <option value="Nazca Terrestre" data-points="10" data-price="150">17. 🗿 Nazca Terrestre (10 pts)</option>
-                        <option value="Renta Tablas Profesional" data-points="10" data-price="50">18. 🏄 Renta Tablas Profesional (10 pts)</option>
-                        <option value="Tablas Profesional - Sonia" data-points="15" data-price="150">19. 🏄 Tablas Profesional - Sonia (15 pts)</option>
-                        <option value="Tablas Profesional + Buggy" data-points="10" data-price="150">20. 🏄 Tablas Profesional + Buggy (10 pts)</option>
-                        <option value="Polaris" data-points="20" data-price="380">21. 🚙 Polaris (20 pts)</option>
+                        <option value="Buggy Privado - Sonia" data-points="40" data-price="180">7. 🏜️ Buggy Privado - Sonia (40 pts)</option>
+                        <option value="Buggy Privado 2 Horas - Sonia" data-points="80" data-price="260">8. 🏜️ Buggy Privado 2 Horas- Sonia (80 pts)</option>
+                        <option value="Tour de bodegas" data-points="10" data-price="20">9. 🍷 Tour de bodegas (10 pts)</option>
+                        <option value="Tour de bodegas - Jackson" data-points="20" data-price="20">10. 🍷 Tour de bodegas - Jackson (20 pts)</option>
+                        <option value="Tour de bodegas Privado" data-points="30" data-price="150">11. 🍷 Tour de bodegas Privado (30 pts)</option>
+                        <option value="Tour de bodegas Privado - Jackson" data-points="40" data-price="150">12. 🍷 Tour de bodegas Privado - Jackson (40 pts)</option>
+                        <option value="City Tour - Jackson" data-points="50" data-price="200">13. 🏛️ City Tour - Jackson (50 pts)</option>
+                        <option value="Tour de Paracas" data-points="20" data-price="60">14. 🏝️ Tour de Paracas (20 pts)</option>
+                        <option value="Cañón de los perdidos" data-points="20" data-price="60">15. 🏔️ Cañón de los perdidos (20 pts)</option>
+                        <option value="Cuatrimotos" data-points="20" data-price="70">16. 🏍️ Cuatrimotos (20 pts)</option>
+                        <option value="Sobrevuelo" data-points="30" data-price="494">17. ✈️ Sobrevuelo (30 pts)</option>
+                        <option value="Nazca Terrestre" data-points="10" data-price="150">18. 🗿 Nazca Terrestre (10 pts)</option>
+                        <option value="Renta Tablas Profesional" data-points="10" data-price="50">19. 🏄 Renta Tablas Profesional (10 pts)</option>
+                        <option value="Tablas Profesional - Sonia" data-points="15" data-price="150">20. 🏄 Tablas Profesional - Sonia (15 pts)</option>
+                        <option value="Tablas Profesional + Buggy" data-points="10" data-price="150">21. 🏄 Tablas Profesional + Buggy (10 pts)</option>
+                        <option value="Polaris" data-points="20" data-price="380">22. 🚙 Polaris (20 pts)</option>
                     </select>
                 </div>
 
@@ -1037,92 +1103,96 @@ function getInfoTabsHTML() {
 
 <div class="tab-content active" id="points-tab">
     <h3><i class="fas fa-chart-bar"></i> Asignación de Puntos por Servicio</h3>
-    <div class="points-grid">
-        <div class="point-item">
-            <span class="service-name">🪂 Parapente</span>
-            <span class="point-value">50</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏜️ Buggy Privado - Sonia</span>
-            <span class="point-value">40</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏛️ City Tour - Jackson</span>
-            <span class="point-value">40</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🍷 Tour de bodegas Privado - Jackson</span>
-            <span class="point-value">40</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏜️ Buggy 2 Horas - Sonia</span>
-            <span class="point-value">35</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🍷 Tour de bodegas Privado</span>
-            <span class="point-value">30</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏜️ Buggy Privado</span>
-            <span class="point-value">30</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏜️ Buggy 1 Hora - Sonia</span>
-            <span class="point-value">25</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏜️ Buggy 2 Horas</span>
-            <span class="point-value">25</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🍷 Tour de bodegas - Jackson</span>
-            <span class="point-value">20</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏜️ Buggy 1 Hora</span>
-            <span class="point-value">15</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🍷 Tour de bodegas</span>
-            <span class="point-value">15</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏄 Tablas Profesional - Sonia</span>
-            <span class="point-value">15</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏝️ Tour de Paracas</span>
-            <span class="point-value">10</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏔️ Cañón de los perdidos</span>
-            <span class="point-value">10</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏍️ Cuatrimotos</span>
-            <span class="point-value">10</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">✈️ Sobrevuelo</span>
-            <span class="point-value">10</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🗿 Nazca Terrestre</span>
-            <span class="point-value">10</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏄 Renta Tablas Profesional</span>
-            <span class="point-value">10</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🏄 Tablas Profesional + Buggy</span>
-            <span class="point-value">10</span>
-        </div>
-        <div class="point-item">
-            <span class="service-name">🚙 Polaris</span>
-            <span class="point-value">10</span>
-        </div>
+<div class="points-grid">
+    <div class="point-item">
+        <span class="service-name">🏜️ Buggy Privado 2 Horas - Sonia</span>
+        <span class="point-value">80</span>
     </div>
+    <div class="point-item">
+        <span class="service-name">🪂 Parapente</span>
+        <span class="point-value">50</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏜️ Buggy Privado - Sonia</span>
+        <span class="point-value">40</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏛️ City Tour - Jackson</span>
+        <span class="point-value">40</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🍷 Tour de bodegas Privado - Jackson</span>
+        <span class="point-value">40</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏜️ Buggy 2 Horas - Sonia</span>
+        <span class="point-value">35</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🍷 Tour de bodegas Privado</span>
+        <span class="point-value">30</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏜️ Buggy Privado</span>
+        <span class="point-value">30</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">✈️ Sobrevuelo</span>
+        <span class="point-value">30</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏜️ Buggy 1 Hora - Sonia</span>
+        <span class="point-value">25</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏜️ Buggy 2 Horas</span>
+        <span class="point-value">25</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🍷 Tour de bodegas - Jackson</span>
+        <span class="point-value">20</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏝️ Tour de Paracas</span>
+        <span class="point-value">20</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏔️ Cañón de los perdidos</span>
+        <span class="point-value">20</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏍️ Cuatrimotos</span>
+        <span class="point-value">20</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🚙 Polaris</span>
+        <span class="point-value">20</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏜️ Buggy 1 Hora</span>
+        <span class="point-value">15</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🍷 Tour de bodegas</span>
+        <span class="point-value">15</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏄 Tablas Profesional - Sonia</span>
+        <span class="point-value">15</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🗿 Nazca Terrestre</span>
+        <span class="point-value">10</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏄 Renta Tablas Profesional</span>
+        <span class="point-value">10</span>
+    </div>
+    <div class="point-item">
+        <span class="service-name">🏄 Tablas Profesional + Buggy</span>
+        <span class="point-value">10</span>
+    </div>
+</div>
 </div>
 
             <div class="tab-content" id="rules-tab">
@@ -1260,6 +1330,7 @@ function getInfoTabsHTML() {
 // $('#importeTotal').attr('disabled','disabled');
 // FUNCIONES UTILES [END]
 
+// EVENTO ACTUALIZADO PARA GUARDAR VENTAS
 $(document).on('click', '.btn-save', async (e) => {
     e.preventDefault();
     
@@ -1268,6 +1339,15 @@ $(document).on('click', '.btn-save', async (e) => {
         const isEditing = !!editId;
         const pax = parseInt($('#cantidadPax').val()) || 1;
         const puntosBase = parseInt($('#tipoTour option:selected').data('points')) || 0;
+        
+        // Verificar ventas especiales
+        const esVentaJulio = $('#vtJulio').prop('checked');
+        const esVentaSonia = $('#vtSonia').prop('checked');
+        const esVentaExterna = $('#vtExterna').prop('checked');
+        
+        // Si hay checkboxes marcados, los puntos son 0
+        const tieneVentaEspecial = esVentaJulio || esVentaSonia || esVentaExterna;
+        const puntosFinales = tieneVentaEspecial ? 0 : (puntosBase * pax);
         
         const formData = {
             tipoTour: $('#tipoTour').val(),
@@ -1287,10 +1367,14 @@ $(document).on('click', '.btn-save', async (e) => {
             fechaTour: $('#fechaTour').val(),
             estadoPago: $('#estadoPago').val(),
             vendedor: userAuth.displayName,
-            puntos: puntosBase * pax, // Puntos multiplicados por PAX
+            puntos: puntosFinales, // Puntos calculados con ventas especiales
             email: userAuth.email,
             qventa: 1,
-            fechaRegistro: serverTimestamp()
+            fechaRegistro: serverTimestamp(),
+            // Campos de ventas especiales
+            esVentaJulio: esVentaJulio,
+            esVentaSonia: esVentaSonia,
+            esVentaExterna: esVentaExterna
         };
 
         // Validaciones
@@ -1300,17 +1384,13 @@ $(document).on('click', '.btn-save', async (e) => {
         }
 
         if (isEditing) {
-            // MODO EDICIÓN - Actualizar venta existente
-            formData.idVenta = editId; // Mantener el ID original
-            
-            // Actualizar en Firebase
+            // MODO EDICIÓN
+            formData.idVenta = editId;
             await setDoc(doc(db, 'registrosdb', editId), formData);
             
-            // Actualizar en localStorage
             const vendedorId = `vendedor_${userAuth.displayName}`;
             savels(vendedorId, formData, 450);
             
-            // Actualizar datos locales
             const index = todasLasVentas.findIndex(v => v.id === editId);
             if (index !== -1) {
                 todasLasVentas[index] = { id: editId, ...formData };
@@ -1319,25 +1399,21 @@ $(document).on('click', '.btn-save', async (e) => {
             Notificacion('¡Venta actualizada exitosamente!', 'success');
             
         } else {
-            // MODO CREACIÓN - Nueva venta
+            // MODO CREACIÓN
             const timestamp = Date.now();
             const docId = `venta_${timestamp}`;
             formData.idVenta = docId;
             
-            // Guardar en Firebase
             await setDoc(doc(db, 'registrosdb', docId), formData);
             
-            // Guardar en localStorage
             const vendedorId = `vendedor_${userAuth.displayName}`;
             savels(vendedorId, formData, 450);
             
             Notificacion('¡Venta registrada exitosamente!', 'success');
         }
         
-        // Limpiar formulario y estado
+        // Limpiar formulario y actualizar datos
         limpiarEstadoFormulario();
-        
-        // Actualizar datos dinámicamente
         await cargarVentas();
         await calcularPuntosEmpleados();
         renderizarEmpleados();
@@ -1349,24 +1425,27 @@ $(document).on('click', '.btn-save', async (e) => {
     }
 });
 
+// EVENTOS ACTUALIZADOS PARA CHECKBOXES Y CAMPOS
+$(document).on('change', '#vtJulio, #vtSonia, #vtExterna', function() {
+    actualizarPuntosPreview();
+});
+
 // Resto de eventos del formulario
 $(document).on('change', '#tipoTour', function() {
-    const puntos = $(this).find('option:selected').data('points') || 0;
     const precio = $(this).find('option:selected').data('price') || 0;
     const pax = parseInt($('#cantidadPax').val()) || 1;
     
-    $('#vistaPreviaLaPuntos').text(puntos * pax);
     $('#precioUnitario').val(precio);
     $('#importeTotal').val(precio * pax);
+    actualizarPuntosPreview();
 });
 
 $(document).on('input', '#cantidadPax, #precioUnitario', function() {
     const pax = parseInt($('#cantidadPax').val()) || 1;
     const precio = parseFloat($('#precioUnitario').val()) || 0;
-    const puntosBase = $('#tipoTour option:selected').data('points') || 0;
     
     $('#importeTotal').val(precio * pax);
-    $('#vistaPreviaLaPuntos').text(puntosBase * pax);
+    actualizarPuntosPreview();
 });
 
 // PARA GUARDAR EL TEMA
