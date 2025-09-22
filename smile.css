@@ -4957,7 +4957,6 @@ a {
     .page-info {
         display: none; /* Ocultar info en móviles muy pequeños */
     }
-    
     /* Mostrar menos botones de página en móvil */
     .pagination .page-btn:not(.active):not(.nav-btn):nth-child(n+6) {
         display: none;
