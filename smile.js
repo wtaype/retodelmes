@@ -216,6 +216,11 @@ function smileContenido(wi){
 // FUNCIÓN PRINCIPAL DE INICIALIZACIÓN
 async function inicializarDashboard(wi) {
     try {
+        // Detectar mes actual automáticamente
+        const mesActual = new Date().toISOString().slice(0, 7); // formato YYYY-MM
+        currentMonth = mesActual;
+        $('#monthSelector').val(mesActual);
+        
         // Cargar datos en paralelo para optimizar
         await Promise.all([
             cargarEmpleados(),
@@ -504,45 +509,86 @@ function renderizarPaginacion(totalPaginas) {
 // CARGAR ÚLTIMO GANADOR
 async function cargarUltimoGanador() {
     try {
-        const ganadorCache = getls('ultimoGanador');
-        if (ganadorCache) {
-            renderizarUltimoGanador(ganadorCache);
-        }
-
         // Calcular mes anterior
         const mesAnterior = calcularMesAnterior(currentMonth);
         const docId = `${mesAnterior.replace('-', '')}`;
         
+        // Verificar si ya existe ganador registrado
         const ganadorDoc = await getDoc(doc(db, 'ganadores', docId));
         
         if (ganadorDoc.exists()) {
-            const ganadorData = ganadorDoc.data();
-            savels('ultimoGanador', ganadorData, 3600); // Cache por 1 hora
-            renderizarUltimoGanador(ganadorData);
-        } else {
-            // Si no hay ganador, mostrar mensaje
+            // Ya existe ganador registrado
+            renderizarUltimoGanador(ganadorDoc.data());
+            return;
+        }
+        
+        // No existe, calcular automáticamente
+        const ventasSnapshot = await getDocs(collection(db, 'registrosdb'));
+        const puntosVendedores = {};
+        
+        // Calcular puntos del mes anterior
+        ventasSnapshot.docs.forEach(doc => {
+            const venta = doc.data();
+            if (venta.fechaTour?.startsWith(mesAnterior)) {
+                const vendedor = venta.vendedor;
+                if (!puntosVendedores[vendedor]) {
+                    puntosVendedores[vendedor] = { puntos: 0, ventas: 0 };
+                }
+                puntosVendedores[vendedor].puntos += (venta.puntos || 0);
+                puntosVendedores[vendedor].ventas += (venta.qventa || 0);
+            }
+        });
+        
+        // Encontrar ganador
+        const vendedoresArray = Object.entries(puntosVendedores);
+        if (vendedoresArray.length === 0) {
             $('#lastWinner').html(`
                 <div class="winner-header">
                     <i class="fas fa-trophy"></i>
-                    <h3>Último Ganador del Mes</h3>
+                    <h3>Ganador del Mes Anterior</h3>
                 </div>
                 <div class="no-winner">
                     <i class="fas fa-question-circle"></i>
-                    <span>Aún no hay ganador registrado</span>
+                    <span>No hay datos disponibles</span>
                 </div>
             `);
+            return;
         }
         
+        // Ordenar y obtener ganador
+        vendedoresArray.sort((a, b) => b[1].puntos - a[1].puntos);
+        const [ganador, datos] = vendedoresArray[0];
+        
+        // Crear objeto ganador
+        const [year, month] = mesAnterior.split('-');
+        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        
+        const ganadorData = {
+            ganador,
+            puntosGanados: datos.puntos,
+            totalVentas: datos.ventas,
+            mes: meses[parseInt(month) - 1],
+            year,
+            mesCompleto: mesAnterior,
+            fechaRegistro: serverTimestamp()
+        };
+        
+        // Registrar en colección ganadores para futuras consultas
+        await setDoc(doc(db, 'ganadores', docId), ganadorData);
+        
+        renderizarUltimoGanador(ganadorData);
+        
     } catch (error) {
-        console.error('Error cargando último ganador:', error);
+        console.error('Error:', error);
         $('#lastWinner').html(`
             <div class="winner-header">
                 <i class="fas fa-trophy"></i>
-                <h3>Último Ganador del Mes</h3>
+                <h3>Ganador del Mes Anterior</h3>
             </div>
             <div class="error-winner">
                 <i class="fas fa-exclamation-triangle"></i>
-                <span>Error cargando ganador</span>
+                <span>Error cargando datos</span>
             </div>
         `);
     }
@@ -550,29 +596,27 @@ async function cargarUltimoGanador() {
 
 // RENDERIZAR ÚLTIMO GANADOR
 function renderizarUltimoGanador(ganadorData) {
-    // Buscar datos del empleado ganador
-    const empleadoGanador = todosLosEmpleados.find(emp => 
+    const empleado = todosLosEmpleados.find(emp => 
         emp.usuario === ganadorData.ganador || emp.nombre === ganadorData.ganador
     );
-    
-    const imagenGanador = empleadoGanador?.imagen || 'https://i.postimg.cc/HWMY74kP/image.png';
-    const nombreGanador = empleadoGanador?.nombre || ganadorData.ganador;
     
     $('#lastWinner').html(`
         <div class="winner-header">
             <i class="fas fa-trophy"></i>
-            <h3>Último Ganador del Mes</h3>
+            <h3>Ganador del Mes Anterior</h3>
         </div>
         <div class="winner-info">
-            <img src="${imagenGanador}" alt="${nombreGanador}">
+            <img src="${empleado?.imagen || 'https://i.postimg.cc/HWMY74kP/image.png'}" 
+                 alt="${empleado?.nombre || ganadorData.ganador}">
             <div class="winner-details">
-                <h4>${nombreGanador}</h4>
+                <h4>${empleado?.nombre || ganadorData.ganador}</h4>
                 <p>${ganadorData.mes} ${ganadorData.year}</p>
                 <span class="winner-points">${ganadorData.puntosGanados} puntos</span>
+                <span class="winner-sales">${ganadorData.totalVentas} tours</span>
             </div>
             <div class="winner-achievement">
-                <i class="fas fa-star"></i>
-                <span>¡Excelente trabajo!</span>
+                <i class="fas fa-crown"></i>
+                <span>¡Campeón!</span>
             </div>
         </div>
     `);
@@ -614,7 +658,10 @@ $(document).on('change', '#monthSelector', function() {
     currentPage = 1;
     
     // Recargar datos para el nuevo mes
-    calcularPuntosEmpleados().then(() => {
+    Promise.all([
+        calcularPuntosEmpleados(),
+        cargarVentas()
+    ]).then(() => {
         renderizarEmpleados();
         renderizarTablaVentas();
         actualizarResumenCompetencia();
