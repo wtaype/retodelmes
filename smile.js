@@ -221,6 +221,7 @@ async function inicializarDashboard(wi) {
         currentMonth = mesActual;
         $('#monthSelector').val(mesActual);
         
+        $('#fechaTour').val(new Date().toLocaleDateString('sv-SE')); 
         // Cargar datos en paralelo para optimizar
         await Promise.all([
             cargarEmpleados(),
@@ -765,7 +766,7 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
     $('#precioUnitario').val(venta.precioUnitario || 0);
     $('#metodoPago').val(venta.metodoPago || '');
     $('#importeTotal').val(venta.importeTotal || 0);
-    $('#cobroProveedor').val(venta.cobroProveedor || 0);
+    $('#ganancia').val(venta.ganancia || 0);
     $('#horaSalida').val(venta.horaSalida);
     $('#Operador').val(venta.Operador);
     $('#Comentario').val(venta.Comentario);
@@ -1015,6 +1016,16 @@ function getFormularioHTML() {
                     <input type="number" id="cantidadPax" required min="1" value="1">
                 </div>
 
+                <!-- HORA DE SALIDA -->
+                <div class="form-field">
+                    <label>
+                        <i class="fas fa-clock"></i>
+                        Hora de salida *
+                    </label>
+                    <input type="text" id="horaSalida" placeholder="2 HORAS -5PM" required>
+                </div>
+     
+
                 <!-- IMPORTE INDIVIDUAL -->
                 <div class="form-field">
                     <label>
@@ -1024,7 +1035,17 @@ function getFormularioHTML() {
                     <input type="number" id="precioUnitario" step="0.01" placeholder="S/ 0.00">
                 </div>
 
-                <!-- METODO PAGO -->
+
+                <!-- IMPORTE TOTAL -->
+                <div class="form-field">
+                    <label>
+                        <i class="fas fa-calculator"></i>
+                        Importe x Cobrar(Total)
+                    </label>
+                    <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00">
+                </div>
+
+           <!-- METODO PAGO -->
                 <div class="form-field">
                     <label>
                         <i class="fas fa-credit-card"></i>
@@ -1040,31 +1061,27 @@ function getFormularioHTML() {
                     </select>
                 </div>
 
-                <!-- IMPORTE TOTAL -->
+                <!-- PAGADO ? -->
                 <div class="form-field">
                     <label>
-                        <i class="fas fa-calculator"></i>
-                        Importe x Cobrar(Total)
+                        <i class="fas fa-money-check-alt"></i>
+                        Pagado?
                     </label>
-                    <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00" disabled>
+                    <select id="estadoPago">
+                    <option value="pagar">Tour con nosotros (pagado)</option>
+                    <option value="pagado">Tour con nosotros (pendiente)</option>
+                    <option value="cobrar">Tour con  Sonia, externo (pagado)</option>
+                    <option value="cobrado">Tour con Sonia, externo (pendiente)</option>
+                    </select>
                 </div>
 
                 <!-- COBRO PROVEEDOR -->
                 <div class="form-field">
-                    <label>
+                    <label title="">
                         <i class="fas fa-handshake"></i>
-                        Pagar/Cobrar a Operador
+                        Ganancia *
                     </label>
-                    <input type="number" id="cobroProveedor" step="0.01" placeholder="S/ 0.00">
-                </div>
-
-                <!-- OPERADOR -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-user"></i>
-                        Operador *
-                    </label>
-                    <input type="text" id="Operador" placeholder="Ejm: Jacki, Pili, William.... " required>
+                    <input type="number" id="ganancia" step="0.01" placeholder="S/ 0.00" disabled>
                 </div>
 
                 <!-- FECHA -->
@@ -1076,27 +1093,13 @@ function getFormularioHTML() {
                     <input type="date" id="fechaTour" required>
                 </div>
 
-                <!-- HORA DE SALIDA -->
+                <!-- OPERADOR -->
                 <div class="form-field">
                     <label>
-                        <i class="fas fa-clock"></i>
-                        Hora de salida *
+                        <i class="fas fa-user"></i>
+                        Operador *
                     </label>
-                    <input type="text" id="horaSalida" placeholder="2 HORAS -5PM" required>
-                </div>
-
-                <!-- PAGADO ? -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-money-check-alt"></i>
-                        Pagado?
-                    </label>
-                    <select id="estadoPago">
-                    <option value="pagar">Falta pagar a proveedor</option>
-                    <option value="pagado">Pagado a proveedor</option>
-                    <option value="cobrar">Cobrar saldo pendiente</option>
-                    <option value="cobrado">Saldo pendiente cobrado</option>
-                    </select>
+                    <input type="text" id="Operador" placeholder="Ejm: Jacki, Pili, William.... " required>
                 </div>
 
                 <!-- COMENTARIO -->
@@ -1407,7 +1410,7 @@ $(document).on('click', '.btn-save', async (e) => {
             precioUnitario: parseFloat($('#precioUnitario').val()) || 0,
             metodoPago: $('#metodoPago').val(),
             importeTotal: parseFloat($('#importeTotal').val()) || 0,
-            cobroProveedor: parseFloat($('#cobroProveedor').val()) || 0,
+            ganancia: parseFloat($('#ganancia').val()) || 0,
             horaSalida: $('#horaSalida').val(),
             Operador: $('#Operador').val(),
             Comentario: $('#Comentario').val(),
@@ -1507,6 +1510,8 @@ $(document).on('click','.tema',async function(){
     Mensaje('Tema guardado <i class="fa-solid fa-circle-check"></i>');
   }catch(e){console.error(e)}
 });
+
+
 
 // JQUERY CONTENIDO JS [End] 
 // DIOS SIEMPRE ES BUENO Y YO AMO A DIOS [END]
