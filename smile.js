@@ -1042,7 +1042,7 @@ function getFormularioHTML() {
                         <i class="fas fa-calculator"></i>
                         Importe x Cobrar(Total)
                     </label>
-                    <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00">
+                    <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00" disabled>
                 </div>
 
            <!-- METODO PAGO -->
@@ -1081,7 +1081,7 @@ function getFormularioHTML() {
                         <i class="fas fa-handshake"></i>
                         Ganancia *
                     </label>
-                    <input type="number" id="ganancia" step="0.01" placeholder="S/ 0.00" disabled>
+                    <input type="number" id="ganancia" step="0.01" placeholder="S/ 0.00">
                 </div>
 
                 <!-- FECHA -->
