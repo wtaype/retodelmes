@@ -1077,7 +1077,7 @@ function getFormularioHTML() {
 
                 <!-- COBRO PROVEEDOR -->
                 <div class="form-field">
-                    <label title="">
+                    <label title="Es un calculo importe total - comision del operador, si es nosotros, no tiene comision, si es externo depende del tour">
                         <i class="fas fa-handshake"></i>
                         Ganancia *
                     </label>
