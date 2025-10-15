@@ -627,14 +627,12 @@ a {
     box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
 }
-
 .subtitle {
     font-size: var(--fz_m);
     color: var(--text-secondary);
     font-weight: 500;
     font-style: italic;
 }
-
 .workers-grid {
     width: 100%;
     display: flex;
