@@ -1065,7 +1065,7 @@ function getFormularioHTML() {
                 <div class="form-field">
                     <label>
                         <i class="fas fa-money-check-alt"></i>
-                        Pagado?
+                        Pagado? 
                     </label>
                     <select id="estadoPago">
                     <option value="pagado">Tour con nosotros (pagado)</option>

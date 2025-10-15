@@ -644,7 +644,6 @@ a {
 .workers-grid>* {
     flex: 33.7%;
 } 
-
 .worker-card {
     background: var(--input-bg);
     border-radius: var(--radius-lg);
