@@ -636,11 +636,14 @@ a {
 }
 
 .workers-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-lg);
+    width: 100%;
+    display: flex;
+    gap: 1vh;
     margin: var(--space-xl) 0;
 }
+.workers-grid>* {
+    flex: 33.7%;
+} 
 
 .worker-card {
     background: var(--input-bg);

@@ -1068,10 +1068,10 @@ function getFormularioHTML() {
                         Pagado?
                     </label>
                     <select id="estadoPago">
-                    <option value="pagar">Tour con nosotros (pagado)</option>
-                    <option value="pagado">Tour con nosotros (pendiente)</option>
-                    <option value="cobrar">Tour con  Sonia, externo (pagado)</option>
-                    <option value="cobrado">Tour con Sonia, externo (pendiente)</option>
+                    <option value="pagado">Tour con nosotros (pagado)</option>
+                    <option value="pagar">Tour con nosotros (pendiente)</option>
+                    <option value="cobrado">Tour con  Sonia, externo (pagado)</option>
+                    <option value="cobrar">Tour con Sonia, externo (pendiente)</option>
                     </select>
                 </div>
 
@@ -1477,7 +1477,7 @@ $(document).on('click', '.btn-save', async (e) => {
 
 // EVENTOS ACTUALIZADOS PARA CHECKBOXES Y CAMPOS
 $(document).on('change', '#vtJulio, #vtSonia, #vtExterna', function() {
-    actualizarPuntosPreview();
+    actualizarPuntosPreview(); 
 });
 
 // Resto de eventos del formulario
