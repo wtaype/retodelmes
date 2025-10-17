@@ -3,7 +3,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { auth, db } from './firebase/init.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { getDocs, doc, updateDoc, collection, query, where, orderBy, limit, startAfter, serverTimestamp, addDoc } from "firebase/firestore";
-import { Capi, Mensaje, Notificacion, savels, getls, removels, wiTema, infoo, fechaLetra } from './widev.js';
+import { Capi, Mensaje, Notificacion, savels, getls, removels, wiTema, infoo, fechaLetra,mis6 } from './widev.js';
 
 // ========================================
 // 🔐 VARIABLES GLOBALES COMPACTAS
@@ -18,7 +18,7 @@ let lastDoc = null;
 let todasLasVentas = [];
 let todosLosUsuarios = [];
 let notasData = [];
-const ITEMS_PER_PAGE = 7;
+let ITEMS_PER_PAGE = 7;
 
 // ========================================
 // 🚀 INICIALIZACIÓN PRINCIPAL
@@ -79,7 +79,7 @@ function getHTML() {
             <div class="header-left">
                 <div class="logo">
                     <i class="fas fa-chart-line"></i>
-                    <h1>SmileTop Admin</h1>
+                    <h1>Administración de Tours Hawka & HClaudia</h1>
                 </div>
             </div>
             <div class="header-right">
@@ -106,6 +106,15 @@ function getHTML() {
                         <label><i class="fas fa-user"></i> Usuario</label>
                         <select id="userFilter">
                             <option value="todos">Todos los usuarios</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fas fa-list"></i> Mostrar</label>
+                        <select id="itemsFilter">
+                            <option value="7" selected>7 ventas</option>
+                            <option value="10">10 ventas</option>
+                            <option value="20">20 ventas</option>
+                            <option value="30">30 ventas</option>
                         </select>
                     </div>
                     <button class="btn-refresh bt_cargar">
@@ -373,10 +382,12 @@ function renderTable() {
                     <th><i class="fas fa-calendar"></i> Fecha</th>
                     <th><i class="fas fa-user"></i> Usuario</th>
                     <th><i class="fas fa-route"></i> Tipo Tour</th>
-                    <th><i class="fas fa-check-circle"></i> Pagado</th>
-                    <th><i class="fas fa-coins"></i> M. Individual</th>
+                    <th><i class="fas fa-users"></i> Pax</th>
+                    <th><i class="fas fa-user"></i> Nombre</th>
                     <th><i class="fas fa-money-bill-wave"></i> M. Total</th>
+                    <th><i class="fas fa-coins"></i> M. Individual</th>
                     <th><i class="fas fa-percentage"></i> Comisión</th>
+                    <th><i class="fas fa-check-circle"></i> Pagado</th>
                     <th><i class="fas fa-chart-line"></i> Ganancia</th>
                     <th><i class="fas fa-star"></i> Puntos</th>
                     <th><i class="fas fa-cogs"></i> Acciones</th>
@@ -413,7 +424,7 @@ function renderVentaRow(venta, editing = false) {
     const fechaFormateada = venta.fechaTour ? new Date(venta.fechaTour).toLocaleDateString('es-ES') : 'Sin fecha';
     const montoIndividual = parseFloat(venta.precioUnitario) || 0;
     const montoTotal = parseFloat(venta.importeTotal) || 0;
-    const comision = montoTotal * 0.1;
+    const comision = parseFloat(venta.comision) || (montoTotal * 0.1);
     const ganancia = parseFloat(venta.ganancia) || (montoTotal - comision);
     const puntos = parseInt(venta.puntos) || 0;
     
@@ -426,9 +437,12 @@ function renderVentaRow(venta, editing = false) {
                     ${usuario?.nombre || usuario?.usuario || venta.vendedor}
                 </td>
                 <td class="tour-cell">${venta.tipoTour || 'Tour'}</td>
-                <td><input type="number" class="edit-input" data-field="precioUnitario" value="${montoIndividual.toFixed(2)}" step="0.01"></td>
+                <td class="money-cell">${venta.cantidadPax || '0'}</td>
+                <td class="money-cell">${mis6(venta.nombreCliente) || 'Sin nombre'}</td>
                 <td><input type="number" class="edit-input" data-field="importeTotal" value="${montoTotal.toFixed(2)}" step="0.01"></td>
+                <td><input type="number" class="edit-input" data-field="precioUnitario" value="${montoIndividual.toFixed(2)}" step="0.01"></td>
                 <td><input type="number" class="edit-input" data-field="comision" value="${comision.toFixed(2)}" step="0.01"></td>
+                <td class="money-cell">${Capi(venta.estadoPago) || 'No'}</td>
                 <td><input type="number" class="edit-input" data-field="ganancia" value="${ganancia.toFixed(2)}" step="0.01"></td>
                 <td><input type="number" class="edit-input" data-field="puntos" value="${puntos}"></td>
                 <td class="actions-cell">
@@ -451,10 +465,12 @@ function renderVentaRow(venta, editing = false) {
                 ${usuario?.nombre || usuario?.usuario || venta.vendedor}
             </td>
             <td class="tour-cell">${venta.tipoTour || 'Tour'}</td>
-            <td class="money-cell">${Capi(venta.estadoPago) || 'No'}</td>
-            <td class="money-cell">${montoIndividual.toFixed(2)}</td>
+            <td class="money-cell">${venta.cantidadPax || '0'}</td>
+            <td class="money-cell">${mis6(venta.nombreCliente) || 'Sin nombre'}</td>
             <td class="money-cell">${montoTotal.toFixed(2)}</td>
+            <td class="money-cell">${montoIndividual.toFixed(2)}</td>
             <td class="money-cell">${comision.toFixed(2)}</td>
+            <td class="money-cell">${Capi(venta.estadoPago) || 'No'}</td>
             <td class="money-cell">${ganancia.toFixed(2)}</td>
             <td class="points-cell">${puntos}</td>
             <td class="actions-cell">
@@ -640,6 +656,17 @@ function initEvents() {
         notasData.push(nuevaNota);
         renderNotas();
         Notificacion('Nueva nota agregada', 'info');
+    });
+
+    // Filtro de cantidad
+    $(document).on('change', '#itemsFilter', async function() {
+        const newItems = parseInt($(this).val());
+        if (newItems !== ITEMS_PER_PAGE) {
+            ITEMS_PER_PAGE = newItems;
+            currentPage = 0;
+            console.log(`📊 Mostrando ${ITEMS_PER_PAGE} ventas por página`);
+            await refreshData();
+        }
     });
 }
 

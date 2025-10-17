@@ -39,6 +39,12 @@ export const adup = (x, y) => {
   setTimeout(() => $(x).removeClass('updating'), 500);
 };
 
+export const mis6 = (texto) => {
+  if (texto.length <= 6) {
+    return texto;
+  }
+  return texto.substring(0, 6) + '...';
+};
 
 export const showLoading = (show) => {
   $('#loading-style').length || $('head').append('<style id="loading-style">.loading{height:1vh;background:linear-gradient(to right,#ffd105,#1e3a8a,#ffd105);background-size:200% 100%;animation:l 1.5s infinite;border-radius:3px;width:100%;position:fixed;top:0;left:0;z-index:9999}@keyframes l{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}</style>');
