@@ -121,6 +121,10 @@ function getHTML() {
                         <i class="fas fa-sync"></i>
                         Actualizar
                     </button>
+                    <button class="btn-refresh bt_exportar">
+                        <i class="fas fa-sync"></i>
+                        Exportar Excel 
+                    </button>
                 </section>
 
                 <section class="table-section">
@@ -576,99 +580,6 @@ function renderNotas() {
     container.html(notasHTML);
 }
 
-// ========================================
-// 🎛️ EVENTOS
-// ========================================
-function initEvents() {
-    // Logout
-    $(document).on('click', '.bt_salir', async () => {
-        try {
-            await signOut(auth);
-            window.location.href = '/';
-            localStorage.clear();
-        } catch (error) {
-            console.error('Error logout:', error);
-        }
-    });
-    
-    // Refresh data (NO RELOAD PAGE)
-    $(document).on('click', '.bt_cargar', async () => {
-        await refreshData();
-    });
-    
-    // Filtro de mes
-    $(document).on('change', '#monthFilter', async function() {
-        currentMonth = $(this).val();
-        currentPage = 0;
-        console.log(`📅 Cambiando a mes: ${currentMonth}`);
-        await refreshData();
-    });
-    
-    // Filtro de usuario
-    $(document).on('change', '#userFilter', async function() {
-        const newUser = $(this).val();
-        if (newUser !== currentUser) {
-            currentUser = newUser;
-            currentPage = 0; // Resetear a primera página
-            console.log(`👤 Filtrando por usuario: ${currentUser}`);
-            await refreshData();
-        }
-    });
-    
-    // Paginación - anterior
-    $(document).on('click', '#prevPage', async () => {
-        if (currentPage > 0) {
-            currentPage--;
-            await loadVentas(currentPage, false);
-            renderTable();
-        }
-    });
-    
-    // Paginación - siguiente
-    $(document).on('click', '#nextPage', async () => {
-        if (currentPage < totalPages - 1) {
-            currentPage++;
-            await loadVentas(currentPage, false);
-            renderTable();
-        }
-    });
-    
-    // Paginación - números
-    $(document).on('click', '.page-number', async function() {
-        const page = parseInt($(this).data('page'));
-        if (page !== currentPage) {
-            currentPage = page;
-            await loadVentas(currentPage, false);
-            renderTable();
-        }
-    });
-    
-    // Agregar nota
-    $(document).on('click', '#addNote', () => {
-        const nuevaNota = {
-            id: Date.now(),
-            titulo: 'Nueva Nota',
-            contenido: '',
-            editando: true,
-            fechaCreacion: new Date().toISOString()
-        };
-        
-        notasData.push(nuevaNota);
-        renderNotas();
-        Notificacion('Nueva nota agregada', 'info');
-    });
-
-    // Filtro de cantidad
-    $(document).on('change', '#itemsFilter', async function() {
-        const newItems = parseInt($(this).val());
-        if (newItems !== ITEMS_PER_PAGE) {
-            ITEMS_PER_PAGE = newItems;
-            currentPage = 0;
-            console.log(`📊 Mostrando ${ITEMS_PER_PAGE} ventas por página`);
-            await refreshData();
-        }
-    });
-}
 
 // ========================================
 // ✏️ FUNCIONES GLOBALES
@@ -762,6 +673,229 @@ window.cancelNota = function(notaId) {
         Notificacion('Edición cancelada', 'info');
     }
 };
+
+// ...existing code...
+
+// ========================================
+// 📊 FUNCIÓN DE EXPORTACIÓN A EXCEL
+// ========================================
+async function exportToExcel() {
+    try {
+        console.log('📊 Exportando a Excel...');
+        
+        // Cargar todas las ventas del mes (sin paginación para export completo)
+        let q = query(
+            collection(db, 'registrosdb'),
+            where('fechaTour', '>=', currentMonth + '-01'),
+            where('fechaTour', '<=', currentMonth + '-31'),
+            orderBy('fechaTour', 'desc')
+        );
+        
+        const snapshot = await getDocs(q);
+        let todasVentas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Filtrar por usuario si no es "todos"
+        if (currentUser !== 'todos') {
+            todasVentas = todasVentas.filter(venta => venta.vendedor === currentUser);
+        }
+        
+        if (todasVentas.length === 0) {
+            return Notificacion('❌ No hay datos para exportar', 'warning');
+        }
+        
+        // Preparar datos para Excel
+        const excelData = todasVentas.map(venta => {
+            const usuario = todosLosUsuarios.find(u => u.usuario === venta.vendedor);
+            const fechaFormateada = venta.fechaTour ? new Date(venta.fechaTour).toLocaleDateString('es-ES') : 'Sin fecha';
+            const montoTotal = parseFloat(venta.importeTotal) || 0;
+            const montoIndividual = parseFloat(venta.precioUnitario) || 0;
+            const comision = parseFloat(venta.comision) || (montoTotal * 0.1);
+            const ganancia = parseFloat(venta.ganancia) || (montoTotal - comision);
+            
+            return {
+                'Fecha': fechaFormateada,
+                'Usuario': usuario?.nombre || usuario?.usuario || venta.vendedor,
+                'Tipo Tour': venta.tipoTour || 'Tour',
+                'PAX': venta.cantidadPax || 0,
+                'Nombre Cliente': venta.nombreCliente || 'Sin nombre',
+                'Monto Total': montoTotal.toFixed(2),
+                'Monto Individual': montoIndividual.toFixed(2),
+                'Comisión': comision.toFixed(2),
+                'Estado Pago': Capi(venta.estadoPago) || 'Pendiente',
+                'Ganancia': ganancia.toFixed(2),
+                'Puntos': parseInt(venta.puntos) || 0,
+                'Hotel': venta.hotel || '',
+                'Habitación': venta.numeroHabitacion || '',
+                'Fecha Registro': venta.fechaRegistro ? new Date(venta.fechaRegistro.toDate()).toLocaleDateString('es-ES') : ''
+            };
+        });
+        
+        // Crear hoja de cálculo
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        
+        // Ajustar ancho de columnas
+        const colWidths = [
+            {wch: 12}, // Fecha
+            {wch: 15}, // Usuario
+            {wch: 20}, // Tipo Tour
+            {wch: 8},  // PAX
+            {wch: 25}, // Nombre Cliente
+            {wch: 12}, // Monto Total
+            {wch: 15}, // Monto Individual
+            {wch: 12}, // Comisión
+            {wch: 12}, // Estado Pago
+            {wch: 12}, // Ganancia
+            {wch: 8},  // Puntos
+            {wch: 20}, // Hotel
+            {wch: 10}, // Habitación
+            {wch: 15}  // Fecha Registro
+        ];
+        ws['!cols'] = colWidths;
+        
+        // Crear libro
+        const wb = XLSX.utils.book_new();
+        
+        // Nombre de la hoja
+        const sheetName = currentUser === 'todos' 
+            ? `Ventas_${currentMonth.replace('-', '_')}` 
+            : `${currentUser}_${currentMonth.replace('-', '_')}`;
+            
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        
+        // Nombre del archivo
+        const fileName = currentUser === 'todos' 
+            ? `ventas_${currentMonth}_todas.xlsx`
+            : `ventas_${currentMonth}_${currentUser}.xlsx`;
+        
+        // Descargar archivo
+        XLSX.writeFile(wb, fileName);
+        
+        console.log(`✅ Excel exportado: ${fileName}`);
+        Notificacion(`📊 Excel exportado: ${excelData.length} registros`, 'success');
+        
+    } catch (error) {
+        console.error('❌ Error exportar Excel:', error);
+        Notificacion('Error al exportar Excel', 'error');
+    }
+}
+
+// ========================================
+// 🎛️ EVENTOS ACTUALIZADOS
+// ========================================
+function initEvents() {
+    // Logout
+    $(document).on('click', '.bt_salir', async () => {
+        try {
+            await signOut(auth);
+            window.location.href = '/';
+            localStorage.clear();
+        } catch (error) {
+            console.error('Error logout:', error);
+        }
+    });
+    
+    // Refresh data
+    $(document).on('click', '.bt_cargar', async () => {
+        await refreshData();
+    });
+    
+    // 📊 EXPORTAR A EXCEL
+    $(document).on('click', '.bt_exportar', async () => {
+        await exportToExcel();
+    });
+    
+    // Filtro de mes
+    $(document).on('change', '#monthFilter', async function() {
+        currentMonth = $(this).val();
+        currentPage = 0;
+        console.log(`📅 Cambiando a mes: ${currentMonth}`);
+        await refreshData();
+    });
+    
+    // Filtro de usuario
+    $(document).on('change', '#userFilter', async function() {
+        const newUser = $(this).val();
+        if (newUser !== currentUser) {
+            currentUser = newUser;
+            currentPage = 0;
+            console.log(`👤 Filtrando por usuario: ${currentUser}`);
+            await refreshData();
+        }
+    });
+    
+    // ...existing pagination events...
+    
+    // Paginación - anterior
+    $(document).on('click', '#prevPage', async () => {
+        if (currentPage > 0) {
+            currentPage--;
+            await loadVentas(currentPage, false);
+            renderTable();
+        }
+    });
+    
+    // Paginación - siguiente
+    $(document).on('click', '#nextPage', async () => {
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            await loadVentas(currentPage, false);
+            renderTable();
+        }
+    });
+    
+    // Paginación - números
+    $(document).on('click', '.page-number', async function() {
+        const page = parseInt($(this).data('page'));
+        if (page !== currentPage) {
+            currentPage = page;
+            await loadVentas(currentPage, false);
+            renderTable();
+        }
+    });
+    
+    // Agregar nota
+    $(document).on('click', '#addNote', () => {
+        const nuevaNota = {
+            id: Date.now(),
+            titulo: 'Nueva Nota',
+            contenido: '',
+            editando: true,
+            fechaCreacion: new Date().toISOString()
+        };
+        
+        notasData.push(nuevaNota);
+        renderNotas();
+        Notificacion('Nueva nota agregada', 'info');
+    });
+
+    // Filtro de cantidad
+    $(document).on('change', '#itemsFilter', async function() {
+        const newItems = parseInt($(this).val());
+        if (newItems !== ITEMS_PER_PAGE) {
+            ITEMS_PER_PAGE = newItems;
+            currentPage = 0;
+            console.log(`📊 Mostrando ${ITEMS_PER_PAGE} ventas por página`);
+            await refreshData();
+        }
+    });
+}
+
+// ...existing code...
+
+// ========================================
+// 🚀 INICIALIZACIÓN FINAL
+// ========================================
+$(document).ready(() => {
+    console.log('🚀 SmileTop Admin v2.0 iniciado');
+    
+    // Cargar biblioteca XLSX si no está disponible
+    if (typeof XLSX === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        script.onload = () => console.log('✅ Biblioteca XLSX cargada');
+        document.head.appendChild(script);
+    }
+});
 
 // ========================================
 // 🚀 INICIALIZACIÓN FINAL

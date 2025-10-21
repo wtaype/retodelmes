@@ -39,11 +39,11 @@ export const adup = (x, y) => {
   setTimeout(() => $(x).removeClass('updating'), 500);
 };
 
-export const mis6 = (texto) => {
-  if (texto.length <= 6) {
+export const mis10 = (texto) => {
+  if (texto.length <= 10) {
     return texto;
   }
-  return texto.substring(0, 6) + '...';
+  return texto.substring(0, 10) + '...';
 };
 
 export const showLoading = (show) => {

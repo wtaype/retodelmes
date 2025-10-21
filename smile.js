@@ -4,7 +4,7 @@ import { auth, db } from './firebase/init.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, onSnapshot, collection, query, where, writeBatch, serverTimestamp, limit} from "firebase/firestore";
 
-import { Capi, Mensaje, Notificacion, savels, getls, removels, accederRol, gosaves, getsaves, adrm, adtm, infoo} from './widev.js';
+import { Capi, Mensaje, Notificacion, savels, getls, removels, accederRol, gosaves, getsaves, adrm, adtm, infoo, mis10} from './widev.js';
 
 // 🔐 GESTIÓN DE AUTENTICACIÓN EN DASHBOARD
 let userAuth = null; //Para guardar usuario
@@ -57,7 +57,7 @@ function smileContenido(wi){
     $('.app').html(`
         <!-- HEADER SUPERIOR -->
         <header class="top-header">
-            <div class="header-container">
+            <div class="header-container miwp">
                 <div class="header-left">
                     <h1 class="main-title">
                         <i class="fas fa-trophy"></i>
@@ -87,7 +87,7 @@ function smileContenido(wi){
         </header>
 
         <!-- CONTENIDO PRINCIPAL -->
-        <main class="main-container">
+        <main class="main-container miwp">
             <div class="dashboard-layout">
                 
                 <!-- SECCION NUEVA VENTA -->
@@ -95,10 +95,10 @@ function smileContenido(wi){
                     <div class="panel-header">
                         <h2><i class="fas fa-plus-circle"></i> Nueva Venta</h2>
                         <div class="bt_add_exportar">
-                            <p>Ventas:</p>
+                            <p>Venta por:</p>
                             <label for="vtJulio"><input type="checkbox" id="vtJulio"/>Julio</label>   
                             <label for="vtSonia"><input type="checkbox" id="vtSonia"/>Sonia</label>   
-                            <label for="vtExterna"><input type="checkbox" id="vtExterna"/>Externa</label>   
+                            <label for="vtExterna"><input type="checkbox" id="vtExterna"/>Otros</label>   
                             <button class="btn-add" id="addNewSale">
                                 <i class="fas fa-plus"></i> Agregar
                             </button>
@@ -116,8 +116,9 @@ function smileContenido(wi){
                     </div>
 
                     <ul class="descripcion_com">
-                        <li>La competencia del mes es una oportunidad para motivarnos y dar lo mejor en nuestras ventas.</li>
-                        <li>¡Recuerda que quien logre más ventas durante este periodo será el ganador!</li>
+                        <li>¡Buenos días Rubi y Piero! Mi nombre es Wilder Taype, desarrollador de este sitio web. Espero que se encuentren muy bien. Quería agradecerles por registrarse y mantener sus ventas actualizadas. Para hacerles las cosas aún más fáciles, he actualizado la plataforma con mejoras en la búsqueda de tours y otras funcionalidades.</li>
+                        <li>Ayer tuvimos una reunión con Clau y, para simplificar el proceso de registro, hemos actualizado 
+                        el campo de motivo de viaje para mantener todo al día con SUNAT y trabajar con mayor tranquilidad.</li>
                     </ul>
 
                     <!-- TRABAJADORES DINÁMICOS -->
@@ -139,16 +140,16 @@ function smileContenido(wi){
                     <!-- RESUMEN COMPETENCIA -->
                     <div class="competition-summary" id="competitionSummary">
                         <div class="summary-stat">
+                            <span class="summary-label">Tours de Hoy</span>
+                            <span class="summary-value" id="toursHoy">0</span>
+                        </div>
+                        <div class="summary-stat">
                             <span class="summary-label">Total Tours</span>
                             <span class="summary-value" id="totalTours">0</span>
                         </div>
                         <div class="summary-stat">
                             <span class="summary-label">Puntos Totales</span>
                             <span class="summary-value" id="totalPuntos">0</span>
-                        </div>
-                        <div class="summary-stat">
-                            <span class="summary-label">Tours de Hoy</span>
-                            <span class="summary-value" id="toursHoy">0</span>
                         </div>
                         <div class="summary-stat">
                             <span class="summary-label">Meta del Mes</span>
@@ -176,20 +177,22 @@ function smileContenido(wi){
         <table class="sales-table" id="salesTable">
             <thead>
                 <tr>
-                    <th><i class="fas fa-route"></i> Tour</th>
-                    <th><i class="fas fa-user"></i> Cliente</th>
+                    <th><i class="fas fa-calendar"></i> Fecha</th>
+                    <th><i class="fas fa-user"></i> Usuario</th>
+                    <th><i class="fas fa-route"></i> Tipo Tour</th>
                     <th><i class="fas fa-users"></i> PAX</th>
-                    <th><i class="fas fa-dollar-sign"></i> Importe</th>
-                    <th><i class="fas fa-calendar-clock"></i> Fecha/Hora</th>
+                    <th><i class="fas fa-user-tag"></i> Nombre</th>
+                    <th><i class="fas fa-calculator"></i> M. Total</th>
+                    <th><i class="fas fa-dollar-sign"></i> M. Individual</th>
+                    <th><i class="fas fa-percent"></i> Comisión</th>
+                    <th><i class="fas fa-credit-card"></i> Pagado</th>
+                    <th><i class="fas fa-hand-holding-usd"></i> Ganancia</th>
                     <th><i class="fas fa-star"></i> Puntos</th>
-                    <th><i class="fas fa-info-circle"></i> Registro</th>
-                    <th><i class="fas fa-user-tie"></i> Vendedor</th>
-                    <th><i class="fas fa-tag"></i> Estado</th>
                     <th><i class="fas fa-cogs"></i> Acciones</th>
                 </tr>
             </thead>
             <tbody id="salesTableBody">
-                <tr><td colspan="10" class="loading-cell">
+                <tr><td colspan="12" class="loading-cell">
                     <i class="fas fa-spinner fa-spin"></i> Cargando ventas...
                 </td></tr>
             </tbody>
@@ -213,25 +216,25 @@ function smileContenido(wi){
     inicializarDashboard(wi);
 }
 
-// FUNCIÓN PRINCIPAL DE INICIALIZACIÓN
+// ACTUALIZAR FUNCIÓN DE INICIALIZACIÓN
 async function inicializarDashboard(wi) {
     try {
-        // Detectar mes actual automáticamente
-        const mesActual = new Date().toISOString().slice(0, 7); // formato YYYY-MM
+        const mesActual = new Date().toISOString().slice(0, 7);
         currentMonth = mesActual;
         $('#monthSelector').val(mesActual);
-        
         $('#fechaTour').val(new Date().toLocaleDateString('sv-SE')); 
-        // Cargar datos en paralelo para optimizar
+        
         await Promise.all([
             cargarEmpleados(),
             cargarVentas(),
             cargarUltimoGanador()
         ]);
         
-        // Actualizar filtros y resumen
         actualizarFiltroEmpleados();
         actualizarResumenCompetencia();
+        
+        // INICIALIZAR SELECTOR DE TOURS
+        initTourSelector();
         
     } catch (error) {
         console.error('Error inicializando dashboard:', error);
@@ -413,44 +416,40 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
                <button class="btn-delete" onclick="eliminarVenta('${venta.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>`
             : `<button class="btn-view" onclick="verDetalleVenta('${venta.id}')" title="Ver detalles"><i class="fas fa-eye"></i></button>`;
         
-        // Mostrar nombre truncado (6 caracteres + ...)
-        const nombreTruncado = venta.nombreCliente.length > 6 
-            ? venta.nombreCliente.substring(0, 6) + '...' 
-            : venta.nombreCliente;
+        // Formatear fecha
+        const fechaFormateada = new Date(venta.fechaTour).toLocaleDateString('es-ES');
         
-        // Información de habitación
-        const habitacionInfo = venta.numeroHabitacion 
-            ? `<small>Hab: ${venta.numeroHabitacion}</small>` 
-            : '';
+        // Cliente con habitación usando mis6
+        const clienteInfo = `${mis10(venta.nombreCliente, 15)}${venta.numeroHabitacion ? ` <small>(${venta.numeroHabitacion}</small>)` : ''}`;
         
-        // Mostrar etiquetas de ventas especiales
-        const etiquetasVentas = obtenerEtiquetasVentas(venta);
+        // Calcular comisión (ejemplo: 10% del importe individual)
+        const comision = (venta.precioUnitario * 0.10).toFixed(2);
         
         return `
             <tr>
+                <td>${fechaFormateada}</td>
+                <td class="user-cell">
+                    <img src="${todosLosEmpleados.find(emp => emp.usuario === venta.vendedor)?.imagen || 'https://i.postimg.cc/HWMY74kP/image.png'}" class="avatar-small">
+                    <strong>${Capi(venta.vendedor)}</strong>
+                </td>
                 <td><span class="tour-badge">${venta.tipoTour}</span></td>
-                <td>
-                    <strong>${nombreTruncado}</strong>
-                    ${habitacionInfo}
-                </td>
                 <td><span class="pax-badge"><i class="fas fa-users"></i> ${venta.cantidadPax}</span></td>
+                <td>${clienteInfo}</td>
                 <td><strong class="price">S/ ${(venta.importeTotal || 0).toFixed(2)}</strong></td>
-                <td>
-                    <div class="datetime-info">
-                        <span><i class="fas fa-calendar"></i> ${venta.fechaTour}</span>
-                        <span><i class="fas fa-clock"></i> ${venta.horaSalida}</span>
-                    </div>
-                </td>
+                <td>S/ ${(venta.precioUnitario || 0).toFixed(2)}</td>
+                <td>S/ ${comision}</td>
+                <td><span class="status-badge ${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'paid' : 'pending'}">
+                    <i class="fas fa-${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'check-circle' : 'clock'}"></i> 
+                    ${venta.estadoPago?.toUpperCase()}
+                </span></td>
+                <td>S/ ${(venta.ganancia || 0).toFixed(2)}</td>
                 <td><span class="points-badge"><i class="fas fa-star"></i> ${venta.puntos || 0}</span></td>
-                <td><div class="seller-info"><strong><i class="fas fa-user-tie"></i> ${Capi(venta.vendedor)}</strong></div></td>
-                <td>${etiquetasVentas || Capi(venta.vendedor)}</td>
-                <td><span class="status-badge ${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'paid' : 'pending'}"><i class="fas fa-${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'check-circle' : 'clock'}"></i> ${venta.estadoPago?.toUpperCase()}</span></td>
-                <td><div class="action-buttons">${botones}</div></div>
+                <td><div class="action-buttons">${botones}</div></td>
             </tr>
         `;
     }).join('');
     
-    $('#salesTableBody').html(filas || `<tr><td colspan="10" class="empty-cell"><i class="fas fa-inbox"></i> No hay ventas para mostrar</td></tr>`);
+    $('#salesTableBody').html(filas || `<tr><td colspan="12" class="empty-cell"><i class="fas fa-inbox"></i> No hay ventas para mostrar</td></tr>`);
     renderizarPaginacion(totalPaginas);
 }
 
@@ -750,13 +749,27 @@ window.eliminarVenta = function(ventaId) {
 };
 
 
-// FUNCIÓN PARA CARGAR DATOS EN EL FORMULARIO ACTUALIZADA
+// FUNCIÓN ACTUALIZADA PARA CARGAR DATOS EN FORMULARIO
 function cargarDatosEnFormulario(venta, soloVista = false) {
-    // Limpiar estado de edición previo
     limpiarEstadoFormulario();
     
-    // Cargar datos en los campos
-    $('#tipoTour').val(venta.tipoTour);
+    // Buscar y seleccionar el tour
+    selTour = htours.find(t => 
+        t.tour === venta.tipoTour || 
+        venta.tipoTour.includes(t.tour.split(' ')[1]) // Búsqueda flexible
+    );
+    
+    if (selTour) {
+        $('#tourDisplay .tour-text').text(selTour.tour);
+        $('#tipoTour').val(selTour.tour);
+        // Marcar como seleccionado en tabla
+        $(`.tour-row[data-tour*='"nt":${selTour.nt}']`).addClass('selected');
+    } else {
+        $('#tourDisplay .tour-text').text(venta.tipoTour || '🔍 Seleccionar tour...');
+        $('#tipoTour').val(venta.tipoTour || '');
+    }
+    
+    // Cargar resto de campos
     $('#registroEn').val(venta.registroEn);
     $('#nombreCliente').val(venta.nombreCliente);
     $('#numeroHabitacion').val(venta.numeroHabitacion || '');
@@ -767,29 +780,25 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
     $('#metodoPago').val(venta.metodoPago || '');
     $('#importeTotal').val(venta.importeTotal || 0);
     $('#ganancia').val(venta.ganancia || 0);
+    calcularComision(); // Recalcular al cargar datos
     $('#horaSalida').val(venta.horaSalida);
     $('#Operador').val(venta.Operador);
+    $('#Viaje').val(venta.Viaje || '');
     $('#Comentario').val(venta.Comentario);
     $('#fechaTour').val(venta.fechaTour);
     $('#estadoPago').val(venta.estadoPago || 'pagado');
     
-    // Cargar checkboxes de ventas especiales
     $('#vtJulio').prop('checked', venta.esVentaJulio || false);
     $('#vtSonia').prop('checked', venta.esVentaSonia || false);
     $('#vtExterna').prop('checked', venta.esVentaExterna || false);
     
-    // Actualizar preview de puntos
     actualizarPuntosPreview();
     
     if (soloVista) {
-        // Deshabilitar todos los campos para solo vista
-        $('#formularioVenta input, #formularioVenta select').prop('disabled', true);
+        $('#formularioVenta input, #formularioVenta select, .tour-display').prop('disabled', true);
         $('.btn-save').prop('disabled', true).html('<i class="fas fa-eye"></i> Solo Vista');
-        
-        // Agregar indicador visual
         $('#formularioVenta').addClass('view-only');
         
-        // Mostrar botón para limpiar vista
         if ($('.btn-clear-view').length === 0) {
             $('.form-actions').prepend(`
                 <button type="button" class="btn-clear-view" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px;">
@@ -798,12 +807,11 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
             `);
         }
     } else {
-        // Modo edición - habilitar campos
         $('#formularioVenta input, #formularioVenta select').prop('disabled', false);
+        $('.tour-display').prop('disabled', false);
         $('.btn-save').prop('disabled', false);
         $('#formularioVenta').addClass('edit-mode');
         
-        // Mostrar botón para cancelar edición
         if ($('.btn-cancel-edit').length === 0) {
             $('.form-actions').prepend(`
                 <button type="button" class="btn-cancel-edit" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px;">
@@ -814,12 +822,11 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
     }
 }
 
-// FUNCIÓN PARA ACTUALIZAR PREVIEW DE PUNTOS
+// FUNCIÓN ACTUALIZADA PARA ACTUALIZAR PUNTOS
 function actualizarPuntosPreview() {
     const pax = parseInt($('#cantidadPax').val()) || 1;
-    const puntosBase = parseInt($('#tipoTour option:selected').data('points')) || 0;
+    const puntosBase = selTour ? selTour.pts : 0;
     
-    // Verificar si hay checkboxes marcados (ventas especiales no dan puntos)
     const tieneVentaEspecial = $('#vtJulio').prop('checked') || 
                                $('#vtSonia').prop('checked') || 
                                $('#vtExterna').prop('checked');
@@ -830,23 +837,17 @@ function actualizarPuntosPreview() {
 
 // FUNCIÓN PARA LIMPIAR ESTADO DEL FORMULARIO
 function limpiarEstadoFormulario() {
-    // Habilitar todos los campos
+    selTour = null;
     $('#formularioVenta input, #formularioVenta select').prop('disabled', false);
     $('.btn-save').prop('disabled', false);
-    
-    // Remover clases de estado
     $('#formularioVenta').removeClass('view-only edit-mode');
-    
-    // Restaurar botón original
     $('.btn-save').html('<i class="fas fa-save"></i> Guardar Venta').removeAttr('data-edit-id');
-    
-    // Remover botones adicionales
     $('.btn-clear-view, .btn-cancel-edit').remove();
-    
-    // Limpiar formulario
     $('#formularioVenta')[0].reset();
     $('#cantidadPax').val(1);
     $('#vistaPreviaLaPuntos').text('0');
+    $('#tourDisplay .tour-text').text('🔍 Seleccionar tour...');
+    $('.tour-row').removeClass('selected');
 }
 
 // FUNCIÓN PARA ELIMINAR VENTA COMPLETA
@@ -917,79 +918,81 @@ function calcularMesAnterior(mesActual) {
     return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
 }
 
+// DATOS DE TOURS OPTIMIZADOS
+const htours = [
+    {nt:1,tour:'🪂 Parapente',price:330,pts:50,com:5},{nt:2,tour:'🏜️ Buggy 1H',price:20,pts:15,com:5},
+    {nt:3,tour:'🏜️ Buggy 2H',price:25,pts:25,com:5},{nt:4,tour:'🏜️ Buggy Privado',price:180,pts:30,com:5},
+    {nt:5,tour:'🏜️ Buggy 1H-Sonia',price:20,pts:25,com:5},{nt:6,tour:'🏜️ Buggy 2H-Sonia',price:25,pts:35,com:5},
+    {nt:7,tour:'🏜️ Buggy Priv-Sonia',price:180,pts:40,com:5},{nt:8,tour:'🏜️ Buggy 2H Priv-Sonia',price:260,pts:80,com:5},
+    {nt:9,tour:'🍷 Bodegas',price:20,pts:10,com:5},{nt:10,tour:'🍷 Bodegas-Jackson',price:20,pts:20,com:5},
+    {nt:11,tour:'🍷 Bodegas Priv',price:150,pts:30,com:5},{nt:12,tour:'🍷 Bodegas Priv-Jackson',price:150,pts:40,com:5},
+    {nt:13,tour:'🏛️ City Tour-Jackson',price:200,pts:50,com:5},{nt:14,tour:'🏝️ Paracas',price:60,pts:20,com:5},
+    {nt:15,tour:'🏔️ Cañón perdidos',price:60,pts:20,com:5},{nt:16,tour:'🏍️ Cuatrimotos',price:70,pts:20,com:5},
+    {nt:17,tour:'✈️ Sobrevuelo',price:494,pts:30,com:5},{nt:18,tour:'🗿 Nazca Terrestre',price:150,pts:10,com:5},
+    {nt:19,tour:'🏄 Tablas Pro',price:50,pts:10,com:5},{nt:20,tour:'🏄 Tablas-Sonia',price:150,pts:15,com:5},
+    {nt:21,tour:'🏄 Tablas+Buggy',price:150,pts:10,com:5},{nt:22,tour:'🚙 Polaris',price:380,pts:20,com:5}
+];
+
+// VARIABLE PARA TOUR SELECCIONADO
+let selTour = null;
+
+// FUNCIÓN ACTUALIZADA PARA GENERAR HTML DEL FORMULARIO
 function getFormularioHTML() {
     return `
         <form id="formularioVenta" class="sale-form">
             <div class="form-grid">
-                <!-- TIPO DE TOUR -->
+                <!-- SELECTOR DE TOUR MEJORADO -->
                 <div class="form-field">
-                    <label>
+                    <label class="tour-label">
                         <i class="fas fa-route"></i>
                         Tipo de Tour *
                     </label>
-                    <select id="tipoTour" required>
-                        <option value="">Seleccionar tour...</option>
-                        <option value="Parapente" data-points="50" data-price="330">1. 🪂 Parapente (50 pts)</option>
-                        <option value="Buggy 1 Hora" data-points="15" data-price="20">2. 🏜️ Buggy 1 Hora (15 pts)</option>
-                        <option value="Buggy 2 Horas" data-points="25" data-price="25">3. 🏜️ Buggy 2 Horas (25 pts)</option>
-                        <option value="Buggy Privado" data-points="30" data-price="180">4. 🏜️ Buggy Privado (30 pts)</option>
-                        <option value="Buggy 1 Hora - Sonia" data-points="25" data-price="20">5. 🏜️ Buggy 1 Hora - Sonia (25 pts)</option>
-                        <option value="Buggy 2 Horas - Sonia" data-points="35" data-price="25">6. 🏜️ Buggy 2 Horas - Sonia (35 pts)</option>
-                        <option value="Buggy Privado - Sonia" data-points="40" data-price="180">7. 🏜️ Buggy Privado - Sonia (40 pts)</option>
-                        <option value="Buggy Privado 2 Horas - Sonia" data-points="80" data-price="260">8. 🏜️ Buggy Privado 2 Horas- Sonia (80 pts)</option>
-                        <option value="Tour de bodegas" data-points="10" data-price="20">9. 🍷 Tour de bodegas (10 pts)</option>
-                        <option value="Tour de bodegas - Jackson" data-points="20" data-price="20">10. 🍷 Tour de bodegas - Jackson (20 pts)</option>
-                        <option value="Tour de bodegas Privado" data-points="30" data-price="150">11. 🍷 Tour de bodegas Privado (30 pts)</option>
-                        <option value="Tour de bodegas Privado - Jackson" data-points="40" data-price="150">12. 🍷 Tour de bodegas Privado - Jackson (40 pts)</option>
-                        <option value="City Tour - Jackson" data-points="50" data-price="200">13. 🏛️ City Tour - Jackson (50 pts)</option>
-                        <option value="Tour de Paracas" data-points="20" data-price="60">14. 🏝️ Tour de Paracas (20 pts)</option>
-                        <option value="Cañón de los perdidos" data-points="20" data-price="60">15. 🏔️ Cañón de los perdidos (20 pts)</option>
-                        <option value="Cuatrimotos" data-points="20" data-price="70">16. 🏍️ Cuatrimotos (20 pts)</option>
-                        <option value="Sobrevuelo" data-points="30" data-price="494">17. ✈️ Sobrevuelo (30 pts)</option>
-                        <option value="Nazca Terrestre" data-points="10" data-price="150">18. 🗿 Nazca Terrestre (10 pts)</option>
-                        <option value="Renta Tablas Profesional" data-points="10" data-price="50">19. 🏄 Renta Tablas Profesional (10 pts)</option>
-                        <option value="Tablas Profesional - Sonia" data-points="15" data-price="150">20. 🏄 Tablas Profesional - Sonia (15 pts)</option>
-                        <option value="Tablas Profesional + Buggy" data-points="10" data-price="150">21. 🏄 Tablas Profesional + Buggy (10 pts)</option>
-                        <option value="Polaris" data-points="20" data-price="380">22. 🚙 Polaris (20 pts)</option>
-                    </select>
+                    <div class="tour-selector" id="tourSelector">
+                        <div class="tour-display" id="tourDisplay">
+                            <span class="tour-text">🔍 Seleccionar tour...</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="tour-dropdown" id="tourDropdown">
+                            <div class="tour-search">
+                                <input type="text" id="tourSearch" placeholder="Buscar tour..." autocomplete="off">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="tour-table-container">
+                                <table class="tour-table" id="tourTable">
+                                    <tbody id="tourTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="tipoTour" required>
                 </div>
 
-                <!-- REGISTRO EN -->
+                <!-- RESTO DE CAMPOS EXISTENTES -->
                 <div class="form-field">
-                    <label>
-                        <i class="fas fa-hotel"></i>
-                        Registro en:
-                    </label>
+                    <label><i class="fas fa-hotel"></i>Registro en:</label>
                     <select id="registroEn">
                         <option value="hawka">Hawka</option>
                         <option value="hclaudia">HClaudia</option>
                     </select>
                 </div>
 
-                <!-- NOMBRE CLIENTE -->
                 <div class="form-field">
-                    <label>
-                        <i class="fas fa-user"></i>
-                        Nombre del Cliente *
-                    </label>
-                    <input type="text" id="nombreCliente" required placeholder="Nombre de cliente / calle">
-                </div>
-
-                <!-- HABITACION -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-bed"></i>
-                        N° Habitación(Opcional)
-                    </label>
+                    <label><i class="fas fa-bed"></i>N° Habitación(Opcional)</label>
                     <input type="text" id="numeroHabitacion" placeholder="Ej: 205">
                 </div>
 
-                <!-- Tipo de documento -->
                 <div class="form-field">
-                    <label>
-                        <i class="fas fa-id-card"></i>
-                        Tipo de Documento (opcional)
-                    </label>
+                    <label><i class="fas fa-user"></i>Nombre del Cliente *</label>
+                    <input type="text" id="nombreCliente" required placeholder="Nombre de cliente / calle">
+                </div>
+
+                <div class="form-field">
+                    <label><i class="fas fa-plane"></i>Motivo de Viaje</label>
+                    <input type="text" id="Viaje" placeholder="Turismo, trabajo, familia...">
+                </div>
+
+                <div class="form-field">
+                    <label><i class="fas fa-id-card"></i>Tipo de Documento (opcional)</label>
                     <select id="tipoDocumento">
                         <option value="dni">DNI</option>
                         <option value="pasaporte">Pasaporte</option>
@@ -998,59 +1001,50 @@ function getFormularioHTML() {
                     </select>
                 </div>
 
-                <!-- INGRESE DNI -->
                 <div class="form-field">
-                    <label>
-                        <i class="fas fa-hashtag"></i>
-                        N° DNI/Pasaporte/CE
-                    </label>
+                    <label><i class="fas fa-hashtag"></i>N° DNI/Pasaporte/CE</label>
                     <input type="text" id="numeroDocumento" placeholder="78964523">
                 </div>
 
-                <!-- PAX -->
                 <div class="form-field">
-                    <label>
-                        <i class="fas fa-users"></i>
-                        PAX (Cantidad Personas/Grupo Privado)
-                    </label>
+                    <label><i class="fas fa-money-check-alt"></i>Pagado?</label>
+                    <select id="estadoPago">
+                        <option value="pagado">Tour con nosotros (pagado)</option>
+                        <option value="pagar">Tour con nosotros (pendiente)</option>
+                        <option value="cobrado">Tour con Sonia, externo (cobrado)</option>
+                        <option value="cobrar">Tour con Sonia, externo (pendiente)</option>
+                    </select>
+                </div>
+
+
+                <div class="form-field">
+                    <label><i class="fas fa-users"></i>PAX (Cantidad Personas/Grupo Privado)</label>
                     <input type="number" id="cantidadPax" required min="1" value="1">
                 </div>
 
-                <!-- HORA DE SALIDA -->
                 <div class="form-field">
-                    <label>
-                        <i class="fas fa-clock"></i>
-                        Hora de salida *
-                    </label>
-                    <input type="text" id="horaSalida" placeholder="2 HORAS -5PM" required>
-                </div>
-     
-
-                <!-- IMPORTE INDIVIDUAL -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-user-tag"></i>
-                        Importe Individual/Grupo Privado
-                    </label>
+                    <label><i class="fas fa-user-tag"></i>Importe Individual/Grupo Privado</label>
                     <input type="number" id="precioUnitario" step="0.01" placeholder="S/ 0.00">
                 </div>
 
-
-                <!-- IMPORTE TOTAL -->
                 <div class="form-field">
-                    <label>
-                        <i class="fas fa-calculator"></i>
-                        Importe x Cobrar(Total)
-                    </label>
+                    <label><i class="fas fa-calculator"></i>Importe x Cobrar(Total)</label>
                     <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00" disabled>
                 </div>
 
-           <!-- METODO PAGO -->
+
                 <div class="form-field">
-                    <label>
-                        <i class="fas fa-credit-card"></i>
-                        Método de Pago
-                    </label>
+                    <label><i class="fas fa-calendar-day"></i>Fecha *</label>
+                    <input type="date" id="fechaTour" required>
+                </div>
+
+                <div class="form-field">
+                    <label title="Es un calculo importe total - comision del operador, si es nosotros, no tiene comision, si es externo depende del tour"><i class="fas fa-handshake"></i>Ganancia *</label>
+                    <input type="number" id="ganancia" step="0.01" placeholder="S/ 0.00">
+                </div>
+
+                <div class="form-field">
+                    <label><i class="fas fa-credit-card"></i>Método de Pago</label>
                     <select id="metodoPago">
                         <option value="">Seleccionar...</option>
                         <option value="Efectivo">Efectivo</option>
@@ -1061,66 +1055,27 @@ function getFormularioHTML() {
                     </select>
                 </div>
 
-                <!-- PAGADO ? -->
                 <div class="form-field">
-                    <label>
-                        <i class="fas fa-money-check-alt"></i>
-                        Pagado? 
-                    </label>
-                    <select id="estadoPago">
-                    <option value="pagado">Tour con nosotros (pagado)</option>
-                    <option value="pagar">Tour con nosotros (pendiente)</option>
-                    <option value="cobrado">Tour con  Sonia, externo (pagado)</option>
-                    <option value="cobrar">Tour con Sonia, externo (pendiente)</option>
-                    </select>
+                    <label><i class="fas fa-user"></i>Operador *</label>
+                    <input type="text" id="Operador" placeholder="Ejm: Jacki, Pili, William...." required>
                 </div>
 
-                <!-- COBRO PROVEEDOR -->
                 <div class="form-field">
-                    <label title="Es un calculo importe total - comision del operador, si es nosotros, no tiene comision, si es externo depende del tour">
-                        <i class="fas fa-handshake"></i>
-                        Ganancia *
-                    </label>
-                    <input type="number" id="ganancia" step="0.01" placeholder="S/ 0.00">
+                    <label><i class="fas fa-clock"></i>Hora de salida *</label>
+                    <input type="text" id="horaSalida" placeholder="2 HORAS -5PM" required>
                 </div>
 
-                <!-- FECHA -->
                 <div class="form-field">
-                    <label>
-                        <i class="fas fa-calendar-day"></i>
-                        Fecha *
-                    </label>
-                    <input type="date" id="fechaTour" required>
+                    <label><i class="fa-solid fa-comment"></i>Comentario/Anotes (Opcional) *</label>
+                    <input type="text" id="Comentario" placeholder="Escribe notas de tu venta" required>
                 </div>
-
-                <!-- OPERADOR -->
-                <div class="form-field">
-                    <label>
-                        <i class="fas fa-user"></i>
-                        Operador *
-                    </label>
-                    <input type="text" id="Operador" placeholder="Ejm: Jacki, Pili, William.... " required>
-                </div>
-
-                <!-- COMENTARIO -->
-                <div class="form-field">
-                    <label>
-                        <i class="fa-solid fa-comment"></i>
-                        Comentario *
-                    </label>
-                    <input type="text" id="Comentario" placeholder="Escribe notas de tu venta " required>
-                </div>
-
             </div>
 
-            <!-- ACCIONES DEL FORMULARIO -->
             <div class="form-actions">
                 <button type="submit" class="btn-save">
                     <i class="fas fa-save"></i>
                     Guardar Venta
                 </button>
-
-                <!-- PREVIEW DE PUNTOS -->
                 <div class="points-preview">
                     <div class="points-info">
                         <i class="fas fa-star"></i>
@@ -1130,6 +1085,125 @@ function getFormularioHTML() {
             </div>
         </form>
     `;
+}
+
+function initTourSelector() {
+    renderTourTable(htours);
+    
+    // Toggle dropdown
+    $('#tourDisplay').on('click', function(e) {
+        e.stopPropagation();
+        $('#tourDropdown').toggleClass('active');
+        $('#tourDisplay').toggleClass('active');
+        if ($('#tourDropdown').hasClass('active')) {
+            $('#tourSearch').focus();
+        }
+    });
+    
+    // Búsqueda
+    $('#tourSearch').on('input', function() {
+        const q = $(this).val().toLowerCase();
+        const filtered = htours.filter(t => 
+            t.tour.toLowerCase().includes(q) ||
+            t.price.toString().includes(q) ||
+            t.pts.toString().includes(q) ||
+            t.nt.toString().includes(q)
+        );
+        renderTourTable(filtered);
+    });
+    
+    // Event listener para selección (movido desde renderTourTable)
+$(document).on('click', '.tour-row', function() {
+    selTour = JSON.parse($(this).attr('data-tour'));
+    
+    $('#tourDisplay .tour-text').text(selTour.tour);
+    $('#tipoTour').val(selTour.tour);
+    $('#precioUnitario').val(selTour.price);
+    
+    // Aplicar zoom temporal al precio individual
+    aplicarZoomTemporal('#precioUnitario');
+    
+    calcularTotal(); // Ya incluye calcularComision()
+    actualizarPuntosPreview();
+    
+    $('#tourDropdown').removeClass('active');
+    $('#tourDisplay').removeClass('active');
+    
+    $('.tour-row').removeClass('selected');
+    $(this).addClass('selected');
+});
+    
+    // Cerrar al hacer click fuera
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.tour-selector').length) {
+            $('#tourDropdown').removeClass('active');
+            $('#tourDisplay').removeClass('active');
+        }
+    });
+}
+
+// RENDERIZAR TABLA DE TOURS
+function renderTourTable(tours) {
+    const html = tours.map((t, i) => `
+        <tr class="tour-row" data-tour='${JSON.stringify(t)}'>
+            <td class="tour-num">${i + 1}</td>
+            <td class="tour-name">${t.tour}</td>
+            <td class="tour-price">S/ ${t.price}</td>
+            <td class="tour-pts">${t.pts} pts</td>
+        </tr>
+    `).join('');
+    
+    $('#tourTableBody').html(html);
+}
+
+// CALCULAR COMISIÓN Y GANANCIA
+function calcularComision() {
+    const estadoPago = $('#estadoPago').val();
+    const pax = parseInt($('#cantidadPax').val()) || 1;
+    const precioUnitario = parseFloat($('#precioUnitario').val()) || 0;
+    const importeTotal = precioUnitario * pax;
+    
+    let ganancia = 0;
+    
+    if (estadoPago === 'pagado' || estadoPago === 'pagar') {
+        ganancia = importeTotal;
+    } else if (estadoPago === 'cobrado' || estadoPago === 'cobrar') {
+        if (selTour && selTour.com) {
+            const comisionPorPersona = selTour.com;
+            ganancia = comisionPorPersona * pax;
+        }
+    }
+    
+    $('#ganancia').val(ganancia.toFixed(2));
+    
+    // Aplicar zoom temporal al campo de ganancia
+    aplicarZoomTemporal('#ganancia');
+}
+// Evento para recalcular cuando cambie el estado de pago
+$(document).on('change', '#estadoPago', function() {
+    calcularComision();
+});
+
+// FUNCIÓN PARA APLICAR EFECTO ZOOM TEMPORAL
+function aplicarZoomTemporal(selector) {
+    const elemento = $(selector);
+    elemento.addClass('field-updated');
+    
+    setTimeout(() => {
+        elemento.removeClass('field-updated');
+    }, 1000);
+}
+
+
+// CALCULAR TOTAL
+function calcularTotal() {
+    const pax = parseInt($('#cantidadPax').val()) || 1;
+    const precio = parseFloat($('#precioUnitario').val()) || 0;
+    $('#importeTotal').val((precio * pax).toFixed(2));
+    calcularComision();
+    
+    // Aplicar zoom temporal a los campos actualizados
+    aplicarZoomTemporal('#importeTotal');
 }
 
 function getInfoTabsHTML() {
@@ -1385,22 +1459,26 @@ $(document).on('click', '.btn-save', async (e) => {
     e.preventDefault();
     
     try {
+        if (!selTour) {
+            Notificacion('⚠️ Selecciona un tour primero', 'error');
+            $('#tourDisplay').focus();
+            return;
+        }
+        
         const editId = $('.btn-save').attr('data-edit-id');
         const isEditing = !!editId;
         const pax = parseInt($('#cantidadPax').val()) || 1;
-        const puntosBase = parseInt($('#tipoTour option:selected').data('points')) || 0;
         
         // Verificar ventas especiales
         const esVentaJulio = $('#vtJulio').prop('checked');
         const esVentaSonia = $('#vtSonia').prop('checked');
         const esVentaExterna = $('#vtExterna').prop('checked');
         
-        // Si hay checkboxes marcados, los puntos son 0
         const tieneVentaEspecial = esVentaJulio || esVentaSonia || esVentaExterna;
-        const puntosFinales = tieneVentaEspecial ? 0 : (puntosBase * pax);
+        const puntosFinales = tieneVentaEspecial ? 0 : (selTour.pts * pax);
         
         const formData = {
-            tipoTour: $('#tipoTour').val(),
+            tipoTour: selTour.tour,
             registroEn: $('#registroEn').val(),
             nombreCliente: $('#nombreCliente').val(),
             numeroHabitacion: $('#numeroHabitacion').val(),
@@ -1413,28 +1491,27 @@ $(document).on('click', '.btn-save', async (e) => {
             ganancia: parseFloat($('#ganancia').val()) || 0,
             horaSalida: $('#horaSalida').val(),
             Operador: $('#Operador').val(),
+            Viaje: $('#Viaje').val(),
             Comentario: $('#Comentario').val(),
             fechaTour: $('#fechaTour').val(),
             estadoPago: $('#estadoPago').val(),
             vendedor: userAuth.displayName,
-            puntos: puntosFinales, // Puntos calculados con ventas especiales
+            puntos: puntosFinales,
             email: userAuth.email,
             qventa: 1,
             fechaRegistro: serverTimestamp(),
-            // Campos de ventas especiales
             esVentaJulio: esVentaJulio,
             esVentaSonia: esVentaSonia,
             esVentaExterna: esVentaExterna
         };
 
         // Validaciones
-        if (!formData.tipoTour || !formData.nombreCliente || !formData.horaSalida || !formData.fechaTour) {
+        if (!formData.nombreCliente || !formData.horaSalida || !formData.fechaTour) {
             Notificacion('Por favor completa todos los campos obligatorios', 'error');
             return;
         }
 
         if (isEditing) {
-            // MODO EDICIÓN
             formData.idVenta = editId;
             await setDoc(doc(db, 'registrosdb', editId), formData);
             
@@ -1447,9 +1524,7 @@ $(document).on('click', '.btn-save', async (e) => {
             }
             
             Notificacion('¡Venta actualizada exitosamente!', 'success');
-            
         } else {
-            // MODO CREACIÓN
             const timestamp = Date.now();
             const docId = `venta_${timestamp}`;
             formData.idVenta = docId;
@@ -1462,7 +1537,6 @@ $(document).on('click', '.btn-save', async (e) => {
             Notificacion('¡Venta registrada exitosamente!', 'success');
         }
         
-        // Limpiar formulario y actualizar datos
         limpiarEstadoFormulario();
         await cargarVentas();
         await calcularPuntosEmpleados();
@@ -1477,7 +1551,7 @@ $(document).on('click', '.btn-save', async (e) => {
 
 // EVENTOS ACTUALIZADOS PARA CHECKBOXES Y CAMPOS
 $(document).on('change', '#vtJulio, #vtSonia, #vtExterna', function() {
-    actualizarPuntosPreview(); 
+    actualizarPuntosPreview();
 });
 
 // Resto de eventos del formulario
@@ -1491,11 +1565,13 @@ $(document).on('change', '#tipoTour', function() {
 });
 
 $(document).on('input', '#cantidadPax, #precioUnitario', function() {
-    const pax = parseInt($('#cantidadPax').val()) || 1;
-    const precio = parseFloat($('#precioUnitario').val()) || 0;
-    
-    $('#importeTotal').val(precio * pax);
+    calcularTotal();
     actualizarPuntosPreview();
+    // const pax = parseInt($('#cantidadPax').val()) || 1;
+    // const precio = parseFloat($('#precioUnitario').val()) || 0;
+    
+    // $('#importeTotal').val(precio * pax);
+    // actualizarPuntosPreview();
 });
 
 // PARA GUARDAR EL TEMA
