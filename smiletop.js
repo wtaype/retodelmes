@@ -61,6 +61,7 @@ async function initAdmin(data) {
         await loadUsuarios();
         await loadVentas();
         await loadNotas();
+        await loadTours();  // ← AGREGAR ESTA LÍNEA
         initEvents();
         renderTable();
         renderNotas();
@@ -553,26 +554,50 @@ function updatePagination() {
 }
 
 // ========================================
-// 📝 ACTUALIZAR VALORES
-// ======================================== 
-
-// Agregar en initAdmin() después de loadNotas()
-        await loadTours();
-
-
-// FUNCIONES DE TOURS - ACTUALIZADAS CON TABLA COMPLETA
+// 🎯 GESTIÓN DE TOURS COMPLETA Y MEJORADA
+// ========================================
 async function loadTours() {
     try {
+        console.log('🔄 Cargando tours desde Firestore...');
+        
         const snapshot = await getDocs(collection(db, 'listatours'));
-        todosLosTours = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+        
+        if (snapshot.empty) {
+            console.log('📭 No hay tours en Firestore');
+            todosLosTours = [];
+            renderTours();
+            return;
+        }
+        
+        todosLosTours = snapshot.docs.map(doc => ({
+            id: doc.id, 
+            ...doc.data()
+        }));
+        
+        console.log(`✅ ${todosLosTours.length} tours cargados:`, todosLosTours);
         renderTours();
-        console.log(`✅ ${todosLosTours.length} tours`);
+        
     } catch (error) {
-        console.error('Error tours:', error);
+        console.error('❌ Error cargando tours:', error);
+        Notificacion('Error al cargar tours', 'error');
+        
+        // Mostrar error en la interfaz
+        $('#toursContainer').html(`
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle" style="color:#dc3545;font-size:48px;margin-bottom:15px;"></i>
+                <h3>Error al cargar tours</h3>
+                <p>No se pudieron cargar los tours desde la base de datos</p>
+                <button onclick="loadTours()" class="btn-refresh" style="margin-top:15px;">
+                    <i class="fas fa-sync"></i> Reintentar
+                </button>
+            </div>
+        `);
     }
 }
 
 function renderTours() {
+    console.log('🎨 Renderizando tours...', todosLosTours);
+    
     const html = `
         <table class="sales-table">
             <thead>
@@ -602,6 +627,7 @@ function renderTours() {
     `;
     
     $('#toursContainer').html(html);
+    console.log('✅ Tours renderizados en interfaz');
 }
 
 function renderTourRow(tour, numero, editing = false) {
@@ -743,7 +769,9 @@ function showAddForm() {
     Notificacion('📝 Agregando nuevo tour...', 'info');
 }
 
-// FUNCIONES GLOBALES - ACTUALIZADAS PARA TABLA
+// ========================================
+// 🎯 FUNCIONES GLOBALES DE TOURS
+// ========================================
 window.editTour = function(id) {
     const tour = todosLosTours.find(t => t.id === id);
     if (!tour) return;
@@ -837,6 +865,9 @@ window.saveTour = async function(id, numero) {
 };
 
 window.showAddForm = showAddForm;
+
+// AGREGAR función global para debugging
+window.loadTours = loadTours;
 
 // ========================================
 // 📝 RENDERIZAR NOTAS
