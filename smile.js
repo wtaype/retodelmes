@@ -74,7 +74,7 @@ function smileContenido(wi){
                     <div class="witemas"></div>
                     <div class="user-section">
                         <div class="user-info">
-                            <img src="${wi.imagen}" alt="${wi.nombre}" class="user-avatar">
+                            <img src="${wi.imagen || '/smile.png'}" alt="${wi.nombre}" class="user-avatar">
                             <span class="user-name">${wi.nombre}</span>
                         </div>
                         <button class="logout-btn bt_salir">
@@ -387,7 +387,7 @@ function renderizarEmpleados() {
                     #${rank}
                 </div>
                 <div class="worker-avatar">
-                    <img src="${empleado.imagen}" alt="${empleado.nombre}">
+                    <img src="${empleado.imagen || '/smile.png'}" alt="${empleado.nombre}">
                     <div class="status-online"></div>
                 </div>
                 <div class="worker-info">
