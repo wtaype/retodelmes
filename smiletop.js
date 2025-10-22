@@ -2,8 +2,8 @@ import $ from 'jquery';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { auth, db } from './firebase/init.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { getDocs, doc, updateDoc, collection, query, where, orderBy, limit, startAfter, serverTimestamp, addDoc } from "firebase/firestore";
-import { Capi, Mensaje, Notificacion, savels, getls, removels, wiTema, infoo, fechaLetra,mis6 } from './widev.js';
+import { getDocs, doc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, startAfter, serverTimestamp, addDoc } from "firebase/firestore";
+import { Capi, Mensaje, Notificacion, savels, getls, removels, wiTema, infoo, fechaLetra,mis10 } from './widev.js';
 
 // ========================================
 // 🔐 VARIABLES GLOBALES COMPACTAS
@@ -19,6 +19,7 @@ let todasLasVentas = [];
 let todosLosUsuarios = [];
 let notasData = [];
 let ITEMS_PER_PAGE = 7;
+let todosLosTours = [];
 
 // ========================================
 // 🚀 INICIALIZACIÓN PRINCIPAL
@@ -154,6 +155,22 @@ function getHTML() {
                         </button>
                     </div>
                 </section>
+
+                <!-- GESTIÓN DE TOURS COMPACTA -->
+                <section class="table-section">
+                    <div class="table-header">
+                        <h2><i class="fas fa-route"></i> Tours</h2>
+                        <button id="addTour" class="btn-refresh">+ Tour</button>
+                    </div>
+                    
+                    <div id="toursContainer">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Cargando tours...</p>
+                        </div>
+                    </div>
+                </section>
+
             </main>
 
             <aside class="sidebar">
@@ -442,7 +459,7 @@ function renderVentaRow(venta, editing = false) {
                 </td>
                 <td class="tour-cell">${venta.tipoTour || 'Tour'}</td>
                 <td class="money-cell">${venta.cantidadPax || '0'}</td>
-                <td class="money-cell">${mis6(venta.nombreCliente) || 'Sin nombre'}</td>
+                <td class="money-cell">${mis10(venta.nombreCliente) || 'Sin nombre'}</td>
                 <td><input type="number" class="edit-input" data-field="importeTotal" value="${montoTotal.toFixed(2)}" step="0.01"></td>
                 <td><input type="number" class="edit-input" data-field="precioUnitario" value="${montoIndividual.toFixed(2)}" step="0.01"></td>
                 <td><input type="number" class="edit-input" data-field="comision" value="${comision.toFixed(2)}" step="0.01"></td>
@@ -470,7 +487,7 @@ function renderVentaRow(venta, editing = false) {
             </td>
             <td class="tour-cell">${venta.tipoTour || 'Tour'}</td>
             <td class="money-cell">${venta.cantidadPax || '0'}</td>
-            <td class="money-cell">${mis6(venta.nombreCliente) || 'Sin nombre'}</td>
+            <td class="money-cell">${mis10(venta.nombreCliente) || 'Sin nombre'}</td>
             <td class="money-cell">${montoTotal.toFixed(2)}</td>
             <td class="money-cell">${montoIndividual.toFixed(2)}</td>
             <td class="money-cell">${comision.toFixed(2)}</td>
@@ -534,6 +551,292 @@ function updatePagination() {
     
     pagination.show();
 }
+
+// ========================================
+// 📝 ACTUALIZAR VALORES
+// ======================================== 
+
+// Agregar en initAdmin() después de loadNotas()
+        await loadTours();
+
+
+// FUNCIONES DE TOURS - ACTUALIZADAS CON TABLA COMPLETA
+async function loadTours() {
+    try {
+        const snapshot = await getDocs(collection(db, 'listatours'));
+        todosLosTours = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+        renderTours();
+        console.log(`✅ ${todosLosTours.length} tours`);
+    } catch (error) {
+        console.error('Error tours:', error);
+    }
+}
+
+function renderTours() {
+    const html = `
+        <table class="sales-table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag"></i> Num</th>
+                    <th><i class="fas fa-route"></i> Tour</th>
+                    <th><i class="fas fa-dollar-sign"></i> Precio (S/)</th>
+                    <th><i class="fas fa-percentage"></i> Comisión</th>
+                    <th><i class="fas fa-star"></i> Puntos</th>
+                    <th><i class="fas fa-cogs"></i> Acción</th>
+                </tr>
+            </thead>
+            <tbody id="toursTableBody">
+                ${todosLosTours.length > 0 ? todosLosTours.map((t, index) => renderTourRow(t, index + 1)).join('') : `
+                    <tr>
+                        <td colspan="6" class="empty-cell" style="text-align:center;padding:40px;">
+                            <i class="fas fa-route" style="font-size:48px;color:#ccc;margin-bottom:15px;"></i>
+                            <p style="margin:0;color:#666;">No hay tours registrados</p>
+                            <button onclick="showAddForm()" class="btn-refresh" style="margin-top:15px;">
+                                <i class="fas fa-plus"></i> Agregar Primer Tour
+                            </button>
+                        </td>
+                    </tr>
+                `}
+            </tbody>
+        </table>
+    `;
+    
+    $('#toursContainer').html(html);
+}
+
+function renderTourRow(tour, numero, editing = false) {
+    if (editing) {
+        return `
+            <tr class="editing-row" data-id="${tour.id}">
+                <td><strong>${numero}</strong></td>
+                <td>
+                    <input id="tourNombre" 
+                           type="text" 
+                           class="edit-input" 
+                           placeholder="Ingresa el tour" 
+                           value="${tour.nombre}" 
+                           style="width:100%;padding:8px;border:1px solid #ced4da;border-radius:4px;">
+                </td>
+                <td>
+                    <input id="tourPrecio" 
+                           type="number" 
+                           class="edit-input" 
+                           placeholder="Precio: Ingresa el valor" 
+                           value="${tour.precio || ''}" 
+                           step="0.01" 
+                           min="0"
+                           style="width:100%;padding:8px;border:1px solid #ced4da;border-radius:4px;">
+                </td>
+                <td>
+                    <input id="tourComision" 
+                           type="number" 
+                           class="edit-input" 
+                           placeholder="Ingresa Comisión: 25.00" 
+                           value="${tour.comision || ''}" 
+                           step="0.01" 
+                           min="0"
+                           style="width:100%;padding:8px;border:1px solid #ced4da;border-radius:4px;">
+                </td>
+                <td>
+                    <input id="tourPuntos" 
+                           type="number" 
+                           class="edit-input" 
+                           placeholder="Aquí también solo número: 50" 
+                           value="${tour.puntos || ''}" 
+                           min="0"
+                           style="width:100%;padding:8px;border:1px solid #ced4da;border-radius:4px;">
+                </td>
+                <td class="actions-cell">
+                    <button onclick="saveTour('${tour.id}', ${numero})" class="btn-action btn-save" title="Guardar">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button onclick="cancelEditTour('${tour.id}')" class="btn-action btn-cancel" title="Cancelar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+    
+    return `
+        <tr data-id="${tour.id}">
+            <td><strong>${numero}</strong></td>
+            <td class="tour-name">${tour.nombre}</td>
+            <td class="money-cell">${(tour.precio || 0).toFixed(2)}</td>
+            <td class="money-cell">${(tour.comision || 0).toFixed(2)}</td>
+            <td class="points-cell">${tour.puntos || 0}</td>
+            <td class="actions-cell">
+                <button onclick="editTour('${tour.id}')" class="btn-action btn-edit" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="delTour('${tour.id}')" class="btn-action btn-delete" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+}
+
+function showAddForm() {
+    // Agregar nueva fila para crear tour
+    const newRow = `
+        <tr class="editing-row new-tour-row">
+            <td><strong>${todosLosTours.length + 1}</strong></td>
+            <td>
+                <input id="tourNombre" 
+                       type="text" 
+                       class="edit-input" 
+                       placeholder="Ingresa el tour" 
+                       value="" 
+                       style="width:100%;padding:8px;border:1px solid #ced4da;border-radius:4px;">
+            </td>
+            <td>
+                <input id="tourPrecio" 
+                       type="number" 
+                       class="edit-input" 
+                       placeholder="Precio: Ingresa el valor" 
+                       value="" 
+                       step="0.01" 
+                       min="0"
+                       style="width:100%;padding:8px;border:1px solid #ced4da;border-radius:4px;">
+            </td>
+            <td>
+                <input id="tourComision" 
+                       type="number" 
+                       class="edit-input" 
+                       placeholder="Ingresa Comisión: 25.00" 
+                       value="" 
+                       step="0.01" 
+                       min="0"
+                       style="width:100%;padding:8px;border:1px solid #ced4da;border-radius:4px;">
+            </td>
+            <td>
+                <input id="tourPuntos" 
+                       type="number" 
+                       class="edit-input" 
+                       placeholder="Aquí también solo número: 50" 
+                       value="" 
+                       min="0"
+                       style="width:100%;padding:8px;border:1px solid #ced4da;border-radius:4px;">
+            </td>
+            <td class="actions-cell">
+                <button onclick="saveTour('', ${todosLosTours.length + 1})" class="btn-action btn-save" title="Guardar">
+                    <i class="fas fa-check"></i>
+                </button>
+                <button onclick="cancelAddTour()" class="btn-action btn-cancel" title="Cancelar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+    
+    // Si hay tours, agregar la nueva fila al final
+    if (todosLosTours.length > 0) {
+        $('#toursTableBody').append(newRow);
+    } else {
+        // Si no hay tours, reemplazar contenido vacío
+        $('#toursTableBody').html(newRow);
+    }
+    
+    // Focus en el primer campo
+    setTimeout(() => $('#tourNombre').focus(), 100);
+    Notificacion('📝 Agregando nuevo tour...', 'info');
+}
+
+// FUNCIONES GLOBALES - ACTUALIZADAS PARA TABLA
+window.editTour = function(id) {
+    const tour = todosLosTours.find(t => t.id === id);
+    if (!tour) return;
+    
+    const index = todosLosTours.findIndex(t => t.id === id) + 1;
+    const row = $(`tr[data-id="${id}"]`);
+    row.replaceWith(renderTourRow(tour, index, true));
+    
+    setTimeout(() => $('#tourNombre').focus(), 100);
+    Notificacion('✏️ Editando tour...', 'info');
+};
+
+window.cancelEditTour = function(id) {
+    renderTours();
+    Notificacion('❌ Edición cancelada', 'info');
+};
+
+window.cancelAddTour = function() {
+    if (todosLosTours.length > 0) {
+        $('.new-tour-row').remove();
+    } else {
+        renderTours();
+    }
+    Notificacion('❌ Nuevo tour cancelado', 'info');
+};
+
+window.delTour = async function(id) {
+    const tour = todosLosTours.find(t => t.id === id);
+    if (!tour) return;
+    
+    const confirmacion = confirm(`¿Eliminar el tour "${tour.nombre}"?\n\nEsta acción no se puede deshacer.`);
+    if (!confirmacion) return;
+    
+    try {
+        await deleteDoc(doc(db, 'listatours', id));
+        await loadTours();
+        Notificacion('🗑️ Tour eliminado correctamente', 'success');
+    } catch (error) {
+        console.error('Error eliminar tour:', error);
+        Notificacion('❌ Error al eliminar tour', 'error');
+    }
+};
+
+window.saveTour = async function(id, numero) {
+    const nombre = $('#tourNombre').val().trim();
+    const precio = parseFloat($('#tourPrecio').val()) || 0;
+    const comision = parseFloat($('#tourComision').val()) || 0;
+    const puntos = parseInt($('#tourPuntos').val()) || 0;
+    
+    // Validaciones
+    if (!nombre) {
+        Notificacion('⚠️ El nombre del tour es obligatorio', 'error');
+        $('#tourNombre').focus();
+        return;
+    }
+    
+    if (precio <= 0) {
+        Notificacion('⚠️ El precio debe ser mayor a 0', 'error');
+        $('#tourPrecio').focus();
+        return;
+    }
+    
+    const data = {
+        nombre: nombre,
+        precio: precio,
+        comision: comision,
+        puntos: puntos,
+        activo: true,
+        fecha: serverTimestamp(),
+        modificadoPor: userData.nombre || userData.usuario
+    };
+    
+    try {
+        if (id) {
+            // Actualizar tour existente
+            await updateDoc(doc(db, 'listatours', id), data);
+            Notificacion('✅ Tour actualizado correctamente', 'success');
+        } else {
+            // Crear nuevo tour
+            await addDoc(collection(db, 'listatours'), data);
+            Notificacion('✅ Tour creado correctamente', 'success');
+        }
+        
+        // Recargar lista de tours
+        await loadTours();
+        
+    } catch (error) {
+        console.error('Error guardar tour:', error);
+        Notificacion('❌ Error al guardar tour', 'error');
+    }
+};
+
+window.showAddForm = showAddForm;
 
 // ========================================
 // 📝 RENDERIZAR NOTAS
@@ -878,6 +1181,9 @@ function initEvents() {
             await refreshData();
         }
     });
+
+    $(document).on('click', '#addTour', () => showAddForm());
+
 }
 
 // ...existing code...

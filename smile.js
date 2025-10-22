@@ -44,7 +44,7 @@ $(document).on('click','.bt_cargar',()=>{
 // VARIABLES GLOBALES
 let currentMonth = '2025-09';
 let currentPage = 1;
-const ventasPorPagina = 5;
+let ventasPorPagina = 5;
 let todasLasVentas = [];
 let todosLosEmpleados = [];
 
@@ -164,6 +164,12 @@ function smileContenido(wi){
     <div class="table-header">
         <h2><i class="fas fa-clipboard-list"></i> Registro de Ventas</h2>
         <div class="table-filters">
+            <select id="mostrarn" class="filter-select">
+                <option value="5">Mostrar 5 ventas</option>
+                <option value="7">7 ventas</option>
+                <option value="10">10 ventas</option>
+                <option value="15">15 ventas</option>
+            </select>
             <select id="filterEmployee" class="filter-select">
                 <option value="">Todos los vendedores</option>
             </select>
@@ -429,7 +435,7 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
             <tr>
                 <td>${fechaFormateada}</td>
                 <td class="user-cell">
-                    <img src="${todosLosEmpleados.find(emp => emp.usuario === venta.vendedor)?.imagen || 'https://i.postimg.cc/HWMY74kP/image.png'}" class="avatar-small">
+                    <img src="${todosLosEmpleados.find(emp => emp.usuario === venta.vendedor)?.imagen || '/smile.png'}" class="avatar-small">
                     <strong>${Capi(venta.vendedor)}</strong>
                 </td>
                 <td><span class="tour-badge">${venta.tipoTour}</span></td>
@@ -606,7 +612,7 @@ function renderizarUltimoGanador(ganadorData) {
             <h3>Ganador del Mes Anterior</h3>
         </div>
         <div class="winner-info">
-            <img src="${empleado?.imagen || 'https://i.postimg.cc/HWMY74kP/image.png'}" 
+            <img src="${empleado?.imagen || '/smile.png'}" 
                  alt="${empleado?.nombre || ganadorData.ganador}">
             <div class="winner-details">
                 <h4>${empleado?.nombre || ganadorData.ganador}</h4>
@@ -651,6 +657,13 @@ function actualizarFiltroEmpleados() {
         ${empleadosOptions}
     `);
 }
+
+// Agregar después de la línea 776 (eventos auxiliares)
+$(document).on('change', '#mostrarn', function() {
+    ventasPorPagina = parseInt($(this).val());
+    currentPage = 1;
+    renderizarTablaVentas($('#filterEmployee').val());
+});
 
 // EVENTOS Y FUNCIONES AUXILIARES
 $(document).on('change', '#monthSelector', function() {
@@ -1040,7 +1053,7 @@ function getFormularioHTML() {
 
                 <div class="form-field">
                     <label title="Es un calculo importe total - comision del operador, si es nosotros, no tiene comision, si es externo depende del tour"><i class="fas fa-handshake"></i>Ganancia *</label>
-                    <input type="number" id="ganancia" step="0.01" placeholder="S/ 0.00">
+                    <input type="number" id="ganancia" step="0.01" placeholder="S/ 0.00" disabled>
                 </div>
 
                 <div class="form-field">
