@@ -988,7 +988,7 @@ function renderNotas() {
 
 
 // ========================================
-// ✏️ FUNCIONES GLOBALES
+// ✏️ FUNCIONES GLOBALES 
 // ========================================
 window.viewVenta = function(ventaId) {
     const venta = todasLasVentas.find(v => v.id === ventaId);
