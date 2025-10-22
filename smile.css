@@ -2293,3 +2293,32 @@ h1 i {
     display: none;
   }
 }
+
+/* Optimizar animaciones para mejor rendimiento */
+.tour-dropdown {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateY(-10px);
+    opacity: 0;
+    will-change: transform, opacity;
+}
+
+.tour-dropdown.active {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.tour-row {
+    transition: background-color 0.15s ease;
+}
+
+.tour-row:hover {
+    background-color: #f8f9fa;
+}
+.faltaValor{
+    border: 1px solid var(--error);
+
+}
+.okValor{
+    border: 1px solid var(--success);
+    
+}

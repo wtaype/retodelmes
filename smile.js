@@ -2,7 +2,7 @@ import $ from 'jquery';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { auth, db } from './firebase/init.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, onSnapshot, collection, query, where, writeBatch, serverTimestamp, limit} from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, onSnapshot, collection, query, where, writeBatch, serverTimestamp, limit } from "firebase/firestore";
 
 import { Capi, Mensaje, Notificacion, savels, getls, removels, accederRol, gosaves, getsaves, adrm, adtm, infoo, mis10} from './widev.js';
 
@@ -33,11 +33,12 @@ $(document).on('click','.tab-btn', function(){
 
 });
 
+// En el evento click '.bt_cargar' (línea 30), ACTUALIZAR:
 $(document).on('click','.bt_cargar',()=>{
-  const pattern=/^(im\d+|ki\d+|remote:im\d+|dirty:im\d+|dirty:ki\d+)$/;
+  const pattern=/^(im\d+|ki\d+|remote:im\d+|dirty:im\d+|dirty:ki\d+|toursSmile)$/;
   Object.keys(localStorage).filter(k=>pattern.test(k)).forEach(k=>localStorage.removeItem(k));
   Mensaje('Actualizado'); setTimeout(()=>location.reload(),800);
-}); // Actualizar la parte de imagen 
+});
 
 // ...existing code...
 
@@ -233,7 +234,8 @@ async function inicializarDashboard(wi) {
         await Promise.all([
             cargarEmpleados(),
             cargarVentas(),
-            cargarUltimoGanador()
+            cargarUltimoGanador(),
+            cargarTours()  // ← AGREGAR ESTA LÍNEA
         ]);
         
         actualizarFiltroEmpleados();
@@ -932,19 +934,58 @@ function calcularMesAnterior(mesActual) {
 }
 
 // DATOS DE TOURS OPTIMIZADOS
-const htours = [
-    {nt:1,tour:'🪂 Parapente',price:330,pts:50,com:5},{nt:2,tour:'🏜️ Buggy 1H',price:20,pts:15,com:5},
-    {nt:3,tour:'🏜️ Buggy 2H',price:25,pts:25,com:5},{nt:4,tour:'🏜️ Buggy Privado',price:180,pts:30,com:5},
-    {nt:5,tour:'🏜️ Buggy 1H-Sonia',price:20,pts:25,com:5},{nt:6,tour:'🏜️ Buggy 2H-Sonia',price:25,pts:35,com:5},
-    {nt:7,tour:'🏜️ Buggy Priv-Sonia',price:180,pts:40,com:5},{nt:8,tour:'🏜️ Buggy 2H Priv-Sonia',price:260,pts:80,com:5},
-    {nt:9,tour:'🍷 Bodegas',price:20,pts:10,com:5},{nt:10,tour:'🍷 Bodegas-Jackson',price:20,pts:20,com:5},
-    {nt:11,tour:'🍷 Bodegas Priv',price:150,pts:30,com:5},{nt:12,tour:'🍷 Bodegas Priv-Jackson',price:150,pts:40,com:5},
-    {nt:13,tour:'🏛️ City Tour-Jackson',price:200,pts:50,com:5},{nt:14,tour:'🏝️ Paracas',price:60,pts:20,com:5},
-    {nt:15,tour:'🏔️ Cañón perdidos',price:60,pts:20,com:5},{nt:16,tour:'🏍️ Cuatrimotos',price:70,pts:20,com:5},
-    {nt:17,tour:'✈️ Sobrevuelo',price:494,pts:30,com:5},{nt:18,tour:'🗿 Nazca Terrestre',price:150,pts:10,com:5},
-    {nt:19,tour:'🏄 Tablas Pro',price:50,pts:10,com:5},{nt:20,tour:'🏄 Tablas-Sonia',price:150,pts:15,com:5},
-    {nt:21,tour:'🏄 Tablas+Buggy',price:150,pts:10,com:5},{nt:22,tour:'🚙 Polaris',price:380,pts:20,com:5}
-];
+let htours = [];
+
+// CARGAR TOURS DESDE FIREBASE - SÚPER COMPACTO
+async function cargarTours() {
+    try {
+        console.log('🔄 Cargando tours...');
+        
+        // 🚀 CACHE PRIMERO
+        const cache = getls('toursSmile');
+        if (cache?.length > 0) {
+            htours = cache.map(t => ({
+                nt: t.num || Math.random(),
+                tour: t.tour,
+                price: t.precio,
+                pts: t.puntos,
+                com: t.comision || 5
+            }));
+            console.log(`✅ ${htours.length} tours desde cache`);
+            if (typeof initTourSelector === 'function') initTourSelector();
+            return;
+        }
+        
+        // 📡 DESDE FIREBASE
+        const snapshot = await getDocs(query(collection(db, 'listatours'), where('activo', '==', true)));
+        if (snapshot.empty) {
+            console.log('❌ No hay tours activos');
+            htours = [];
+            return;
+        }
+        
+        const toursData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+        
+        // Convertir formato para compatibilidad
+        htours = toursData.map(t => ({
+            nt: t.num || Math.random(),
+            tour: t.tour,
+            price: t.precio,
+            pts: t.puntos,
+            com: t.comision || 5
+        }));
+        
+        // 💾 GUARDAR CACHE (5 minutos)
+        savels('toursSmile', toursData, 300);
+        
+        console.log(`✅ ${htours.length} tours cargados desde Firebase`);
+        if (typeof initTourSelector === 'function') initTourSelector();
+        
+    } catch (error) {
+        console.error('❌ Error cargando tours:', error);
+        Notificacion('Error al cargar tours', 'error');
+    }
+}
 
 // VARIABLE PARA TOUR SELECCIONADO
 let selTour = null;
@@ -1100,73 +1141,138 @@ function getFormularioHTML() {
     `;
 }
 
+// REEMPLAZAR función initTourSelector() (línea 1080)
 function initTourSelector() {
+    // SOLO renderizar una vez al inicializar
     renderTourTable(htours);
     
-    // Toggle dropdown
+    // REMOVER listeners existentes para evitar duplicados
+    $('#tourDisplay').off('click');
+    $('#tourSearch').off('input');
+    $(document).off('click', '.tour-row');
+    
+    // Toggle dropdown - OPTIMIZADO
     $('#tourDisplay').on('click', function(e) {
         e.stopPropagation();
-        $('#tourDropdown').toggleClass('active');
-        $('#tourDisplay').toggleClass('active');
-        if ($('#tourDropdown').hasClass('active')) {
-            $('#tourSearch').focus();
+        const dropdown = $('#tourDropdown');
+        const isActive = dropdown.hasClass('active');
+        
+        if (isActive) {
+            dropdown.removeClass('active');
+            $('#tourDisplay').removeClass('active');
+        } else {
+            dropdown.addClass('active');
+            $('#tourDisplay').addClass('active');
+            // FOCUS DIFERIDO para evitar bloqueo
+            setTimeout(() => $('#tourSearch').focus(), 50);
         }
     });
     
-    // Búsqueda
+    // Búsqueda OPTIMIZADA con debounce
+    let searchTimeout;
     $('#tourSearch').on('input', function() {
-        const q = $(this).val().toLowerCase();
-        const filtered = htours.filter(t => 
-            t.tour.toLowerCase().includes(q) ||
-            t.price.toString().includes(q) ||
-            t.pts.toString().includes(q) ||
-            t.nt.toString().includes(q)
-        );
-        renderTourTable(filtered);
+        const query = $(this).val().toLowerCase();
+        
+        // CANCELAR búsqueda anterior
+        if (searchTimeout) clearTimeout(searchTimeout);
+        
+        // DEBOUNCE de 200ms
+        searchTimeout = setTimeout(() => {
+            if (query.length === 0) {
+                renderTourTableOptimized(htours);
+            } else if (query.length >= 2) {
+                const filtered = htours.filter(t => 
+                    t.tour.toLowerCase().includes(query) ||
+                    t.price.toString().includes(query)
+                );
+                renderTourTableOptimized(filtered);
+            }
+        }, 200);
     });
     
-    // Event listener para selección (movido desde renderTourTable)
-$(document).on('click', '.tour-row', function() {
-    selTour = JSON.parse($(this).attr('data-tour'));
+    // Event listener para selección - OPTIMIZADO
+    $(document).on('click', '.tour-row', function(e) {
+        e.stopPropagation();
+        
+        // OBTENER datos del dataset (más rápido que JSON.parse)
+        const tourIndex = $(this).data('index');
+        selTour = htours[tourIndex];
+        
+        if (!selTour) return;
+        
+        // ACTUALIZAR interfaz
+        $('#tourDisplay .tour-text').text(selTour.tour);
+        $('#tipoTour').val(selTour.tour);
+        $('#precioUnitario').val(selTour.price);
+        
+        // CERRAR dropdown inmediatamente
+        $('#tourDropdown').removeClass('active');
+        $('#tourDisplay').removeClass('active');
+        
+        // MARCAR como seleccionado
+        $('.tour-row').removeClass('selected');
+        $(this).addClass('selected');
+        
+        // CÁLCULOS diferidos para no bloquear UI
+        setTimeout(() => {
+            aplicarZoomTemporal('#precioUnitario');
+            calcularTotal();
+            actualizarPuntosPreview();
+        }, 50);
+    });
     
-    $('#tourDisplay .tour-text').text(selTour.tour);
-    $('#tipoTour').val(selTour.tour);
-    $('#precioUnitario').val(selTour.price);
-    
-    // Aplicar zoom temporal al precio individual
-    aplicarZoomTemporal('#precioUnitario');
-    
-    calcularTotal(); // Ya incluye calcularComision()
-    actualizarPuntosPreview();
-    
-    $('#tourDropdown').removeClass('active');
-    $('#tourDisplay').removeClass('active');
-    
-    $('.tour-row').removeClass('selected');
-    $(this).addClass('selected');
-});
-    
-    // Cerrar al hacer click fuera
+    // Cerrar al hacer click fuera - OPTIMIZADO
     $(document).on('click', function(e) {
         if (!$(e.target).closest('.tour-selector').length) {
             $('#tourDropdown').removeClass('active');
             $('#tourDisplay').removeClass('active');
         }
     });
+
+    // RENDERIZAR tabs dinámicos
+    renderizarPuntosDinamicos();
+    renderizarPreciosDinamicos(); 
 }
 
-// RENDERIZAR TABLA DE TOURS
-function renderTourTable(tours) {
-    const html = tours.map((t, i) => `
-        <tr class="tour-row" data-tour='${JSON.stringify(t)}'>
-            <td class="tour-num">${i + 1}</td>
-            <td class="tour-name">${t.tour}</td>
-            <td class="tour-price">S/ ${t.price}</td>
-            <td class="tour-pts">${t.pts} pts</td>
-        </tr>
-    `).join('');
+// NUEVA función de renderizado OPTIMIZADA
+function renderTourTableOptimized(tours) {
+    if (!tours.length) {
+        $('#tourTableBody').html('<tr><td colspan="4" style="text-align:center;color:#666;">No hay tours disponibles</td></tr>');
+        return;
+    }
     
-    $('#tourTableBody').html(html);
+    // USAR fragment para renderizado más rápido
+    const fragment = document.createDocumentFragment();
+    
+    tours.forEach((tour, index) => {
+        const row = document.createElement('tr');
+        row.className = 'tour-row';
+        row.dataset.index = htours.indexOf(tour); // USAR índice en lugar de JSON
+        
+        row.innerHTML = `
+            <td class="tour-num">${index + 1}</td>
+            <td class="tour-name">${tour.tour}</td>
+            <td class="tour-price">S/ ${tour.price}</td>
+            <td class="tour-pts">${tour.pts} pts</td>
+        `;
+        
+        fragment.appendChild(row);
+    });
+    
+    // LIMPIAR y agregar todo de una vez
+    const tbody = document.getElementById('tourTableBody');
+    tbody.innerHTML = '';
+    tbody.appendChild(fragment);
+}
+
+// ACTUALIZAR función renderTourTable original para compatibilidad
+// function renderTourTable(tours) {
+//     renderTourTableOptimized(tours);
+// }
+
+// ACTUALIZAR función renderTourTable original para compatibilidad
+function renderTourTable(tours) {
+    renderTourTableOptimized(tours);
 }
 
 // CALCULAR COMISIÓN Y GANANCIA
@@ -1240,96 +1346,12 @@ function getInfoTabsHTML() {
 
 <div class="tab-content active" id="points-tab">
     <h3><i class="fas fa-chart-bar"></i> Asignación de Puntos por Servicio</h3>
-<div class="points-grid">
-    <div class="point-item">
-        <span class="service-name">🏜️ Buggy Privado 2 Horas - Sonia</span>
-        <span class="point-value">80</span>
+    <div class="points-grid" id="pointsGrid">
+        <div class="loading-points">
+            <i class="fas fa-spinner fa-spin"></i>
+            Cargando puntos...
+        </div>
     </div>
-    <div class="point-item">
-        <span class="service-name">🪂 Parapente</span>
-        <span class="point-value">50</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏜️ Buggy Privado - Sonia</span>
-        <span class="point-value">40</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏛️ City Tour - Jackson</span>
-        <span class="point-value">40</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🍷 Tour de bodegas Privado - Jackson</span>
-        <span class="point-value">40</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏜️ Buggy 2 Horas - Sonia</span>
-        <span class="point-value">35</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🍷 Tour de bodegas Privado</span>
-        <span class="point-value">30</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏜️ Buggy Privado</span>
-        <span class="point-value">30</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">✈️ Sobrevuelo</span>
-        <span class="point-value">30</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏜️ Buggy 1 Hora - Sonia</span>
-        <span class="point-value">25</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏜️ Buggy 2 Horas</span>
-        <span class="point-value">25</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🍷 Tour de bodegas - Jackson</span>
-        <span class="point-value">20</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏝️ Tour de Paracas</span>
-        <span class="point-value">20</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏔️ Cañón de los perdidos</span>
-        <span class="point-value">20</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏍️ Cuatrimotos</span>
-        <span class="point-value">20</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🚙 Polaris</span>
-        <span class="point-value">20</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏜️ Buggy 1 Hora</span>
-        <span class="point-value">15</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🍷 Tour de bodegas</span>
-        <span class="point-value">15</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏄 Tablas Profesional - Sonia</span>
-        <span class="point-value">15</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🗿 Nazca Terrestre</span>
-        <span class="point-value">10</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏄 Renta Tablas Profesional</span>
-        <span class="point-value">10</span>
-    </div>
-    <div class="point-item">
-        <span class="service-name">🏄 Tablas Profesional + Buggy</span>
-        <span class="point-value">10</span>
-    </div>
-</div>
 </div>
 
             <div class="tab-content" id="rules-tab">
@@ -1362,98 +1384,18 @@ function getInfoTabsHTML() {
                 </div>
             </div>
 
-   <div class="tab-content" id="prices-tab">
+      <div class="tab-content" id="prices-tab">
     <h3><i class="fas fa-tags"></i> Precios de Tours - Venta Mínima</h3>
-    <div class="prices-grid">
-        <div class="price-item">
-            <span class="service-name">🪂 Parapente</span>
-            <span class="service-price">S/ 330.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏜️ Buggy 1 Hora</span>
-            <span class="service-price">S/ 20.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏜️ Buggy 2 Horas</span>
-            <span class="service-price">S/ 25.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏜️ Buggy Privado</span>
-            <span class="service-price">S/ 180.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏜️ Buggy 1 Hora - Sonia</span>
-            <span class="service-price">S/ 25.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏜️ Buggy 2 Horas - Sonia</span>
-            <span class="service-price">S/ 35.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏜️ Buggy Privado - Sonia</span>
-            <span class="service-price">S/ 200.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🍷 Tour de bodegas</span>
-            <span class="service-price">S/ 30.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🍷 Tour de bodegas - Jackson</span>
-            <span class="service-price">S/ 30.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🍷 Tour de bodegas Privado</span>
-            <span class="service-price">S/ 150.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🍷 Tour de bodegas Privado - Jackson</span>
-            <span class="service-price">S/ 150.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏛️ City Tour - Jackson</span>
-            <span class="service-price">S/ 200.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏝️ Tour de Paracas</span>
-            <span class="service-price">S/ 70.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏔️ Cañón de los perdidos</span>
-            <span class="service-price">S/ 70.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏍️ Cuatrimotos</span>
-            <span class="service-price">S/ 70.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">✈️ Sobrevuelo</span>
-            <span class="service-price">S/ 200.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🗿 Nazca Terrestre</span>
-            <span class="service-price">S/ 150.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏄 Renta Tablas Profesional</span>
-            <span class="service-price">S/ 50.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏄 Tablas Profesional - Sonia</span>
-            <span class="service-price">S/ 150.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🏄 Tablas Profesional + Buggy</span>
-            <span class="service-price">S/ 150.00</span>
-        </div>
-        <div class="price-item">
-            <span class="service-name">🚙 Polaris</span>
-            <span class="service-price">S/ 380.00</span>
+    <div class="prices-grid" id="pricesGrid">
+        <div class="loading-prices">
+            <i class="fas fa-spinner fa-spin"></i>
+            Cargando precios...
         </div>
     </div>
     <div class="price-note">
-        <p><i class="fas fa-info-circle"></i> <strong>Nota:</strong> City Tour incluye S/ 10.00 por persona para actividad de chocotejas</p>
+        <p><i class="fas fa-info-circle"></i> <strong>Nota:</strong> Precios actualizados automáticamente desde la base de datos</p>
     </div>
-</div>
+    </div>
 
             </div>
         </section>
@@ -1461,6 +1403,41 @@ function getInfoTabsHTML() {
 }
 
 // ...existing code...
+// Agregar después de la función cargarTours()
+function renderizarPuntosDinamicos() {
+    if (!htours.length) {
+        $('#pointsGrid').html('<p style="text-align:center;color:#666;">No hay tours disponibles</p>');
+        return;
+    }
+    
+    // Ordenar por puntos (mayor a menor)
+    const toursOrdenados = [...htours].sort((a, b) => b.pts - a.pts);
+    
+    const html = toursOrdenados.map(tour => `
+        <div class="point-item">
+            <span class="service-name">${tour.tour}</span>
+            <span class="point-value">${tour.pts}</span>
+        </div>
+    `).join('');
+    
+    $('#pointsGrid').html(html);
+}
+
+function renderizarPreciosDinamicos() {
+    if (!htours.length) {
+        $('#pricesGrid').html('<p style="text-align:center;color:#666;">No hay precios disponibles</p>');
+        return;
+    }
+    
+    const html = htours.map(tour => `
+        <div class="price-item">
+            <span class="service-name">${tour.tour}</span>
+            <span class="service-price">S/ ${tour.price.toFixed(2)}</span>
+        </div>
+    `).join('');
+    
+    $('#pricesGrid').html(html);
+}
 
 // JQUERY CONTENIDO JS [Start] 
 // FUNCIONES UTILES [START]
@@ -1518,9 +1495,26 @@ $(document).on('click', '.btn-save', async (e) => {
             esVentaExterna: esVentaExterna
         };
 
-        // Validaciones
-        if (!formData.nombreCliente || !formData.horaSalida || !formData.fechaTour) {
-            Notificacion('Por favor completa todos los campos obligatorios', 'error');
+        // VALIDACIÓN VISUAL COMPACTA
+        const campos = [
+            [selTour, '#tourDisplay', 'tour'],
+            [formData.nombreCliente, '#nombreCliente', 'cliente'],
+            [formData.horaSalida, '#horaSalida', 'hora'],
+            [formData.fechaTour, '#fechaTour', 'fecha'],
+            [formData.Operador, '#Operador', 'operador'],
+            [formData.Comentario, '#Comentario', 'comentario']
+        ];
+
+        $('.faltaValor, .okValor').removeClass('faltaValor okValor');
+        const faltantes = campos.filter(([val, sel, nom]) => {
+            const ok = val && val.toString().trim();
+            $(sel).addClass(ok ? 'okValor' : 'faltaValor');
+            return !ok ? nom : null;
+        }).map(([,,nom]) => nom).filter(Boolean);
+
+        if (faltantes.length) {
+            Notificacion(`⚠️ Completa: ${faltantes.join(', ')}`, 'error');
+            $('.faltaValor').first().focus();
             return;
         }
 
@@ -1565,6 +1559,15 @@ $(document).on('click', '.btn-save', async (e) => {
 // EVENTOS ACTUALIZADOS PARA CHECKBOXES Y CAMPOS
 $(document).on('change', '#vtJulio, #vtSonia, #vtExterna', function() {
     actualizarPuntosPreview();
+});
+
+// Limpiar validación al escribir - COMPACTO
+$(document).on('input change', '#nombreCliente, #horaSalida, #fechaTour, #Operador, #Comentario', function() {
+    $(this).removeClass('faltaValor').addClass('okValor');
+});
+
+$(document).on('click', '.tour-row', function() {
+    $('#tourDisplay').removeClass('faltaValor').addClass('okValor');
 });
 
 // Resto de eventos del formulario
