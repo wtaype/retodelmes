@@ -605,7 +605,7 @@ body {
 
 .avatar-small {
     width: 24px;
-    height: 24px;
+    height: 3.6vh;
     border-radius: var(--radius-full);
     border: 1px solid var(--border-color);
     object-fit: cover;
@@ -1622,7 +1622,7 @@ body {
 
 .avatar-small {
     width: 24px;
-    height: 24px;
+    height: 3.6vh;
     border-radius: var(--radius-full);
     border: 1px solid var(--border-color);
     object-fit: cover;

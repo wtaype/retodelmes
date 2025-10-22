@@ -667,7 +667,9 @@ h1 i {
 .form-grid .form-field:nth-child(2) {
   grid-column: span 1;
 }
-
+.form-grid .form-field:last-child {
+  grid-column: span 2;
+}
 
 .form-field {
   display: flex;

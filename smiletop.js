@@ -328,28 +328,41 @@ async function loadNotas() {
     try {
         console.log('🔄 Cargando notas...');
         
+        // 🚀 CACHE PRIMERO
         const cache = getls('notasSmileTop');
-        if (cache && cache.length > 0) {
+        if (cache?.length > 0) {
             notasData = cache;
             console.log(`✅ ${notasData.length} notas desde cache`);
+            renderNotas();
             return;
         }
         
-        // Si no hay cache, crear nota por defecto
-        notasData = [
-            { 
-                id: 1, 
-                titulo: 'Noticias a trabajadores', 
-                contenido: 'Escribe aquí las noticias importantes para el equipo...', 
-                editando: false,
-                fechaCreacion: new Date().toISOString()
-            }
-        ];
+        // 📡 DESDE FIREBASE
+        const snapshot = await getDocs(collection(db, 'notas'));
+        if (snapshot.empty) {
+            console.log('📭 No hay notas, creando por defecto');
+            notasData = [];
+            renderNotas();
+            return;
+        }
         
+        notasData = snapshot.docs.map(doc => ({
+            id: doc.id,
+            titulo: 'Noticias a trabajadores',
+            contenido: doc.data().nota || '',
+            editando: false,
+            ...doc.data()
+        }));
+        
+        // 💾 CACHE (12 horas)
         savels('notasSmileTop', notasData, 720);
-        console.log('✅ Notas por defecto creadas');
+        console.log(`✅ ${notasData.length} notas cargadas desde Firebase`);
+        renderNotas();
+        
     } catch (error) {
         console.error('❌ Error load notas:', error);
+        notasData = [];
+        renderNotas();
     }
 }
 
@@ -947,22 +960,22 @@ function renderNotas() {
     
     const notasHTML = notasData.map(nota => `
         <div class="note-item" data-id="${nota.id}">
-            <h4>${nota.titulo}</h4>
+            <h4>${nota.titulo || 'Nota'}</h4>
             <textarea 
                 class="note-content" 
                 ${!nota.editando ? 'disabled' : ''} 
-                placeholder="Escribe aquí..."
-            >${nota.contenido || ''}</textarea>
+                placeholder="Escribe aquí tu nota..."
+            >${nota.nota || nota.contenido || ''}</textarea>
             <div class="note-actions">
                 ${nota.editando ? `
-                    <button class="btn-save" onclick="saveNota(${nota.id})">
+                    <button class="btn-save" onclick="saveNota('${nota.id}')">
                         <i class="fas fa-save"></i> 
                     </button>
-                    <button class="btn-cancel" onclick="cancelNota(${nota.id})">
+                    <button class="btn-cancel" onclick="cancelNota('${nota.id}')">
                         <i class="fas fa-times"></i> 
                     </button>
                 ` : `
-                    <button class="btn-edit" onclick="editNota(${nota.id})">
+                    <button class="btn-edit" onclick="editNota('${nota.id}')">
                         <i class="fas fa-edit"></i> 
                     </button>
                 `}
@@ -1034,37 +1047,104 @@ window.cancelEdit = function(ventaId) {
     Notificacion('Edición cancelada', 'info');
 };
 
+// ACTUALIZAR función editNota (línea 1080)
 window.editNota = function(notaId) {
-    const nota = notasData.find(n => n.id === notaId);
+    console.log('📝 Editando nota:', notaId);
+    const nota = notasData.find(n => n.id == notaId); // Usar == para comparación flexible
     if (nota) {
         nota.editando = true;
         renderNotas();
-        Notificacion('Editando nota...', 'info');
-    }
-};
-
-window.saveNota = function(notaId) {
-    const nota = notasData.find(n => n.id === notaId);
-    const contenido = $(`.note-item[data-id="${notaId}"] .note-content`).val();
-    
-    if (nota) {
-        nota.contenido = contenido;
-        nota.editando = false;
-        nota.fechaModificacion = new Date().toISOString();
         
-        savels('notasSmileTop', notasData, 720);
-        renderNotas();
-        Notificacion('📝 Nota guardada correctamente', 'success');
+        // Focus en el textarea después de renderizar
+        setTimeout(() => {
+            $(`.note-item[data-id="${notaId}"] .note-content`).focus();
+        }, 100);
+        
+        Notificacion('✏️ Editando nota...', 'info');
+    } else {
+        console.error('❌ Nota no encontrada:', notaId);
+        Notificacion('❌ Error: Nota no encontrada', 'error');
     }
 };
 
-window.cancelNota = function(notaId) {
-    const nota = notasData.find(n => n.id === notaId);
-    if (nota) {
-        nota.editando = false;
-        renderNotas();
-        Notificacion('Edición cancelada', 'info');
+
+// ACTUALIZAR función saveNota (línea 1095)
+window.saveNota = async function(notaId) {
+    console.log('💾 Guardando nota:', notaId);
+    
+    const contenido = $(`.note-item[data-id="${notaId}"] .note-content`).val().trim();
+    
+    if (!contenido) {
+        Notificacion('⚠️ La nota no puede estar vacía', 'error');
+        $(`.note-item[data-id="${notaId}"] .note-content`).focus();
+        return;
     }
+    
+    try {
+        const data = {
+            nota: contenido,
+            creadoPor: userData.nombre || userData.usuario || 'Admin',
+            actualizadoPor: userData.nombre || userData.usuario || 'Admin',
+            fechaCreacion: serverTimestamp()
+        };
+        
+        if (notaId && notaId !== 'new') {
+            // ACTUALIZAR EXISTENTE
+            await updateDoc(doc(db, 'notas', notaId.toString()), data);
+            
+            // Actualizar en array local
+            const nota = notasData.find(n => n.id == notaId);
+            if (nota) {
+                nota.nota = contenido;
+                nota.editando = false;
+            }
+            
+            Notificacion('✅ Nota actualizada', 'success');
+        } else {
+            // CREAR NUEVA
+            const docId = Date.now().toString();
+            await setDoc(doc(db, 'notas', docId), data);
+            
+            // Remover nota temporal y agregar la real
+            notasData = notasData.filter(n => n.id !== 'new');
+            notasData.push({
+                id: docId,
+                titulo: 'Nota',
+                nota: contenido,
+                editando: false,
+                ...data
+            });
+            
+            Notificacion('✅ Nota creada', 'success');
+        }
+        
+        // 🗑️ LIMPIAR CACHE Y RECARGAR
+        removels('notasSmileTop');
+        renderNotas();
+        
+    } catch (error) {
+        console.error('❌ Error guardar nota:', error);
+        Notificacion('❌ Error al guardar: ' + error.message, 'error');
+    }
+};
+
+// ACTUALIZAR función cancelNota (línea 1140)
+window.cancelNota = function(notaId) {
+    console.log('❌ Cancelando edición:', notaId);
+    
+    if (notaId === 'new') {
+        // REMOVER nota nueva
+        notasData = notasData.filter(n => n.id !== 'new');
+    } else {
+        // CANCELAR edición
+        const nota = notasData.find(n => n.id == notaId);
+        if (nota) {
+            nota.editando = false;
+        }
+    }
+    
+    renderNotas();
+    Notificacion('❌ Edición cancelada', 'info');
 };
 
 // ...existing code...
@@ -1189,12 +1269,13 @@ function initEvents() {
     
     // Actualizar el botón "Actualizar" para incluir tours (línea 1430)
     $(document).on('click', '.bt_cargar', async () => {
-        // Limpiar caches para forzar recarga
-        removels('usuariosSmileTop');
-        removels('toursSmileTop');
-        
-        await refreshData();
-        await loadTours(); // Recargar tours también
+    removels('usuariosSmileTop');
+    removels('toursSmileTop');
+    removels('notasSmileTop'); // ← AGREGAR ESTA LÍNEA
+    
+    await refreshData();
+    await loadTours();
+    await loadNotas(); // ← AGREGAR ESTA LÍNEA
     });
     
     // 📊 EXPORTAR A EXCEL
@@ -1251,20 +1332,21 @@ function initEvents() {
         }
     });
     
-    // Agregar nota
-    $(document).on('click', '#addNote', () => {
-        const nuevaNota = {
-            id: Date.now(),
-            titulo: 'Nueva Nota',
-            contenido: '',
-            editando: true,
-            fechaCreacion: new Date().toISOString()
-        };
-        
-        notasData.push(nuevaNota);
-        renderNotas();
-        Notificacion('Nueva nota agregada', 'info');
-    });
+
+// ACTUALIZAR función addNote (línea 1200)
+$(document).on('click', '#addNote', () => {
+    const nuevaNota = {
+        id: 'new',
+        titulo: 'Nueva Nota',
+        contenido: '',
+        editando: true,
+        fechaCreacion: new Date().toISOString()
+    };
+    
+    notasData.push(nuevaNota);
+    renderNotas();
+    Notificacion('📝 Agregando nueva nota...', 'info');
+});
 
     // Filtro de cantidad
     $(document).on('change', '#itemsFilter', async function() {

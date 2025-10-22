@@ -35,11 +35,10 @@ $(document).on('click','.tab-btn', function(){
 
 // En el evento click '.bt_cargar' (línea 30), ACTUALIZAR:
 $(document).on('click','.bt_cargar',()=>{
-  const pattern=/^(im\d+|ki\d+|remote:im\d+|dirty:im\d+|dirty:ki\d+|toursSmile)$/;
+  const pattern=/^(im\d+|ki\d+|remote:im\d+|dirty:im\d+|dirty:ki\d+|toursSmile|notasSmile)$/;
   Object.keys(localStorage).filter(k=>pattern.test(k)).forEach(k=>localStorage.removeItem(k));
   Mensaje('Actualizado'); setTimeout(()=>location.reload(),800);
 });
-
 // ...existing code...
 
 // VARIABLES GLOBALES
@@ -223,6 +222,59 @@ function smileContenido(wi){
     inicializarDashboard(wi);
 }
 
+// AGREGAR función para cargar notas (línea 950)
+async function cargarNotas() {
+    try {
+        console.log('🔄 Cargando notas admin...');
+        
+        // 🚀 CACHE PRIMERO
+        const cache = getls('notasSmile');
+        if (cache?.length > 0) {
+            console.log(`✅ ${cache.length} notas desde cache`);
+            renderizarNotas(cache);
+            return;
+        }
+        
+        // 📡 DESDE FIREBASE
+        const snapshot = await getDocs(collection(db, 'notas'));
+        if (snapshot.empty) {
+            console.log('📭 No hay notas');
+            renderizarNotas([]);
+            return;
+        }
+        
+        const notasData = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        // 💾 CACHE (10 minutos)
+        savels('notasSmile', notasData, 600);
+        console.log(`✅ ${notasData.length} notas cargadas`);
+        renderizarNotas(notasData);
+        
+    } catch (error) {
+        console.error('❌ Error cargar notas:', error);
+        renderizarNotas([]);
+    }
+}
+
+// REEMPLAZAR función renderizarNotas (línea ~210)
+function renderizarNotas(notas) {
+    const html = notas.length > 0 ? `
+        ${notas.map(nota => `<li>${nota.nota}</li>`).join('')}
+        <div style="font-size:var(--fz_s2);padding:.5vh 0">
+            <i class="fas fa-sync"></i> Última actualización: ${new Date().toLocaleTimeString('es-ES')}
+        </div>
+    ` : `
+        <div style="color:#666;font-style:italic;text-align:center;padding:20px;">
+            <i class="fas fa-info-circle"></i> No hay noticias disponibles
+        </div>
+    `;
+    
+    $('.descripcion_com').html(html);
+}
+
 // ACTUALIZAR FUNCIÓN DE INICIALIZACIÓN
 async function inicializarDashboard(wi) {
     try {
@@ -235,7 +287,8 @@ async function inicializarDashboard(wi) {
             cargarEmpleados(),
             cargarVentas(),
             cargarUltimoGanador(),
-            cargarTours()  // ← AGREGAR ESTA LÍNEA
+            cargarTours(),
+            cargarNotas()  // ← AGREGAR ESTA LÍNEA
         ]);
         
         actualizarFiltroEmpleados();
@@ -798,7 +851,6 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
     calcularComision(); // Recalcular al cargar datos
     $('#horaSalida').val(venta.horaSalida);
     $('#Operador').val(venta.Operador);
-    $('#Viaje').val(venta.Viaje || '');
     $('#Comentario').val(venta.Comentario);
     $('#fechaTour').val(venta.fechaTour);
     $('#estadoPago').val(venta.estadoPago || 'pagado');
@@ -1038,11 +1090,6 @@ function getFormularioHTML() {
                 <div class="form-field">
                     <label><i class="fas fa-user"></i>Nombre del Cliente *</label>
                     <input type="text" id="nombreCliente" required placeholder="Nombre de cliente / calle">
-                </div>
-
-                <div class="form-field">
-                    <label><i class="fas fa-plane"></i>Motivo de Viaje</label>
-                    <input type="text" id="Viaje" placeholder="Turismo, trabajo, familia...">
                 </div>
 
                 <div class="form-field">
@@ -1481,7 +1528,6 @@ $(document).on('click', '.btn-save', async (e) => {
             ganancia: parseFloat($('#ganancia').val()) || 0,
             horaSalida: $('#horaSalida').val(),
             Operador: $('#Operador').val(),
-            Viaje: $('#Viaje').val(),
             Comentario: $('#Comentario').val(),
             fechaTour: $('#fechaTour').val(),
             estadoPago: $('#estadoPago').val(),
