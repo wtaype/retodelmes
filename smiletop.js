@@ -2,7 +2,7 @@ import $ from 'jquery';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { auth, db } from './firebase/init.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { getDocs, doc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, startAfter, serverTimestamp, addDoc } from "firebase/firestore";
+import { getDocs, doc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, startAfter, serverTimestamp, addDoc, setDoc } from "firebase/firestore";
 import { Capi, Mensaje, Notificacion, savels, getls, removels, wiTema, infoo, fechaLetra,mis10 } from './widev.js';
 
 // ========================================
@@ -160,8 +160,15 @@ function getHTML() {
                 <!-- GESTIÓN DE TOURS COMPACTA -->
                 <section class="table-section">
                     <div class="table-header">
-                        <h2><i class="fas fa-route"></i> Tours</h2>
-                        <button id="addTour" class="btn-refresh">+ Tour</button>
+                        <h2><i class="fas fa-route"></i> Administrar Tours</h2>
+                        <div class="table-stats">
+                            <button id="refreshTours" class="btn-refresh" onclick="refreshToursFromDB()">
+                                <i class="fas fa-sync"></i> Actualizar
+                            </button>
+                            <button id="addTour" class="btn-refresh">
+                                <i class="fas fa-plus"></i> Agregar
+                            </button>
+                        </div>
                     </div>
                     
                     <div id="toursContainer">
@@ -558,8 +565,19 @@ function updatePagination() {
 // ========================================
 async function loadTours() {
     try {
-        console.log('🔄 Cargando tours desde Firestore...');
+        console.log('🔄 Cargando tours...');
         
+        // 🚀 VERIFICAR CACHE PRIMERO
+        const cache = getls('toursSmileTop');
+        if (cache && cache.length > 0) {
+            todosLosTours = cache;
+            console.log(`✅ ${todosLosTours.length} tours desde cache`);
+            renderTours();
+            return;
+        }
+        
+        // Si no hay cache, cargar desde Firestore
+        console.log('📡 Cargando desde Firestore...');
         const snapshot = await getDocs(collection(db, 'listatours'));
         
         if (snapshot.empty) {
@@ -574,7 +592,10 @@ async function loadTours() {
             ...doc.data()
         }));
         
-        console.log(`✅ ${todosLosTours.length} tours cargados:`, todosLosTours);
+        // 💾 GUARDAR EN CACHE (5 minutos)
+        savels('toursSmileTop', todosLosTours, 300);
+        
+        console.log(`✅ ${todosLosTours.length} tours cargados y guardados en cache`);
         renderTours();
         
     } catch (error) {
@@ -630,17 +651,21 @@ function renderTours() {
     console.log('✅ Tours renderizados en interfaz');
 }
 
+// Actualizar función renderTourRow para mostrar el número desde la base de datos
 function renderTourRow(tour, numero, editing = false) {
+    // Usar tour.num si existe, sino usar numero secuencial
+    const displayNum = tour.num || numero;
+    
     if (editing) {
         return `
             <tr class="editing-row" data-id="${tour.id}">
-                <td><strong>${numero}</strong></td>
+                <td><strong>${displayNum}</strong></td>
                 <td>
                     <input id="tourNombre" 
                            type="text" 
                            class="edit-input" 
                            placeholder="Ingresa el tour" 
-                           value="${tour.nombre}" 
+                           value="${tour.tour || tour.nombre || ''}" 
                            style="width:100%;padding:8px;border:1px solid #ced4da;border-radius:4px;">
                 </td>
                 <td>
@@ -673,7 +698,7 @@ function renderTourRow(tour, numero, editing = false) {
                            style="width:100%;padding:8px;border:1px solid #ced4da;border-radius:4px;">
                 </td>
                 <td class="actions-cell">
-                    <button onclick="saveTour('${tour.id}', ${numero})" class="btn-action btn-save" title="Guardar">
+                    <button onclick="saveTour('${tour.id}', ${displayNum})" class="btn-action btn-save" title="Guardar">
                         <i class="fas fa-check"></i>
                     </button>
                     <button onclick="cancelEditTour('${tour.id}')" class="btn-action btn-cancel" title="Cancelar">
@@ -686,8 +711,8 @@ function renderTourRow(tour, numero, editing = false) {
     
     return `
         <tr data-id="${tour.id}">
-            <td><strong>${numero}</strong></td>
-            <td class="tour-name">${tour.nombre}</td>
+            <td><strong>${displayNum}</strong></td>
+            <td class="tour-name">${tour.tour || tour.nombre || 'Tour sin nombre'}</td>
             <td class="money-cell">${(tour.precio || 0).toFixed(2)}</td>
             <td class="money-cell">${(tour.comision || 0).toFixed(2)}</td>
             <td class="points-cell">${tour.puntos || 0}</td>
@@ -798,16 +823,21 @@ window.cancelAddTour = function() {
     Notificacion('❌ Nuevo tour cancelado', 'info');
 };
 
+// Actualizar delTour para limpiar cache
 window.delTour = async function(id) {
     const tour = todosLosTours.find(t => t.id === id);
     if (!tour) return;
     
-    const confirmacion = confirm(`¿Eliminar el tour "${tour.nombre}"?\n\nEsta acción no se puede deshacer.`);
+    const confirmacion = confirm(`¿Eliminar el tour "${tour.tour || tour.nombre}"?\n\nEsta acción no se puede deshacer.`);
     if (!confirmacion) return;
     
     try {
         await deleteDoc(doc(db, 'listatours', id));
+        
+        // 🗑️ LIMPIAR CACHE Y RECARGAR
+        removels('toursSmileTop');
         await loadTours();
+        
         Notificacion('🗑️ Tour eliminado correctamente', 'success');
     } catch (error) {
         console.error('Error eliminar tour:', error);
@@ -815,6 +845,15 @@ window.delTour = async function(id) {
     }
 };
 
+// Agregar función para forzar recarga desde Firestore
+window.refreshToursFromDB = async function() {
+    console.log('🔄 Forzando recarga desde Firebase...');
+    removels('toursSmileTop');
+    await loadTours();
+    Notificacion('✅ Tours actualizados desde Firebase', 'success');
+};
+
+// Actualizar la función saveTour para limpiar cache
 window.saveTour = async function(id, numero) {
     const nombre = $('#tourNombre').val().trim();
     const precio = parseFloat($('#tourPrecio').val()) || 0;
@@ -834,33 +873,53 @@ window.saveTour = async function(id, numero) {
         return;
     }
     
-    const data = {
-        nombre: nombre,
-        precio: precio,
-        comision: comision,
-        puntos: puntos,
-        activo: true,
-        fecha: serverTimestamp(),
-        modificadoPor: userData.nombre || userData.usuario
-    };
-    
     try {
         if (id) {
-            // Actualizar tour existente
+            // ACTUALIZAR TOUR EXISTENTE
+            const data = {
+                activo: true,
+                comision: comision,
+                tour: nombre,
+                precio: precio,
+                puntos: puntos,
+                actualizadoPor: userData.nombre || userData.usuario || 'Admin',
+                fecha: serverTimestamp()
+            };
+            
             await updateDoc(doc(db, 'listatours', id), data);
             Notificacion('✅ Tour actualizado correctamente', 'success');
+            
         } else {
-            // Crear nuevo tour
-            await addDoc(collection(db, 'listatours'), data);
-            Notificacion('✅ Tour creado correctamente', 'success');
+            // CREAR NUEVO TOUR
+            const nextNum = todosLosTours.length > 0 
+                ? Math.max(...todosLosTours.map(t => t.num || 0)) + 1 
+                : 1;
+            
+            const data = {
+                activo: true,
+                comision: comision,
+                tour: nombre,
+                precio: precio,
+                puntos: puntos,
+                num: nextNum,
+                creadoPor: userData.nombre || userData.usuario || 'Admin',
+                actualizadoPor: userData.nombre || userData.usuario || 'Admin',
+                fecha: serverTimestamp()
+            };
+            
+            const docId = Date.now().toString();
+            await setDoc(doc(db, 'listatours', docId), data);
+            
+            Notificacion(`✅ Tour #${nextNum} creado correctamente`, 'success');
         }
         
-        // Recargar lista de tours
+        // 🗑️ LIMPIAR CACHE Y RECARGAR
+        removels('toursSmileTop');
         await loadTours();
         
     } catch (error) {
-        console.error('Error guardar tour:', error);
-        Notificacion('❌ Error al guardar tour', 'error');
+        console.error('❌ Error guardar tour:', error);
+        Notificacion('❌ Error al guardar tour: ' + error.message, 'error');
     }
 };
 
@@ -1128,9 +1187,14 @@ function initEvents() {
         }
     });
     
-    // Refresh data
+    // Actualizar el botón "Actualizar" para incluir tours (línea 1430)
     $(document).on('click', '.bt_cargar', async () => {
+        // Limpiar caches para forzar recarga
+        removels('usuariosSmileTop');
+        removels('toursSmileTop');
+        
         await refreshData();
+        await loadTours(); // Recargar tours también
     });
     
     // 📊 EXPORTAR A EXCEL
