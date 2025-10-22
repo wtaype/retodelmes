@@ -715,6 +715,10 @@ h1 i {
   font-weight: 700;
 }
 
+#formularioVenta option {
+    color: var(--mco);
+    font-weight: 600;
+}
 /* =============================================
    ACCIONES DEL FORMULARIO
    ============================================= */

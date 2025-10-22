@@ -1093,7 +1093,12 @@ function getFormularioHTML() {
                 </div>
 
                 <div class="form-field">
-                    <label><i class="fas fa-id-card"></i>Tipo de Documento (opcional)</label>
+                    <label><i class="fas fa-clock"></i>Hora de salida *</label>
+                    <input type="text" id="horaSalida" placeholder="2 HORAS -5PM" required>
+                </div>
+
+                <div class="form-field">
+                    <label><i class="fas fa-id-card"></i>Tipo de Documento</label>
                     <select id="tipoDocumento">
                         <option value="dni">DNI</option>
                         <option value="pasaporte">Pasaporte</option>
@@ -1129,31 +1134,8 @@ function getFormularioHTML() {
                 </div>
 
                 <div class="form-field">
-                    <label><i class="fas fa-calculator"></i>Importe x Cobrar(Total)</label>
+                    <label><i class="fas fa-calculator"></i>Total por Cobrar(S/)</label>
                     <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00" disabled>
-                </div>
-
-
-                <div class="form-field">
-                    <label><i class="fas fa-calendar-day"></i>Fecha *</label>
-                    <input type="date" id="fechaTour" required>
-                </div>
-
-                <div class="form-field">
-                    <label title="Es un calculo importe total - comision del operador, si es nosotros, no tiene comision, si es externo depende del tour"><i class="fas fa-handshake"></i>Ganancia *</label>
-                    <input type="number" id="ganancia" step="0.01" placeholder="S/ 0.00" disabled>
-                </div>
-
-                <div class="form-field">
-                    <label><i class="fas fa-credit-card"></i>Método de Pago</label>
-                    <select id="metodoPago">
-                        <option value="">Seleccionar...</option>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Tarjeta">Tarjeta</option>
-                        <option value="Transferencia">Transferencia</option>
-                        <option value="Yape">Yape</option>
-                        <option value="Plin">Plin</option>
-                    </select>
                 </div>
 
                 <div class="form-field">
@@ -1162,13 +1144,31 @@ function getFormularioHTML() {
                 </div>
 
                 <div class="form-field">
-                    <label><i class="fas fa-clock"></i>Hora de salida *</label>
-                    <input type="text" id="horaSalida" placeholder="2 HORAS -5PM" required>
+                    <label><i class="fas fa-credit-card"></i>Método de Pago</label>
+                    <select id="metodoPago">
+                    <option value="">Seleccionar...</option>
+                        <option value="Tarjeta">Tarjeta de Débito/Crédito</option>
+                        <option value="Efectivo">Efectivo en Cash</option>
+                        <option value="Transferencia">Transferencia Bancaria</option>
+                        <option value="Yape">Yape</option>
+                        <option value="Plin">Plin</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label title="Es un calculo importe total - comision del operador, si es nosotros, no tiene comision, si es externo depende del tour">
+                    <i class="fas fa-handshake"></i>Ganancia Estimada*</label>
+                    <input type="number" id="ganancia" step="0.01" placeholder="S/ 0.00" disabled>
+                </div>
+
+                <div class="form-field">
+                    <label><i class="fas fa-calendar-day"></i>Fecha *</label>
+                    <input type="date" id="fechaTour" required>
                 </div>
 
                 <div class="form-field">
                     <label><i class="fa-solid fa-comment"></i>Comentario/Anotes (Opcional) *</label>
-                    <input type="text" id="Comentario" placeholder="Escribe notas de tu venta" required>
+                    <input type="text" id="Comentario" placeholder="Escribe notas de tu venta(opcional)" required>
                 </div>
             </div>
 
