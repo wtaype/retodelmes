@@ -515,7 +515,7 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
                 <td>S/ ${(venta.precioUnitario || 0).toFixed(2)}</td>
                 <td><span class="status-badge ${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'paid' : 'pending'}">
                     <i class="fas fa-${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'check-circle' : 'clock'}"></i> 
-                    ${venta.estadoPago?.toUpperCase()}
+                    ${obtenerEstadoSimplificado(venta.estadoPago)}
                 </span></td>
                 <td>S/ ${(venta.ganancia || 0).toFixed(2)}</td>
                 <td><span class="points-badge"><i class="fas fa-star"></i> ${venta.puntos || 0}</span></td>
@@ -526,6 +526,16 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
     
     $('#salesTableBody').html(filas || `<tr><td colspan="11" class="empty-cell"><i class="fas fa-inbox"></i> No hay ventas para mostrar</td></tr>`);
     renderizarPaginacion(totalPaginas);
+}
+
+// 📋 FUNCIÓN PARA SIMPLIFICAR ESTADOS DE PAGO
+function obtenerEstadoSimplificado(estadoPago) {
+    const estados = {
+        'pagado': 'PAGADO',
+        'cobrado': 'PAGADO', 
+        'cobrar': 'DEUDA'
+    };
+    return estados[estadoPago] || 'DEUDA';
 }
 
 // FUNCIÓN PARA OBTENER ETIQUETAS DE VENTAS ESPECIALES
@@ -883,6 +893,7 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
     calcularComision(); // Recalcular al cargar datos
     $('#horaSalida').val(venta.horaSalida);
     $('#Operador').val(venta.Operador);
+    $('#PagoOperador').val(venta.PagoOperador || 0); // ← AGREGAR ESTA LÍNEA
     $('#Comentario').val(venta.Comentario);
     $('#fechaTour').val(venta.fechaTour);
     $('#estadoPago').val(venta.estadoPago || 'pagado');
@@ -956,7 +967,7 @@ function limpiarEstadoFormulario() {
     $('.tour-row').removeClass('selected');
     
     // 🔒 MANTENER campos disabled que deben estarlo
-    $('#importeTotal, #ganancia').prop('disabled', true);
+    $('#importeTotal').prop('disabled', true);
 }
 
 // FUNCIÓN PARA ELIMINAR VENTA COMPLETA
@@ -1177,7 +1188,7 @@ function getFormularioHTML() {
                 </div>
 
                 <div class="form-field">
-                    <label><i class="fas fa-calculator"></i>Total por Cobrar(S/)</label>
+                    <label><i class="fas fa-calculator"></i>Total por Pagar(S/)</label>
                     <input type="number" id="importeTotal" step="0.01" placeholder="S/ 0.00" disabled>
                 </div>
 
@@ -1187,10 +1198,17 @@ function getFormularioHTML() {
                 </div>
 
                 <div class="form-field">
-                    <label><i class="fas fa-money-check-alt"></i>Pagado?</label>
+                    <label><i class="fas fa-money-bill"></i>Pago al operador (S/) *</label>
+                    <input type="number" id="PagoOperador" step="0.01" placeholder="0.00" required>
+                </div>
+
+                <div class="form-field">
+                    <label><i class="fas fa-money-check-alt"></i>Estado del Pago:</label>
                     <select id="estadoPago">
-                        <option value="pagado">Servicio Pagado </option>
-                        <option value="cobrar">Servicio por cobrar</option>
+                        <option id="ep01" value="pagado">Pagado (Tour con nosotros) </option>
+                        <option id="ep02" value="pagado">Transferido hacia nosotros(<-)</option>
+                        <option id="ep03" value="cobrar">Transferido con Deuda(->)</option>
+                        <option id="ep04" value="cobrado">Deuda Saldada(Arreglada ->)</option>
                     </select>
                 </div>
 
@@ -1364,29 +1382,39 @@ function renderTourTable(tours) {
 // CALCULAR COMISIÓN Y GANANCIA
 function calcularComision() {
     const estadoPago = $('#estadoPago').val();
-    const pax = parseInt($('#cantidadPax').val()) || 1;
-    const precioUnitario = parseFloat($('#precioUnitario').val()) || 0;
-    const importeTotal = precioUnitario * pax;
+    const importeTotal = parseFloat($('#importeTotal').val()) || 0;
+    const pagoOperador = parseFloat($('#PagoOperador').val()) || 0;
     
     let ganancia = 0;
     
-    if (estadoPago === 'pagado' || estadoPago === 'pagar') {
+    // LÓGICA ACTUALIZADA SEGÚN ESTADO DE PAGO
+    if (estadoPago === 'pagado') {
+        // "Pagado" y "Transferido hacia nosotros" = ganancia total
         ganancia = importeTotal;
-    } else if (estadoPago === 'cobrado' || estadoPago === 'cobrar') {
-        if (selTour && selTour.com) {
-            const comisionPorPersona = selTour.com;
-            ganancia = comisionPorPersona * pax;
-        }
+        $('#PagoOperador').prop('disabled', true).attr('placeholder', 'El servicio hemos hecho nosotros').val('0');
+    } else if (estadoPago === 'cobrar' || estadoPago === 'cobrado') {
+        // "Transferido con Deuda" y "Deuda Saldada" = total - pago operador
+        ganancia = importeTotal - pagoOperador;
+        $('#PagoOperador').prop('disabled', false).attr('placeholder', '0.00');
     }
     
     $('#ganancia').val(ganancia.toFixed(2));
-    
-    // Aplicar zoom temporal al campo de ganancia
     aplicarZoomTemporal('#ganancia');
 }
-// Evento para recalcular cuando cambie el estado de pago
+
+// 🔄 ACTUALIZAR PLACEHOLDER Y CÁLCULO AL CAMBIAR ESTADO DE PAGO
+// 🔄 EVENTOS AUTOMÁTICOS PARA RECÁLCULO
 $(document).on('change', '#estadoPago', function() {
     calcularComision();
+});
+
+$(document).on('input', '#importeTotal, #PagoOperador', function() {
+    calcularComision();
+});
+
+$(document).on('input', '#cantidadPax, #precioUnitario', function() {
+    calcularTotal();
+    calcularComision(); // ← AGREGAR ESTE LLAMADO
 });
 
 // FUNCIÓN PARA APLICAR EFECTO ZOOM TEMPORAL
@@ -1575,6 +1603,7 @@ $(document).on('click', '.btn-save', async (e) => {
             ganancia: parseFloat($('#ganancia').val()) || 0,
             horaSalida: $('#horaSalida').val(),
             Operador: $('#Operador').val(),
+            PagoOperador: parseFloat($('#PagoOperador').val()) || 0, // ← AGREGAR ESTA LÍNEA
             Comentario: $('#Comentario').val(),
             fechaTour: $('#fechaTour').val(),
             estadoPago: $('#estadoPago').val(),
@@ -1684,6 +1713,7 @@ $(document).on('change', '#tipoTour', function() {
 $(document).on('input', '#cantidadPax, #precioUnitario', function() {
     calcularTotal();
     actualizarPuntosPreview();
+    calcularComision(); // ← AGREGAR ESTE LLAMADO
     // const pax = parseInt($('#cantidadPax').val()) || 1;
     // const precio = parseFloat($('#precioUnitario').val()) || 0;
     
