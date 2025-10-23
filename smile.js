@@ -275,13 +275,29 @@ function renderizarNotas(notas) {
     $('.descripcion_com').html(html);
 }
 
+// 📅 FUNCIÓN PARA OBTENER FECHA LOCAL CORRECTA
+function obtenerFechaLocal() {
+    const ahora = new Date();
+    const year = ahora.getFullYear();
+    const month = String(ahora.getMonth() + 1).padStart(2, '0');
+    const day = String(ahora.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+// 📅 FUNCIÓN PARA FORMATEAR FECHA SIN ZONA HORARIA
+function formatearFechaLocal(fechaString) {
+    if (!fechaString) return 'Sin fecha';
+    
+    // DIVIDIR fecha sin crear objeto Date (evita zona horaria)
+    const [year, month, day] = fechaString.split('-');
+    return `${day}/${month}/${year}`;
+}
 // ACTUALIZAR FUNCIÓN DE INICIALIZACIÓN
 async function inicializarDashboard(wi) {
     try {
         const mesActual = new Date().toISOString().slice(0, 7);
         currentMonth = mesActual;
         $('#monthSelector').val(mesActual);
-        $('#fechaTour').val(new Date().toLocaleDateString('sv-SE')); 
+        $('#fechaTour').val(obtenerFechaLocal()); 
         
         await Promise.all([
             cargarEmpleados(),
@@ -478,7 +494,7 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
             : `<button class="btn-view" onclick="verDetalleVenta('${venta.id}')" title="Ver detalles"><i class="fas fa-eye"></i></button>`;
         
         // Formatear fecha
-        const fechaFormateada = new Date(venta.fechaTour).toLocaleDateString('es-ES');
+        const fechaFormateada = formatearFechaLocal(venta.fechaTour);
         
         // Cliente con habitación usando mis6
         const clienteInfo = `${mis10(venta.nombreCliente, 15)}${venta.numeroHabitacion ? ` <small>(${venta.numeroHabitacion}</small>)` : ''}`;
@@ -923,7 +939,7 @@ function actualizarPuntosPreview() {
 // FUNCIÓN PARA LIMPIAR ESTADO DEL FORMULARIO
 function limpiarEstadoFormulario() {
     // 💾 GUARDAR valores por defecto antes del reset
-    const fechaHoy = new Date().toLocaleDateString('sv-SE');
+    const fechaHoy = obtenerFechaLocal(); // ← CAMBIO AQUÍ
     const paxDefecto = 1;
     
     selTour = null;
@@ -936,7 +952,7 @@ function limpiarEstadoFormulario() {
     
     // 🔄 RESTAURAR valores por defecto DESPUÉS del reset
     $('#cantidadPax').val(paxDefecto);
-    $('#fechaTour').val(fechaHoy);
+    $('#fechaTour').val(fechaHoy); // ← USAR FECHA CORREGIDA
     $('#vistaPreviaLaPuntos').text('0');
     $('#tourDisplay .tour-text').text('🔍 Seleccionar tour...');
     $('.tour-row').removeClass('selected');
