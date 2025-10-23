@@ -50,7 +50,7 @@ const showLogin = `
       
       <div class="auth-links">
         <span class="olvidastePass">¿Olvidaste tu contraseña?</span>
-        <span class="crearCuenta">Crear cuenta</span>
+        <!-- <span class="crearCuenta">Crear cuenta</span> -->
       </div>
     </div>
   </div>

@@ -695,10 +695,28 @@ function actualizarResumenCompetencia() {
     const totalTours = ventasDelMes.reduce((sum, venta) => sum + (venta.qventa || 0), 0);
     const totalPuntos = ventasDelMes.reduce((sum, venta) => sum + (venta.puntos || 0), 0);
     const toursHoy = ventasHoy.reduce((sum, venta) => sum + (venta.qventa || 0), 0);
+    const meta = 2500;
     
+    // 📊 ACTUALIZAR VALORES
     $('#totalTours').text(totalTours);
     $('#totalPuntos').text(totalPuntos);
     $('#toursHoy').text(toursHoy);
+    
+    // 🎨 ACTUALIZAR CSS DINÁMICO - SÚPER COMPACTO
+    const stats = [
+        Math.min((toursHoy / 5) * 100, 100),      // Tours hoy %
+        Math.min((totalTours / 50) * 100, 100),   // Total tours %
+        Math.min((totalPuntos / meta) * 100, 100), // Puntos %
+        100                                        // Meta 100%
+    ];
+    
+    $('.summary-stat').each((i, el) => {
+        const grados = (stats[i] / 100) * 360;
+        $(el).css({
+            '--progress': `${grados}deg`,
+            '--width': `${stats[i]}%`
+        });
+    });
 }
 
 // ACTUALIZAR FILTRO DE EMPLEADOS
@@ -904,6 +922,10 @@ function actualizarPuntosPreview() {
 
 // FUNCIÓN PARA LIMPIAR ESTADO DEL FORMULARIO
 function limpiarEstadoFormulario() {
+    // 💾 GUARDAR valores por defecto antes del reset
+    const fechaHoy = new Date().toLocaleDateString('sv-SE');
+    const paxDefecto = 1;
+    
     selTour = null;
     $('#formularioVenta input, #formularioVenta select').prop('disabled', false);
     $('.btn-save').prop('disabled', false);
@@ -911,10 +933,16 @@ function limpiarEstadoFormulario() {
     $('.btn-save').html('<i class="fas fa-save"></i> Guardar Venta').removeAttr('data-edit-id');
     $('.btn-clear-view, .btn-cancel-edit').remove();
     $('#formularioVenta')[0].reset();
-    $('#cantidadPax').val(1);
+    
+    // 🔄 RESTAURAR valores por defecto DESPUÉS del reset
+    $('#cantidadPax').val(paxDefecto);
+    $('#fechaTour').val(fechaHoy);
     $('#vistaPreviaLaPuntos').text('0');
     $('#tourDisplay .tour-text').text('🔍 Seleccionar tour...');
     $('.tour-row').removeClass('selected');
+    
+    // 🔒 MANTENER campos disabled que deben estarlo
+    $('#importeTotal, #ganancia').prop('disabled', true);
 }
 
 // FUNCIÓN PARA ELIMINAR VENTA COMPLETA
@@ -1113,15 +1141,16 @@ function getFormularioHTML() {
                 </div>
 
                 <div class="form-field">
-                    <label><i class="fas fa-money-check-alt"></i>Pagado?</label>
-                    <select id="estadoPago">
-                        <option value="pagado">Tour con nosotros (pagado)</option>
-                        <option value="pagar">Tour con nosotros (pendiente)</option>
-                        <option value="cobrado">Tour con Sonia, externo (cobrado)</option>
-                        <option value="cobrar">Tour con Sonia, externo (pendiente)</option>
+                    <label><i class="fas fa-credit-card"></i>Método de Pago</label>
+                    <select id="metodoPago">
+                    <option value="">Seleccionar...</option>
+                        <option value="Tarjeta">Tarjeta de Débito/Crédito</option>
+                        <option value="Transferencia">Transferencia Bancaria</option>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Yape">Yape</option>
+                        <option value="Plin">Plin</option>
                     </select>
                 </div>
-
 
                 <div class="form-field">
                     <label><i class="fas fa-users"></i>PAX (Cantidad Personas/Grupo Privado)</label>
@@ -1144,14 +1173,10 @@ function getFormularioHTML() {
                 </div>
 
                 <div class="form-field">
-                    <label><i class="fas fa-credit-card"></i>Método de Pago</label>
-                    <select id="metodoPago">
-                    <option value="">Seleccionar...</option>
-                        <option value="Tarjeta">Tarjeta de Débito/Crédito</option>
-                        <option value="Efectivo">Efectivo en Cash</option>
-                        <option value="Transferencia">Transferencia Bancaria</option>
-                        <option value="Yape">Yape</option>
-                        <option value="Plin">Plin</option>
+                    <label><i class="fas fa-money-check-alt"></i>Pagado?</label>
+                    <select id="estadoPago">
+                        <option value="pagado">Servicio Pagado </option>
+                        <option value="cobrar">Servicio por cobrar</option>
                     </select>
                 </div>
 
@@ -1490,10 +1515,12 @@ function renderizarPreciosDinamicos() {
 // FUNCIONES UTILES [START]
 // $('#importeTotal').attr('disabled','disabled');
 // FUNCIONES UTILES [END]
-
-// EVENTO ACTUALIZADO PARA GUARDAR VENTAS
+// EVENTO ACTUALIZADO PARA GUARDAR VENTAS CON ANIMACIÓN Y PROTECCIÓN
 $(document).on('click', '.btn-save', async (e) => {
     e.preventDefault();
+    
+    // 🚫 PROTECCIÓN CONTRA DUPLICADOS
+    if ($('.btn-save').prop('disabled')) return;
     
     try {
         if (!selTour) {
@@ -1501,6 +1528,12 @@ $(document).on('click', '.btn-save', async (e) => {
             $('#tourDisplay').focus();
             return;
         }
+        
+        // 🎬 INICIAR ANIMACIÓN Y DESHABILITAR
+        const $btnSave = $('.btn-save');
+        const textoOriginal = $btnSave.html();
+        $btnSave.prop('disabled', true)
+                .html('<i class="fas fa-spinner fa-spin"></i> Guardando venta...');
         
         const editId = $('.btn-save').attr('data-edit-id');
         const isEditing = !!editId;
@@ -1544,11 +1577,12 @@ $(document).on('click', '.btn-save', async (e) => {
         // VALIDACIÓN VISUAL COMPACTA
         const campos = [
             [selTour, '#tourDisplay', 'tour'],
-            [formData.nombreCliente, '#nombreCliente', 'cliente'],
-            [formData.horaSalida, '#horaSalida', 'hora'],
-            [formData.fechaTour, '#fechaTour', 'fecha'],
-            [formData.Operador, '#Operador', 'operador'],
-            [formData.Comentario, '#Comentario', 'comentario']
+            [formData.nombreCliente, '#nombreCliente', 'Cliente'],
+            [formData.horaSalida, '#horaSalida', 'Hora'],
+            [formData.fechaTour, '#fechaTour', 'Fecha'],
+            [formData.Operador, '#Operador', 'Operador'],
+            [formData.numeroDocumento, '#numeroDocumento', 'Documento'],
+            [formData.metodoPago, '#metodoPago', 'y Metodo de pago'],
         ];
 
         $('.faltaValor, .okValor').removeClass('faltaValor okValor');
@@ -1559,6 +1593,8 @@ $(document).on('click', '.btn-save', async (e) => {
         }).map(([,,nom]) => nom).filter(Boolean);
 
         if (faltantes.length) {
+            // 🔄 RESTAURAR BOTÓN SI HAY ERRORES
+            $btnSave.prop('disabled', false).html(textoOriginal);
             Notificacion(`⚠️ Completa: ${faltantes.join(', ')}`, 'error');
             $('.faltaValor').first().focus();
             return;
@@ -1590,6 +1626,8 @@ $(document).on('click', '.btn-save', async (e) => {
             Notificacion('¡Venta registrada exitosamente!', 'success');
         }
         
+        // 🧹 LIMPIAR TODO Y RESETEAR
+        $('.faltaValor, .okValor').removeClass('faltaValor okValor');
         limpiarEstadoFormulario();
         await cargarVentas();
         await calcularPuntosEmpleados();
@@ -1599,6 +1637,8 @@ $(document).on('click', '.btn-save', async (e) => {
     } catch (error) {
         console.error('Error al guardar/actualizar venta:', error);
         Notificacion('Error al procesar la venta. Inténtalo nuevamente.', 'error');
+        // 🔄 RESTAURAR BOTÓN EN CASO DE ERROR
+        $('.btn-save').prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Venta');
     }
 });
 
@@ -1607,9 +1647,10 @@ $(document).on('change', '#vtJulio, #vtSonia, #vtExterna', function() {
     actualizarPuntosPreview();
 });
 
-// Limpiar validación al escribir - COMPACTO
-$(document).on('input change', '#nombreCliente, #horaSalida, #fechaTour, #Operador, #Comentario', function() {
-    $(this).removeClass('faltaValor').addClass('okValor');
+// Validación visual para TODOS los inputs del formulario - COMPACTO
+$(document).on('input change', '#formularioVenta input, #formularioVenta select', function() {
+    const valor = $(this).val()?.toString().trim();
+    $(this).removeClass('faltaValor').addClass(valor ? 'okValor' : 'faltaValor');
 });
 
 $(document).on('click', '.tour-row', function() {
