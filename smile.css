@@ -319,6 +319,14 @@ h1 i {
   display: flex;
   gap: 1vh;
 }
+.wifresh {
+    display: flex;
+    align-items: center;
+    background: var(--bg1);
+    padding-inline: 1.5vh;
+    border-radius: 1vh;
+    cursor: pointer;
+}
 
 #monthSelector {
   border-radius: 1vh;

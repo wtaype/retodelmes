@@ -71,6 +71,7 @@ function smileContenido(wi){
                     </select>
                 </div>
                 <div class="header-right">
+                    <div class="wifresh"><i class="fa-solid fa-rotate-right"></i></div>
                     <div class="witemas"></div>
                     <div class="user-section">
                         <div class="user-info">
@@ -190,7 +191,6 @@ function smileContenido(wi){
                     <th><i class="fas fa-user-tag"></i> Nombre</th>
                     <th><i class="fas fa-calculator"></i> M. Total</th>
                     <th><i class="fas fa-dollar-sign"></i> M. Individual</th>
-                    <th><i class="fas fa-percent"></i> Comisión</th>
                     <th><i class="fas fa-credit-card"></i> Pagado</th>
                     <th><i class="fas fa-hand-holding-usd"></i> Ganancia</th>
                     <th><i class="fas fa-star"></i> Puntos</th>
@@ -500,7 +500,6 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
         const clienteInfo = `${mis10(venta.nombreCliente, 15)}${venta.numeroHabitacion ? ` <small>(${venta.numeroHabitacion}</small>)` : ''}`;
         
         // Calcular comisión (ejemplo: 10% del importe individual)
-        const comision = (venta.precioUnitario * 0.10).toFixed(2);
         
         return `
             <tr>
@@ -514,7 +513,6 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
                 <td>${clienteInfo}</td>
                 <td><strong class="price">S/ ${(venta.importeTotal || 0).toFixed(2)}</strong></td>
                 <td>S/ ${(venta.precioUnitario || 0).toFixed(2)}</td>
-                <td>S/ ${comision}</td>
                 <td><span class="status-badge ${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'paid' : 'pending'}">
                     <i class="fas fa-${(venta.estadoPago === 'pagado' || venta.estadoPago === 'cobrado') ? 'check-circle' : 'clock'}"></i> 
                     ${venta.estadoPago?.toUpperCase()}
@@ -526,7 +524,7 @@ function renderizarTablaVentas(filtroEmpleado = '', soloHoy = false) {
         `;
     }).join('');
     
-    $('#salesTableBody').html(filas || `<tr><td colspan="12" class="empty-cell"><i class="fas fa-inbox"></i> No hay ventas para mostrar</td></tr>`);
+    $('#salesTableBody').html(filas || `<tr><td colspan="11" class="empty-cell"><i class="fas fa-inbox"></i> No hay ventas para mostrar</td></tr>`);
     renderizarPaginacion(totalPaginas);
 }
 
@@ -1706,6 +1704,163 @@ $(document).on('click','.tema',async function(){
   }catch(e){console.error(e)}
 });
 
+// AGREGAR DESPUÉS DE LA LÍNEA ~74 (después de las variables globales)
+
+// 🔄 FUNCIÓN WIFRESH PARA ACTUALIZACIONES INTELIGENTES
+async function wifresh() {
+    try {
+        const $btn = $('.wifresh');
+        const iconoOriginal = $btn.html();
+        
+        // 🎬 INICIAR ANIMACIÓN
+        $btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+        Notificacion('🔄 Verificando actualizaciones...', 'info');
+        
+        // 📊 DETECTAR CAMBIOS DISPONIBLES
+        const cambiosDetectados = await detectarCambios();
+        
+        if (!cambiosDetectados.hayActualizaciones) {
+            $btn.html(iconoOriginal).prop('disabled', false);
+            Notificacion('✅ Todo está actualizado', 'success');
+            return;
+        }
+        
+        // 🚀 APLICAR ACTUALIZACIONES ENCONTRADAS
+        Notificacion(`🔄 Aplicando ${cambiosDetectados.total} actualizaciones...`, 'info');
+        
+        const promesasActualizacion = [];
+        
+        // ACTUALIZAR EMPLEADOS
+        if (cambiosDetectados.empleados) {
+            promesasActualizacion.push(actualizarEmpleados());
+        }
+        
+        // ACTUALIZAR TOURS
+        if (cambiosDetectados.tours) {
+            promesasActualizacion.push(actualizarTours());
+        }
+        
+        // ACTUALIZAR VENTAS
+        if (cambiosDetectados.ventas) {
+            promesasActualizacion.push(actualizarVentas());
+        }
+        
+        // ACTUALIZAR NOTAS
+        if (cambiosDetectados.notas) {
+            promesasActualizacion.push(actualizarNotas());
+        }
+        
+        // EJECUTAR TODAS LAS ACTUALIZACIONES EN PARALELO
+        await Promise.all(promesasActualizacion);
+        
+        // 🎯 ACTUALIZAR INTERFAZ
+        await Promise.all([
+            calcularPuntosEmpleados(),
+            actualizarResumenCompetencia()
+        ]);
+        
+        renderizarEmpleados();
+        renderizarTablaVentas();
+        initTourSelector();
+        
+        // ✅ FINALIZAR
+        $btn.html(iconoOriginal).prop('disabled', false);
+        Notificacion(`✅ ${cambiosDetectados.total} actualizaciones aplicadas correctamente`, 'success');
+        
+    } catch (error) {
+        console.error('❌ Error en wifresh:', error);
+        $('.wifresh').html('<i class="fa-solid fa-rotate-right"></i>').prop('disabled', false);
+        Notificacion('❌ Error en actualización. Inténtalo nuevamente.', 'error');
+    }
+}
+
+// 🔍 DETECTAR CAMBIOS DISPONIBLES
+async function detectarCambios() {
+    const cambios = {
+        empleados: false,
+        tours: false,
+        ventas: false,
+        notas: false,
+        total: 0,
+        hayActualizaciones: false
+    };
+    
+    try {
+        // VERIFICAR EMPLEADOS
+        const empleadosCache = getls('empleadosSmile');
+        if (!empleadosCache || esCacheExpirado('empleadosSmile', 300)) {
+            cambios.empleados = true;
+            cambios.total++;
+        }
+        
+        // VERIFICAR TOURS
+        const toursCache = getls('toursSmile');
+        if (!toursCache || esCacheExpirado('toursSmile', 300)) {
+            cambios.tours = true;
+            cambios.total++;
+        }
+        
+        // VERIFICAR VENTAS (siempre actualizar para datos en tiempo real)
+        cambios.ventas = true;
+        cambios.total++;
+        
+        // VERIFICAR NOTAS
+        const notasCache = getls('notasSmile');
+        if (!notasCache || esCacheExpirado('notasSmile', 600)) {
+            cambios.notas = true;
+            cambios.total++;
+        }
+        
+        cambios.hayActualizaciones = cambios.total > 0;
+        
+    } catch (error) {
+        console.error('Error detectando cambios:', error);
+    }
+    
+    return cambios;
+}
+
+// 🕒 VERIFICAR SI CACHE ESTÁ EXPIRADO
+function esCacheExpirado(clave, tiempoMaximo) {
+    try {
+        const item = localStorage.getItem(clave + '_timestamp');
+        if (!item) return true;
+        
+        const timestamp = parseInt(item);
+        const ahora = Date.now();
+        const diferencia = (ahora - timestamp) / 1000; // segundos
+        
+        return diferencia > tiempoMaximo;
+    } catch {
+        return true;
+    }
+}
+
+// 🔄 FUNCIONES DE ACTUALIZACIÓN ESPECÍFICAS
+async function actualizarEmpleados() {
+    removels('empleadosSmile');
+    await cargarEmpleados();
+}
+
+async function actualizarTours() {
+    removels('toursSmile');
+    await cargarTours();
+}
+
+async function actualizarVentas() {
+    await cargarVentas();
+}
+
+async function actualizarNotas() {
+    removels('notasSmile');
+    await cargarNotas();
+}
+
+// 🔄 EVENTO WIFRESH INTELIGENTE
+$(document).on('click', '.wifresh', function(e) {
+    e.preventDefault();
+    wifresh();
+});
 
 
 // JQUERY CONTENIDO JS [End] 
