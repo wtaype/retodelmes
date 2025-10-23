@@ -1150,12 +1150,12 @@ function getFormularioHTML() {
                         <option value="Yape">Yape</option>
                         <option value="Plin">Plin</option>
                     </select>
-                </div>
+                </div>  
 
                 <div class="form-field">
                     <label><i class="fas fa-users"></i>PAX (Cantidad Personas/Grupo Privado)</label>
                     <input type="number" id="cantidadPax" required min="1" value="1">
-                </div>
+                </div>  
 
                 <div class="form-field">
                     <label><i class="fas fa-user-tag"></i>Importe Individual/Grupo Privado</label>
