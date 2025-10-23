@@ -3,6 +3,7 @@
 /* =============================================
    VARIABLES CSS
    ============================================= */
+
 :root {
   /* === TAMAÑOS DE FUENTE RESPONSIVOS === */
   --fz_s1: .62vw;
@@ -98,6 +99,7 @@
 /* =============================================
    TEMAS DE COLOR
    ============================================= */
+
 :root[data-theme="Cielo"] {
   --bg: #ccefff;
   --wb: #e5f7ff;
@@ -231,6 +233,7 @@
 /* =============================================
    RESET Y BASE
    ============================================= */
+
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -254,7 +257,7 @@ body {
 }
 
 .miwp {
-  max-width: 98vw;
+  max-width: 97vw;
   margin: auto;
 }
 
@@ -269,6 +272,7 @@ main * :not(i) {
 /* =============================================
    HEADER
    ============================================= */
+
 .top-header {
   background: var(--mco);
   box-shadow: 0 0.1vw 0.1vw 0 var(--bga);
@@ -319,6 +323,7 @@ h1 i {
   display: flex;
   gap: 1vh;
 }
+
 .wifresh {
     display: flex;
     align-items: center;
@@ -335,6 +340,7 @@ h1 i {
 }
 
 /* User Info */
+
 .user-info {
   height: 4.5vh;
   display: flex;
@@ -357,6 +363,7 @@ h1 i {
 }
 
 /* Temas */
+
 .witemas {
   display: flex;
   align-items: center;
@@ -385,6 +392,7 @@ h1 i {
 }
 
 /* Botón Salir */
+
 .bt_salir {
   background: var(--bg1);
   border-radius: 1.2vh;
@@ -401,6 +409,7 @@ h1 i {
 /* =============================================
    LAYOUT DASHBOARD
    ============================================= */
+
 .dashboard-layout {
   display: grid;
   grid-template-columns: 62% auto;
@@ -417,6 +426,7 @@ h1 i {
 /* =============================================
    PANELES
    ============================================= */
+
 .panel-header {
   display: flex;
   justify-content: space-between;
@@ -448,6 +458,7 @@ h1 i {
 /* =============================================
    BOTONES Y FILTROS
    ============================================= */
+
 .bt_add_exportar {
   display: flex;
   align-items: center;
@@ -520,6 +531,7 @@ h1 i {
 /* =============================================
    DESCRIPCIÓN COMPETENCIA
    ============================================= */
+
 .descripcion_com {
   list-style: none;
   padding: 2vh 1.5vw;
@@ -550,6 +562,7 @@ h1 i {
 /* =============================================
    RESUMEN COMPETENCIA
    ============================================= */
+
 .competition-summary {
   display: flex;
   gap: 1vh;
@@ -603,7 +616,6 @@ h1 i {
     box-shadow: 0 0.2vh 0.8vh var(--bxs);
 }
 
-
 .summary-stat:hover {
   transform: translateY(-.5vh) scale(1.02);
   box-shadow: var(--sombra6);
@@ -655,6 +667,7 @@ h1 i {
 /* =============================================
    FORMULARIO DE VENTA
    ============================================= */
+
 .sale-form {
   margin-top: .5vh;
 }
@@ -672,6 +685,7 @@ h1 i {
 .form-grid .form-field:nth-child(2) {
   grid-column: span 1;
 }
+
 /* .form-grid .form-field:last-child {
   grid-column: span 2;
 } */
@@ -723,9 +737,11 @@ h1 i {
     color: var(--mco);
     font-weight: 600;
 }
+
 /* =============================================
    ACCIONES DEL FORMULARIO
    ============================================= */
+
 .form-actions {
   display: flex;
   justify-content: space-between;
@@ -815,6 +831,7 @@ h1 i {
 /* =============================================
    GRID DE TRABAJADORES
    ============================================= */
+
 #workersGrid {
   display: flex;
   justify-content: space-between;
@@ -999,6 +1016,7 @@ h1 i {
 /* =============================================
    ÚLTIMO GANADOR
    ============================================= */
+
 .last-winner {
   background: var(--amar5);
   border: 2px solid var(--amar9);
@@ -1092,6 +1110,7 @@ h1 i {
   font-size: var(--fz_c4);
   font-weight: 700;
 }
+
 /* =============================================
    ESTILO 3: BOLD & MODERN (VIBRANTE PROFESIONAL)
    ============================================= */
@@ -1350,10 +1369,12 @@ h1 i {
   border-radius:.5vh;
   box-shadow: var(--bs_l); 
 }
+
 .action-buttons>*:hover{
   cursor:pointer;
   
 }
+
 .btn-view {
     background: var(--info);
 }
@@ -1377,6 +1398,7 @@ h1 i {
     background: var(--error);
 
 }
+
 .btn-delete:hover {
     background: #c62828;
     transform: scale(1.1);
@@ -1435,6 +1457,7 @@ h1 i {
 }
 
 /* INFO SECTION */
+
 .info-tabs {
     display: flex;
     gap: 0.5rem;
@@ -1627,6 +1650,7 @@ h1 i {
 /* =============================================
    SELECTOR DE TOURS
    ============================================= */
+
 .tour-selector {
   position: relative;
   width: 100%;
@@ -1945,6 +1969,7 @@ h1 i {
 /* =============================================
    SECCIÓN INFO
    ============================================= */
+
 .info-section {
   backdrop-filter: blur(20px);
   border-radius: 2vh;
@@ -1955,8 +1980,6 @@ h1 i {
    RESPONSIVE
    ============================================= */
 
-
-
 .filter-select option {
     color: var(--txe);
 }
@@ -1964,6 +1987,7 @@ h1 i {
 .pax-badge i, .action-buttons i, .status-badge i, .points-badge i, #todayFilter i {
     color: var(--bg9);
 }
+
 .user-cell {
   display: flex;
   align-items: center;
@@ -1979,12 +2003,15 @@ h1 i {
 }
 
 /* Efecto zoom temporal para campos actualizados */
+
 .field-updated {
     transform: scale(1.05);
     font-weight: bold;
     transition: all 0.3s ease;
 }
+
 /* Optimizar animaciones para mejor rendimiento */
+
 .tour-dropdown {
     transition: opacity 0.2s ease, transform 0.2s ease;
     transform: translateY(-10px);
@@ -2004,17 +2031,47 @@ h1 i {
 .tour-row:hover {
     background-color: #f8f9fa;
 }
+
 .faltaValor{
     border: .3vh solid var(--error)!important;
 
 }
+
 .okValor{
     border: .3vh solid var(--success)!important;
     
 }
+
 .btn-cancel-edit i{
   color: var(--txa);
 }
+
+.foo{text-align: center;padding-block: 1.5vh 1vh;background:var(--wb); border-radius: 1vh 1vh 0 0; }
+
+.foo *{
+font-size:var(--fz_s2);
+margin-inline:.3vh;
+}
+
+.foo a{
+    color: var(--bg2);
+}
+
+.abwc{
+background:var(--bg);
+top:0;
+width:99%;
+height:100%;
+padding:2vh 2vw;
+overflow:scroll;
+line-height:1.80;
+}
+
+.abwok{
+background:var(--mco);
+color:var(--txa);
+}
+
 @media (max-width: 768px) {
   :root {
     --fz_s1: 12px;
@@ -2039,6 +2096,7 @@ h1 i {
     gap: 12px;
     padding: 8px 12px;
     min-height: 90px;
+    height: auto;
   }
 
   .header-left,
@@ -2059,14 +2117,17 @@ h1 i {
   .user-info,
   .bt_salir {
     min-height: 44px;
-    padding: 8px 14px;
-    font-size: 14px;
+    padding: 7px .5vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .dashboard-layout {
     grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 12px;
+    gap: 1vh 0;
+    padding: 1vh 0;
+    max-width: 100vw;
   }
 
   .form-grid {
@@ -2082,25 +2143,38 @@ h1 i {
   .info-section,
   .competition-summary {
     padding: 16px;
+    max-width: 98vw;
   }
 }
 
 @media (max-width: 560px) {
+  .new-sale-panel .panel-header{
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 100vw;
+  }
+.form-grid .form-field:nth-child(1){
+  grid-column: span 1;
+}
+  .pagination{
+    display: flex;
+    flex-wrap: wrap;
+  }
   :root {
-    --fz_s1: 14px;
-    --fz_s2: 15px;
-    --fz_s3: 16px;
-    --fz_s4: 17px;
-    --fz_m: 18px;
-    --fz_m1: 19px;
-    --fz_m2: 20px;
-    --fz_m3: 21px;
-    --fz_l: 22px;
-    --fz_l1: 24px;
-    --fz_l2: 26px;
-    --fz_l3: 28px;
-    --fz_t1: 34px;
-    --fz_t2: 44px;
+--fz_s1:2.12vw;
+--fz_s2:2.27vw;
+--fz_s3:2.32vw;
+--fz_s4:2.47vw;
+--fz_m:2.50vw;
+--fz_m1:2.55vw;
+--fz_m2:2.6vw;
+--fz_m3:2.65vw;
+--fz_l:2.70vw;
+--fz_l1:2.75vw;
+--fz_l2:2.80vw;
+--fz_l3:2.85vw;
+--fz_t1:3.30vw;
+--fz_t2:4.30vw;
   }
 
   .header-container {

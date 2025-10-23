@@ -216,6 +216,10 @@ function smileContenido(wi){
 
         <div id="notifications-container"></div>
         <div id="modal-container"></div>
+
+<footer class='foo hwb txc'>
+<p>Creado con<i class='wicon wi-corazon'></i>by<a class='ftx lkme' href='https://wtaype.github.io/' target='_blank'>@wilder.taype</a>2025 - <span class='wty'></span><span class='abw tm11042025' id='101542394703517594'>| Acerca del app | Actualizado</span><span class='wtu'></span></p>
+</footer>
     `);
 
     // Inicializar datos
