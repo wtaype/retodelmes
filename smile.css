@@ -2015,3 +2015,185 @@ h1 i {
 .btn-cancel-edit i{
   color: var(--txa);
 }
+@media (max-width: 768px) {
+  :root {
+    --fz_s1: 12px;
+    --fz_s2: 13px;
+    --fz_s3: 14px;
+    --fz_s4: 15px;
+    --fz_m: 16px;
+    --fz_m1: 17px;
+    --fz_m2: 18px;
+    --fz_m3: 19px;
+    --fz_l: 20px;
+    --fz_l1: 22px;
+    --fz_l2: 24px;
+    --fz_l3: 26px;
+    --fz_t1: 32px;
+    --fz_t2: 40px;
+  }
+
+  .header-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 8px 12px;
+    min-height: 90px;
+  }
+
+  .header-left,
+  .header-right {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  h1 {
+    font-size: 22px;
+    text-align: center;
+  }
+
+  #monthSelector,
+  .wifresh,
+  .witemas,
+  .user-info,
+  .bt_salir {
+    min-height: 44px;
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 12px;
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .form-grid .form-field:nth-child(1) {
+    grid-column: span 2;
+  }
+
+  .sales-table-section,
+  .info-section,
+  .competition-summary {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  :root {
+    --fz_s1: 14px;
+    --fz_s2: 15px;
+    --fz_s3: 16px;
+    --fz_s4: 17px;
+    --fz_m: 18px;
+    --fz_m1: 19px;
+    --fz_m2: 20px;
+    --fz_m3: 21px;
+    --fz_l: 22px;
+    --fz_l1: 24px;
+    --fz_l2: 26px;
+    --fz_l3: 28px;
+    --fz_t1: 34px;
+    --fz_t2: 44px;
+  }
+
+  .header-container {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .header-right {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-info,
+  .bt_salir {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-field input,
+  .form-field select {
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-size: 16px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .btn-save,
+  .btn-add,
+  .filter-select,
+  .filter-btn {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 18px;
+  }
+
+  .competition-summary {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .sales-table {
+    min-width: 780px;
+    font-size: 14px;
+  }
+
+  .table-header,
+  .table-filters {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .points-preview,
+  #workersGrid > * {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .header-container {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  h1 {
+    font-size: 18px;
+  }
+
+  .user-info,
+    .bt_salir {
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  .btn-save {
+    font-size: 20px;
+    padding: 16px;
+  }
+
+  .points-info {
+    font-size: 18px;
+  }
+}
