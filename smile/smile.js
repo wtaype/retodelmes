@@ -1,24 +1,25 @@
 import $ from 'jquery';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { auth, db } from './firebase/init.js';
+import { auth, db } from '../firebase/init.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, onSnapshot, collection, query, where, writeBatch, serverTimestamp, limit } from "firebase/firestore";
 
-import { Capi, Mensaje, Notificacion, savels, getls, removels, accederRol, gosaves, getsaves, adrm, adtm, infoo, mis10, mesPeru} from './widev.js';
+import {wiTema, Capi, Mensaje, Notificacion, savels, getls, removels, accederRol, gosaves, getsaves, adrm, adtm, infoo, mis10, mesPeru} from '../widev.js';
 
-// 🔐 GESTIÓN DE AUTENTICACIÓN EN DASHBOARD
-let userAuth = null; //Para guardar usuario
-
+// 🔐 AUTENTICACIÓN
+let userAuth = null;
 onAuthStateChanged(auth, async user => {
-  if(!user) return window.location.href = '/'; // Seguridad default 
-  userAuth = user; //Guardando usuario
-
+  if(!user) return window.location.href = '/';
+  userAuth = user;
+  
   try{
     const wi = getls('wiSmile');
-    if(wi) return smileContenido(wi); // Cache primero 
+    if(wi) return smileContenido(wi), wiTema(db, userAuth);//Cache Primero con Contenido + temas Cache
 
     const busq = await getDocs(query(collection(db, 'smiles'), where('usuario', '==', user.displayName)));
-    const widt = busq.docs[0].data(); savels('wiSmile', widt, 450); smileContenido(widt); // Desde Online 
+    const widt = busq.docs[0].data(); savels('wiSmile', widt, 450);
+
+    smileContenido(widt); wiTema(db, userAuth); //Contenido + temas Online
   }catch(e){console.error(e)}
 });
 
@@ -26,20 +27,6 @@ $(document).on('click', '.bt_salir', async () => {
   await signOut(auth); window.location.href = '/';   // Cierra la sesión + Envia al inicio 
   try{localStorage.clear();}catch(_){Object.keys(localStorage).forEach(k=>localStorage.removeItem(k));} //Limpieza de localStorage
 });
-
-$(document).on('click','.tab-btn', function(){
-    const activetb = $(this).data('tab');
-    adrm(this, 'active'); adrm('#'+activetb+'-tab', 'active');
-
-});
-
-// En el evento click '.bt_cargar' (línea 30), ACTUALIZAR:
-$(document).on('click','.bt_cargar',()=>{
-  const pattern=/^(im\d+|ki\d+|remote:im\d+|dirty:im\d+|dirty:ki\d+|toursSmile|notasSmile)$/;
-  Object.keys(localStorage).filter(k=>pattern.test(k)).forEach(k=>localStorage.removeItem(k));
-  Mensaje('Actualizado'); setTimeout(()=>location.reload(),800);
-});
-// ...existing code...
 
 // VARIABLES GLOBALES
 let currentMonth = '2025-09';
@@ -225,6 +212,19 @@ function smileContenido(wi){
     // Inicializar datos
     inicializarDashboard(wi);
 }
+
+// PARA MOVER ENTRE NAV DE PUNTOS. PRECIOS ETC
+$(document).on('click','.tab-btn', function(){
+    const activetb = $(this).data('tab');
+    adrm(this, 'active'); adrm('#'+activetb+'-tab', 'active');
+});
+
+// En el evento click '.bt_cargar' (línea 30), ACTUALIZAR:
+$(document).on('click','.bt_cargar',()=>{
+  const pattern=/^(im\d+|ki\d+|remote:im\d+|dirty:im\d+|dirty:ki\d+|toursSmile|notasSmile)$/;
+  Object.keys(localStorage).filter(k=>pattern.test(k)).forEach(k=>localStorage.removeItem(k));
+  Mensaje('Actualizado'); setTimeout(()=>location.reload(),800);
+});
 
 // AGREGAR función para cargar notas (línea 950)
 async function cargarNotas() {
@@ -1716,18 +1716,6 @@ $(document).on('input', '#cantidadPax, #precioUnitario', function() {
     // actualizarPuntosPreview();
 });
 
-// PARA GUARDAR EL TEMA
-$(document).on('click','.tema',async function(){
-  const miTema = $(this).data('tema');
-  try {
-    await setDoc(doc(db, 'configuracion', userAuth.displayName), {
-      tema: miTema,
-      actualizado: serverTimestamp()
-    }, { merge: true });
-    savels('wiTema', miTema, 72);
-    Mensaje('Tema guardado <i class="fa-solid fa-circle-check"></i>');
-  }catch(e){console.error(e)}
-});
 
 // AGREGAR DESPUÉS DE LA LÍNEA ~74 (después de las variables globales)
 
