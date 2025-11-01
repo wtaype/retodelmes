@@ -16,6 +16,23 @@ export const wiTema = (() => {
  return {set};
 })();
 
+
+// FECHA PERÚ - SÚPER COMPACTO
+export const mesPeru = (formato = 'mes') => {
+  const ahora = new Date();
+  const peru = new Date(ahora.getTime() - (5 * 60 * 60 * 1000)); // UTC-5
+  const y = peru.getFullYear();
+  const m = String(peru.getMonth() + 1).padStart(2, '0');
+  const d = String(peru.getDate()).padStart(2, '0');
+  
+  return {
+    'mes': `${y}-${m}`,
+    'fecha': `${y}-${m}-${d}`,
+    'dia': d,
+    'año': y
+  }[formato] || `${y}-${m}`;
+};
+
 // ==============================
 // SISTEMA DE ACTUALIZACION DE CLASES
 // ==============================

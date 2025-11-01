@@ -4,7 +4,7 @@ import { auth, db } from './firebase/init.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, onSnapshot, collection, query, where, writeBatch, serverTimestamp, limit } from "firebase/firestore";
 
-import { Capi, Mensaje, Notificacion, savels, getls, removels, accederRol, gosaves, getsaves, adrm, adtm, infoo, mis10} from './widev.js';
+import { Capi, Mensaje, Notificacion, savels, getls, removels, accederRol, gosaves, getsaves, adrm, adtm, infoo, mis10, mesPeru} from './widev.js';
 
 // 🔐 GESTIÓN DE AUTENTICACIÓN EN DASHBOARD
 let userAuth = null; //Para guardar usuario
@@ -279,14 +279,6 @@ function renderizarNotas(notas) {
     $('.descripcion_com').html(html);
 }
 
-// 📅 FUNCIÓN PARA OBTENER FECHA LOCAL CORRECTA
-function obtenerFechaLocal() {
-    const ahora = new Date();
-    const year = ahora.getFullYear();
-    const month = String(ahora.getMonth() + 1).padStart(2, '0');
-    const day = String(ahora.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
 // 📅 FUNCIÓN PARA FORMATEAR FECHA SIN ZONA HORARIA
 function formatearFechaLocal(fechaString) {
     if (!fechaString) return 'Sin fecha';
@@ -298,23 +290,20 @@ function formatearFechaLocal(fechaString) {
 // ACTUALIZAR FUNCIÓN DE INICIALIZACIÓN
 async function inicializarDashboard(wi) {
     try {
-        const mesActual = new Date().toISOString().slice(0, 7);
-        currentMonth = mesActual;
-        $('#monthSelector').val(mesActual);
-        $('#fechaTour').val(obtenerFechaLocal()); 
+        currentMonth = mesPeru(); // En lugar de: new Date().toISOString().slice(0, 7)
+        $('#monthSelector').val(currentMonth);
+        $('#fechaTour').val(mesPeru('fecha')); // En lugar de: obtenerFechaLocal()
         
         await Promise.all([
             cargarEmpleados(),
             cargarVentas(),
             cargarUltimoGanador(),
             cargarTours(),
-            cargarNotas()  // ← AGREGAR ESTA LÍNEA
+            cargarNotas()
         ]);
         
         actualizarFiltroEmpleados();
         actualizarResumenCompetencia();
-        
-        // INICIALIZAR SELECTOR DE TOURS
         initTourSelector();
         
     } catch (error) {
@@ -717,18 +706,20 @@ function actualizarResumenCompetencia() {
         venta.fechaTour && venta.fechaTour.startsWith(currentMonth)
     );
     
-    const hoy = new Date().toISOString().split('T')[0];
+    // ✅ USAR mesPeru('fecha') - SÚPER SIMPLE
+    const hoy = mesPeru('fecha'); // En lugar de: new Date().toISOString().split('T')[0]
     const ventasHoy = ventasDelMes.filter(venta => venta.fechaTour === hoy);
     
     const totalTours = ventasDelMes.reduce((sum, venta) => sum + (venta.qventa || 0), 0);
     const totalPuntos = ventasDelMes.reduce((sum, venta) => sum + (venta.puntos || 0), 0);
     const toursHoy = ventasHoy.reduce((sum, venta) => sum + (venta.qventa || 0), 0);
-    const meta = 2500;
     
-    // 📊 ACTUALIZAR VALORES
     $('#totalTours').text(totalTours);
     $('#totalPuntos').text(totalPuntos);
     $('#toursHoy').text(toursHoy);
+    
+    // 🎯 DEFINIR META AQUÍ
+    const meta = 2500; // ✅ AGREGAR ESTA LÍNEA
     
     // 🎨 ACTUALIZAR CSS DINÁMICO - SÚPER COMPACTO
     const stats = [
@@ -952,7 +943,7 @@ function actualizarPuntosPreview() {
 // FUNCIÓN PARA LIMPIAR ESTADO DEL FORMULARIO
 function limpiarEstadoFormulario() {
     // 💾 GUARDAR valores por defecto antes del reset
-    const fechaHoy = obtenerFechaLocal(); // ← CAMBIO AQUÍ
+    const fechaHoy = mesPeru('fecha'); // ✅ CAMBIO AQUÍ
     const paxDefecto = 1;
     
     selTour = null;
@@ -965,7 +956,7 @@ function limpiarEstadoFormulario() {
     
     // 🔄 RESTAURAR valores por defecto DESPUÉS del reset
     $('#cantidadPax').val(paxDefecto);
-    $('#fechaTour').val(fechaHoy); // ← USAR FECHA CORREGIDA
+    $('#fechaTour').val(fechaHoy); // ✅ USAR FECHA CORREGIDA
     $('#vistaPreviaLaPuntos').text('0');
     $('#tourDisplay .tour-text').text('🔍 Seleccionar tour...');
     $('.tour-row').removeClass('selected');
