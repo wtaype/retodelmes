@@ -3,14 +3,13 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { auth, db } from '../firebase/init.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { getDocs, doc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, startAfter, serverTimestamp, addDoc, setDoc } from "firebase/firestore";
-import { Capi, Mensaje, Notificacion, savels, getls, removels, wiTema, infoo, fechaLetra,mis10 } from '../widev.js';
+import { wiTema, mesPeru, Capi, Mensaje, Notificacion, savels, getls, removels, infoo, fechaLetra,mis10 } from '../widev.js';
 
 // ========================================
 // 🔐 VARIABLES GLOBALES COMPACTAS
 // ========================================
-let userAuth = null;
 let userData = null;
-let currentMonth = new Date().toISOString().slice(0, 7);
+let currentMonth = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Lima'})).toISOString().slice(0,7);
 let currentUser = 'todos';
 let currentPage = 0;
 let totalPages = 0;
@@ -20,32 +19,29 @@ let todosLosUsuarios = [];
 let notasData = [];
 let ITEMS_PER_PAGE = 7;
 let todosLosTours = [];
+let configCrearCuenta = false;
 
 // ========================================
 // 🚀 INICIALIZACIÓN PRINCIPAL
 // ========================================
+
+// 🔐 AUTENTICACIÓN
+let userAuth = null;
 onAuthStateChanged(auth, async user => {
-    if (!user) return window.location.href = '/';
-    userAuth = user;
-    
-    try {
-        const wi = getls('wiSmileTop');
-        if (wi) return await initAdmin(wi);
-        
-        const busq = await getDocs(query(collection(db, 'smiles'), where('usuario', '==', user.displayName)));
-        if (busq.empty || busq.docs[0].data().rol !== 'smiletop') {
-            Notificacion('No tienes permisos de administrador', 'error');
-            return await signOut(auth);
-        }
-        
-        const widt = busq.docs[0].data();
-        savels('wiSmileTop', widt, 450);
-        await initAdmin(widt);
-    } catch (error) {
-        console.error('Error auth:', error);
-        Notificacion('Error al cargar aplicación', 'error');
-    }
+  if(!user) return window.location.href = '/';
+  userAuth = user;
+  
+  try{
+    const wi = getls('wiSmileTop');
+    if(wi) return initAdmin(wi), wiTema(db, userAuth);//Cache Primero con Contenido + temas Cache
+
+    const busq = await getDocs(query(collection(db, 'smiles'), where('usuario', '==', user.displayName)));
+    const widt = busq.docs[0].data(); savels('wiSmile', widt, 450);
+
+    initAdmin(widt); wiTema(db, userAuth); //Contenido + temas Online
+  }catch(e){console.error(e)}
 });
+
 
 // ========================================
 // 🏗️ INICIALIZAR ADMIN
@@ -62,10 +58,11 @@ async function initAdmin(data) {
         await loadVentas();
         await loadNotas();
         await loadTours();  // ← AGREGAR ESTA LÍNEA
+        await loadConfigCuenta(); // ← AGREGAR
         initEvents();
         renderTable();
         renderNotas();
-        Notificacion('Dashboard cargado', 'success');
+        Notificacion('Bienvenido '+ data.nombre, 'success');
     } catch (error) {
         console.error('Error init:', error);
         Notificacion('Error al inicializar', 'error');
@@ -179,6 +176,19 @@ function getHTML() {
                     </div>
                 </section>
 
+                <!-- GESTIÓN DE USUARIOS COMPACTA -->
+                <section class="table-section">
+                    <div class="table-header">
+                        <h2><i class="fas fa-users-cog"></i> Administrar Usuarios</h2>
+                    </div>
+                    <div id="usuariosConfigContainer">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Cargando configuración...</p>
+                        </div>
+                    </div>
+                </section>
+
             </main>
 
             <aside class="sidebar">
@@ -202,20 +212,13 @@ function getHTML() {
 }
 
 function getMonthOptions() {
-    const options = [];
-    const currentDate = new Date();
-    
-    for (let i = -6; i <= 5; i++) {
-        const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + i, 1);
-        const value = date.toISOString().slice(0, 7);
-        const label = date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long' });
-        const selected = value === currentMonth ? 'selected' : '';
-        options.push(`<option value="${value}" ${selected}>${Capi(label)}</option>`);
-    }
-    
-    return options.join('');
+    const base = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Lima'}));
+    return [...Array(12)].map((_,i) => {
+        const d = new Date(base.getFullYear(), base.getMonth()-6+i, 1);
+        const v = d.toISOString().slice(0,7);
+        return `<option value="${v}" ${v===currentMonth?'selected':''}>${v}</option>`;
+    }).join('');
 }
-
 // ========================================
 // 📊 CARGAR DATOS OPTIMIZADO
 // ========================================
@@ -463,7 +466,9 @@ function filtrarVentas() {
 
 function renderVentaRow(venta, editing = false) {
     const usuario = todosLosUsuarios.find(u => u.usuario === venta.vendedor || u.id === venta.vendedor);
-    const fechaFormateada = venta.fechaTour ? new Date(venta.fechaTour).toLocaleDateString('es-ES') : 'Sin fecha';
+    const fechaFormateada = venta.fechaTour 
+        ? new Date(venta.fechaTour).toLocaleDateString('es-PE', { timeZone: 'America/Lima' }) 
+        : 'Sin fecha';
     const montoIndividual = parseFloat(venta.precioUnitario) || 0;
     const montoTotal = parseFloat(venta.importeTotal) || 0;
     const comision = parseFloat(venta.comision) || (montoTotal * 0.1);
@@ -806,6 +811,7 @@ function showAddForm() {
     setTimeout(() => $('#tourNombre').focus(), 100);
     Notificacion('📝 Agregando nuevo tour...', 'info');
 }
+
 
 // ========================================
 // 🎯 FUNCIONES GLOBALES DE TOURS
@@ -1179,7 +1185,9 @@ async function exportToExcel() {
         // Preparar datos para Excel
         const excelData = todasVentas.map(venta => {
             const usuario = todosLosUsuarios.find(u => u.usuario === venta.vendedor);
-            const fechaFormateada = venta.fechaTour ? new Date(venta.fechaTour).toLocaleDateString('es-ES') : 'Sin fecha';
+            const fechaFormateada = venta.fechaTour 
+                ? new Date(venta.fechaTour).toLocaleDateString('es-PE', { timeZone: 'America/Lima' }) 
+                : 'Sin fecha';
             const montoTotal = parseFloat(venta.importeTotal) || 0;
             const montoIndividual = parseFloat(venta.precioUnitario) || 0;
             const comision = parseFloat(venta.comision) || (montoTotal * 0.1);
@@ -1272,10 +1280,12 @@ function initEvents() {
     removels('usuariosSmileTop');
     removels('toursSmileTop');
     removels('notasSmileTop'); // ← AGREGAR ESTA LÍNEA
+    removels('configCrearCuenta'); // ← AGREGAR
     
     await refreshData();
     await loadTours();
     await loadNotas(); // ← AGREGAR ESTA LÍNEA
+    await loadConfigCuenta(); // ← AGREGAR
     });
     
     // 📊 EXPORTAR A EXCEL
@@ -1379,6 +1389,77 @@ $(document).ready(() => {
         document.head.appendChild(script);
     }
 });
+
+// ========================================
+// 👥 GESTIÓN DE USUARIOS
+// ========================================
+async function loadConfigCuenta() {
+    try {
+        console.log('🔄 Cargando config cuenta...');
+        const cache = getls('configCrearCuenta');
+        if (cache !== null) {
+            configCrearCuenta = cache;
+            renderConfigUsuarios();
+            return;
+        }
+        const doc = await getDocs(query(collection(db, 'smilesTop'), where('__name__', '==', 'configuracion')));
+        configCrearCuenta = doc.docs[0]?.data()?.crearCuenta || false;
+        savels('configCrearCuenta', configCrearCuenta, 60);
+        renderConfigUsuarios();
+    } catch (e) {
+        console.error('❌ Error load config:', e);
+        configCrearCuenta = false;
+        renderConfigUsuarios();
+    }
+}
+
+function renderConfigUsuarios() {
+    $('#usuariosConfigContainer').html(`
+        <table class="sales-table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-cog"></i> Configuración</th>
+                    <th><i class="fas fa-toggle-on"></i> Estado</th>
+                    <th><i class="fas fa-save"></i> Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Habilitar Crear Cuenta</strong></td>
+                    <td>
+                        <input type="checkbox" id="checkCrearCuenta" ${configCrearCuenta?'checked':''} style="width:20px;height:20px;cursor:pointer;">
+                    </td>
+                    <td class="actions-cell">
+                        <button onclick="saveConfigCuenta()" class="btn-action btn-save" title="Guardar">
+                            <i class="fas fa-save"></i> 
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    `);
+}
+
+window.saveConfigCuenta = async function() {
+    try {
+        const valor = $('#checkCrearCuenta').is(':checked');
+        const data = {
+            crearCuenta: valor,
+            usuario: userData.usuario,
+            actualizadoPor: userData.nombre || userData.usuario,
+            fechaCreado: serverTimestamp(),
+            fechaActualizado: serverTimestamp()
+        };
+        await setDoc(doc(db, 'smilesTop', 'configuracion'), data, {merge: true});
+        configCrearCuenta = valor;
+        removels('configCrearCuenta');
+        savels('configCrearCuenta', valor, 60);
+        Notificacion(`✅ Crear cuenta ${valor?'habilitado':'deshabilitado'}`, 'success');
+    } catch (e) {
+        console.error('❌ Error save config:', e);
+        Notificacion('❌ Error al guardar', 'error');
+    }
+};
 
 // ========================================
 // 🚀 INICIALIZACIÓN FINAL

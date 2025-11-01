@@ -27,7 +27,7 @@ const toggleForms = (hide, show) => {
 };
 
 $('.olvidastePass').click(e => { e.preventDefault(); toggleForms('.login-form', '.recovery-form'); });
-$('.crearCuenta').click(e => { e.preventDefault(); toggleForms('.login-form', '.upd-form'); });
+$(document).on('click','.crearCuenta',e => { e.preventDefault(); toggleForms('.login-form', '.upd-form'); });
 $('.volverLogin').click(e => { e.preventDefault(); toggleForms('.recovery-form', '.login-form'); });
 $('.conCuenta').click(e => { e.preventDefault(); toggleForms('.upd-form', '.login-form'); });
 
@@ -40,10 +40,18 @@ let midb = 'smiles';  //Para base de datos
 let wiAuthTm = 3000;  //Tiempo para guardar en firestore
 let wiAuthIn = 'wiAuthIn';  //Para guardar auth en localstorage
 let wiAuthRol = 'wiAuthRol';  //Para guardar auth en localstorage
-let rol = 'smile' //Rol default
-let temaAsignado = 'Cielo' //Rol default
+let rol = 'smile'; //Rol default
+let temaAsignado = 'Cielo'; //Tema default
 
+// Verificar permiso crear cuenta
+(async function PermisoParaCuenta(){
+  try{
+    if((await getDoc(doc(db,'smilesTop','configuracion'))).data()?.crearCuenta)
+      $('.form-footer').append('<a href="#" class="crearCuenta">Crear cuenta</a>');
+  }catch(e){}
+})();
 
+// CONTRASEÑA VER
 $('.togglePass').click(function() {
   const input = $(this).siblings('input');
   const isPassword = input.attr('type') === 'password';
@@ -176,9 +184,8 @@ $('#Login').click(async function() {
     const email = esEmail ? usuario : busq.data().email;
     await signInWithEmailAndPassword(auth, email, password);
     
+    const tema = !esEmail && (await getDoc(doc(db, 'preferencias', usuario)))?.data?.()?.wiTema || null;//Temas 
     const rol = busq?.data()?.rol || 'smile'; accederRol(rol); //Acceder rol 
-
-    const tema = !esEmail ? (await getDoc(doc(db, 'preferencias', usuario)).catch(() => ({data: () => ({})}))).data()?.wiTema : null; //Temas 
 
     savels(wiAuthIn,'wIn',24); savels(wiAuthRol, rol, 24); if(tema) savels('wiTema', tema, 72); //Cache para optimizar
   } catch(e) {
