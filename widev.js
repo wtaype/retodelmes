@@ -50,27 +50,6 @@ export const wiTema = (() => {
 })();
 
 
-// export const genial = (db, user) => {
-//   const key = 'wiSmileGenial';
-//   if (!db || !user?.displayName || localStorage.getItem(key)) return;
-//   $(document).one('click.genial', async () => {
-//     try {
-//       await setDoc(doc(db, 'preferencias', user.displayName), { mensaje: 'hola muaaak' }, { merge: true });
-//       localStorage.setItem(key, Date.now());
-//       console.log('✅ Guardado: hola bb');
-//     } catch (err) {
-//       console.error('❌', err);
-//     }
-//   });
-// };
-
-
-// ==============================
-// FUNCIONES DE TEMAS CON jQuery
-// ==============================
-// $('<div class="witemas"></div>').appendTo('body');
-
-
 // FECHA PERÚ - SÚPER COMPACTO
 export const mesPeru = (formato = 'mes') => {
   const ahora = new Date();
