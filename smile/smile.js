@@ -1201,9 +1201,9 @@ function getFormularioHTML() {
                     <label><i class="fas fa-money-check-alt"></i>Estado del Pago:</label>
                     <select id="estadoPago">
                         <option id="ep01" value="pagado">Pagado (Tour con nosotros) </option>
-                        <option id="ep02" value="pagado">Transferido hacia nosotros(<-)</option>
-                        <option id="ep03" value="cobrar">Transferido con Deuda(->)</option>
-                        <option id="ep04" value="cobrado">Deuda Saldada(Arreglada ->)</option>
+                        <option id="ep03" value="cobrar">Yo pase al operador (->)</option>
+                        <option id="ep02" value="pagado">Nos ha pasado a nosotros (<-)</option>
+                        <option id="ep04" value="cobrado">Deuda Arreglada (<->)</option>
                     </select>
                 </div>
 
