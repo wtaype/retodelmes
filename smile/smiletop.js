@@ -3,7 +3,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { auth, db } from '../firebase/init.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { getDocs, doc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, startAfter, serverTimestamp, addDoc, setDoc } from "firebase/firestore";
-import { wiTema, mesPeru, Capi, Mensaje, Notificacion, savels, getls, removels, infoo, fechaLetra,mis10 } from '../widev.js';
+import { wiTema, mesPeru, Capi, Mensaje, Notificacion, savels, getls, removels, infoo, fechaLetra,mis10 } from './widev.js';
 
 // ========================================
 // 🔐 VARIABLES GLOBALES COMPACTAS
