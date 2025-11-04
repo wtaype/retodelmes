@@ -1,18 +1,33 @@
 // === IMPORTS ===
 import $ from 'jquery';
-import { Mensaje, Notificacion, removels } from './widev.js';
+import { Mensaje, Notificacion, removels, getls } from './widev.js';
+import { cargarEmpleados, cargarVentas, renderizarTablaVentas } from './tourHistorial.js';
+import { cargarTours, initTourSelector } from './tourRegistrar.js';
+import { cargarNotas, calcularPuntosEmpleados, renderizarEmpleados, actualizarResumenCompetencia } from './tourRanking.js';
 
 // === EXPORTS ===
 export { wifresh };
 
+// === SPIN HELPER ===
+const spin = ($btn, estado) => {
+  const $icono = $btn.find('i');
+  if (estado) {
+    $icono.removeClass().addClass('fas fa-spinner fa-spin');
+    $btn.prop('disabled', true);
+  } else {
+    $icono.removeClass().addClass('fa-solid fa-rotate-right');
+    $btn.prop('disabled', false);
+  }
+};
+
 // === ACTUALIZAR DATOS ===
 $(document).on('click', '.bt_cargar', () => {
-  const regex = /^(im\d+|ki\d+|remote:im\d+|dirty:im\d+|dirty:ki\d+|toursSmile|notasSmile)$/;
+  const regex = /^(im\d+|ki\d+|remote:im\d+|dirty:im\d+|dirty:ki\d+|toursSmile|notasSmile|empleadosSmile|empleadosPuntos_)$/;
   Object.keys(localStorage)
     .filter(k => regex.test(k))
     .forEach(k => localStorage.removeItem(k));
   
-  Mensaje('Actualizado');
+  Mensaje('✅ Cache limpiado');
   setTimeout(() => location.reload(), 800);
 });
 
@@ -20,15 +35,13 @@ $(document).on('click', '.bt_cargar', () => {
 async function wifresh() {
   try {
     const $btn = $('.wifresh');
-    const orig = $btn.html();
-    
-    $btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+    spin($btn, true);
     Notificacion('🔄 Verificando actualizaciones...', 'info');
     
     const cambios = await detectarCambios();
     
     if (!cambios.hayActualizaciones) {
-      $btn.html(orig).prop('disabled', false);
+      spin($btn, false);
       Notificacion('✅ Todo actualizado', 'success');
       return;
     }
@@ -42,19 +55,18 @@ async function wifresh() {
     if (cambios.notas) promesas.push(actualizarNotas());
     
     await Promise.all(promesas);
-    
     await Promise.all([calcularPuntosEmpleados(), actualizarResumenCompetencia()]);
     
     renderizarEmpleados();
     renderizarTablaVentas();
     initTourSelector();
     
-    $btn.html(orig).prop('disabled', false);
+    spin($btn, false);
     Notificacion(`✅ ${cambios.total} actualizaciones aplicadas`, 'success');
     
   } catch (e) {
     console.error('❌ Error wifresh:', e);
-    $('.wifresh').html('<i class="fa-solid fa-rotate-right"></i>').prop('disabled', false);
+    spin($('.wifresh'), false);
     Notificacion('❌ Error en actualización', 'error');
   }
 }

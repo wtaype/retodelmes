@@ -9,6 +9,7 @@ import { cargarNotas, cargarUltimoGanador, actualizarResumenCompetencia } from '
 import { cargarVentas, actualizarFiltroEmpleados, cargarEmpleados } from './tourHistorial.js';
 import { cargarTours, initTourSelector, getFormularioHTML } from './tourRegistrar.js';
 import { getInfoTabsHTML } from './tourInfo.js';
+import { wifresh } from './wiupdate.js';
 
 // === EXPORTS ===
 export let userAuth = null;
@@ -17,6 +18,11 @@ export let currentPage = 1;
 export let ventasPorPagina = 5;
 export let todasLasVentas = [];
 export let todosLosEmpleados = [];
+
+// 🔥 FUNCIONES SETTER
+export const setVentasPorPagina = (val) => { ventasPorPagina = val; };
+export const setCurrentPage = (val) => { currentPage = val; };
+export const setCurrentMonth = (val) => { currentMonth = val; };
 
 // === AUTH ===
 onAuthStateChanged(auth, async user => {

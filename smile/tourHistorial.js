@@ -3,9 +3,9 @@ import $ from 'jquery';
 import { db } from '../firebase/init.js';
 import { getDocs, deleteDoc, collection, doc } from 'firebase/firestore';
 import { Notificacion, savels, getls, Capi, mis10, fechaPeru } from './widev.js';
-import { userAuth, currentMonth, currentPage, ventasPorPagina, todasLasVentas, todosLosEmpleados } from './smile.js';
 import { cargarDatosEnFormulario, limpiarEstadoFormulario} from './tourRegistrar.js';
-import { renderizarEmpleados, calcularPuntosEmpleados,actualizarResumenCompetencia } from './tourRanking.js';
+import { userAuth, currentMonth, currentPage, ventasPorPagina, todasLasVentas, todosLosEmpleados, setVentasPorPagina, setCurrentPage, setCurrentMonth } from './smile.js';
+import { renderizarEmpleados, calcularPuntosEmpleados, actualizarResumenCompetencia, cargarUltimoGanador } from './tourRanking.js';
 
 // === EXPORTS ===
 export { renderizarTablaVentas, cargarVentas, actualizarFiltroEmpleados, cargarEmpleados };
@@ -38,14 +38,14 @@ async function cargarEmpleados() {
 
 // === EVENTOS ===
 $(document).on('change', '#mostrarn', function() {
-  ventasPorPagina = parseInt($(this).val());
-  currentPage = 1;
+  setVentasPorPagina(parseInt($(this).val()));
+  setCurrentPage(1);
   renderizarTablaVentas($('#filterEmployee').val());
 });
 
 $(document).on('change', '#monthSelector', function() {
-  currentMonth = $(this).val();
-  currentPage = 1;
+  setCurrentMonth($(this).val());
+  setCurrentPage(1);
   
   Promise.all([calcularPuntosEmpleados(), cargarVentas()])
     .then(() => {
@@ -57,18 +57,18 @@ $(document).on('change', '#monthSelector', function() {
 });
 
 $(document).on('change', '#filterEmployee', () => {
-  currentPage = 1;
+  setCurrentPage(1);
   renderizarTablaVentas($('#filterEmployee').val());
 });
 
 $(document).on('click', '#todayFilter', () => {
-  currentPage = 1;
+  setCurrentPage(1);
   renderizarTablaVentas($('#filterEmployee').val(), true);
 });
 
 // === FUNCIONES GLOBALES ===
 window.cambiarPagina = (pag) => {
-  currentPage = pag;
+  setCurrentPage(pag);
   renderizarTablaVentas($('#filterEmployee').val());
 };
 
