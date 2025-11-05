@@ -4,7 +4,6 @@ import { db } from '../firebase/init.js';
 import { doc, setDoc, getDoc, getDocs, collection, serverTimestamp } from 'firebase/firestore';
 import { savels, getls, fechaPeru } from './widev.js';
 import { currentMonth, todasLasVentas, todosLosEmpleados } from './smile.js';
-
 // === EXPORTS ===
 export { cargarNotas, cargarUltimoGanador, actualizarResumenCompetencia, calcularPuntosEmpleados, renderizarEmpleados };
 
