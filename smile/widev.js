@@ -150,10 +150,6 @@ export const Saludar = () => {
     }
 }; 
 
-// AccederRol
-// export const accederRol = (rol) => {
-//   window.location.href = { smiletop: '/smiletop.html' }[rol] || '/smile.html';
-// };
 
 export const accederRol = (rol) => {
   const to = rol === 'smiletop' ? 'smiletop.html' : 'smile.html';
@@ -287,36 +283,6 @@ export function getls(clave) {
   } catch(e){console.error('Error getls:', e); removels(clave); return null;}
 }
 
-
-// ✅ GUARDAR OBJECTS 
-// const userData = {
-//   nombre: 'Wilder',
-//   rol: 'smile',
-// };
-// savels('userData', userData, 120);
-
-// // 🔍 Consultar objeto (súper fácil)
-// const user = getls('userData');
-// if (user) {
-//   console.log(user.nombre);              // "Wilder"
-//   console.log(user.rol);                 // "smiletop"
-// }
-// 🎯 Usar en tu app directamente
-// $('#welcome').text(`Hola ${user.nombre}!`);
-// $('#email').text(user.email);
-
-// ✅ GUARDAR ARRAYS 
-// const acciones = ['login', 'updateProfile', 'logout'];
-// savels('userActions', acciones, 45);
-
-// // 🔍 Consultar array simple
-// const actions = getls('userActions');
-// if (actions) {
-//   console.log(actions[0]);             // "login"
-//   console.log(actions.includes('logout')); // true
-//   console.log(actions.join(', '));     // "login, updateProfile, logout"
-// }
-// Remove a key from localStorage
 export function removels(...claves) {
   claves.forEach(clave => {
     if (clave && typeof clave === 'string') {
