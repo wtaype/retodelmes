@@ -2,7 +2,7 @@
 import $ from 'jquery';
 import { db } from '../firebase/init.js';
 import { doc, setDoc, getDoc, getDocs, collection, serverTimestamp } from 'firebase/firestore';
-import { savels, getls, savebd, getbd } from './widev.js';
+import { savels, getls, savebd, getbd, Capi } from './widev.js';
 import { currentMonth, todasLasVentas, todosLosEmpleados } from './smile.js';
 
 // === EXPORTS ===
@@ -265,7 +265,7 @@ function renderizarUltimoGanador(data) {
     <div class="winner-info">
       <img src="${emp?.imagen || '/smile.png'}" alt="${data.ganador}">
       <div class="winner-details">
-        <h4>${data.ganador}</h4>
+        <h4>${Capi(data.ganador)}</h4>
         <p>${data.mes}/${data.year}</p>
         <span class="winner-points">${data.puntosGanados} puntos</span>
         <span class="winner-sales">${data.totalVentas} tours</span>
