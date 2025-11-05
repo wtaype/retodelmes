@@ -36,7 +36,6 @@ $('.conCuenta').click(e => { e.preventDefault(); toggleForms('.upd-form', '.logi
 // =====================================================
 
 let midb = 'smiles';  //Para base de datos 
-// let miconf = 'configuracion';  //Para base de datos 
 let wiAuthTm = 3000;  //Tiempo para guardar en firestore
 let wiAuthIn = 'wiAuthIn';  //Para guardar auth en localstorage
 let wiAuthRol = 'wiAuthRol';  //Para guardar auth en localstorage

@@ -1,5 +1,22 @@
 import $ from 'jquery'; 
-import { doc, setDoc, getDoc, serverTimestamp} from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, Timestamp} from 'firebase/firestore';
+
+// ==============================
+// 🔥 FECHA CON HORA ACTUAL PARA FIRESTORE
+// ==============================
+export const savebd = (fecha) => {
+  const [año, mes, dia] = fecha.split('-').map(Number);
+  const ahora = new Date();
+  const fechaObj = new Date(año, mes - 1, dia, ahora.getHours(), ahora.getMinutes(), ahora.getSeconds());
+  return Timestamp.fromDate(fechaObj);
+};
+
+export const getbd = (timestamp) => {
+  if (!timestamp?.toDate) return '';
+  const d = timestamp.toDate();
+  return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+};
+ 
 
 export const wiTema = (() => {
   const tonos = [["Cielo","#0EBEFF"],["Dulce","#FF5C69"],["Paz","#29C72E"],["Mora","#7000FF"],["Futuro","#21273B"]];
@@ -52,24 +69,20 @@ export const wiTema = (() => {
 // 🇵🇪 OBTENER FECHA/HORA ACTUAL DE PERÚ
 export const fechaPeru = (tipo = 'full') => {
   const ahora = new Date();
-  const opciones = { timeZone: 'America/Lima' };
+  const peru = new Date(ahora.getTime() - (5 * 60 * 60 * 1000)); // UTC-5
+  const y = peru.getFullYear();
+  const m = String(peru.getMonth() + 1).padStart(2, '0');
+  const d = String(peru.getDate()).padStart(2, '0');
+  const h = String(peru.getHours()).padStart(2, '0');
+  const min = String(peru.getMinutes()).padStart(2, '0');
   
-  if (tipo === 'input') {
-    // Para inputs datetime-local: 2025-11-02T23:26
-    const año = ahora.toLocaleString('en-US', { ...opciones, year: 'numeric' });
-    const mes = ahora.toLocaleString('en-US', { ...opciones, month: '2-digit' });
-    const dia = ahora.toLocaleString('en-US', { ...opciones, day: '2-digit' });
-    const hora = ahora.toLocaleString('en-US', { ...opciones, hour: '2-digit', hour12: false });
-    const min = ahora.toLocaleString('en-US', { ...opciones, minute: '2-digit' });
-    return `${año}-${mes}-${dia}T${hora}:${min}`;
-  }
+  if (tipo === 'date') return `${y}-${m}-${d}`; // 2025-11-05 para input type="date"
+  if (tipo === 'datetime') return `${y}-${m}-${d}T${h}:${min}`; // 2025-11-05T12:22 para input type="datetime-local"
   
-  // Para mostrar: 02/11/2025 11:26 pm
-  const dia = ahora.toLocaleString('es-PE', { ...opciones, day: '2-digit' });
-  const mes = ahora.toLocaleString('es-PE', { ...opciones, month: '2-digit' });
-  const año = ahora.toLocaleString('es-PE', { ...opciones, year: 'numeric' });
-  const hora = ahora.toLocaleString('es-PE', { ...opciones, hour: '2-digit', minute: '2-digit', hour12: true });
-  return `${dia}/${mes}/${año} ${hora}`;
+  // Para mostrar: 05/11/2025 12:22 pm
+  const hora12 = peru.getHours() % 12 || 12;
+  const ampm = peru.getHours() >= 12 ? 'pm' : 'am';
+  return `${d}/${m}/${y} ${hora12}:${min} ${ampm}`;
 };
 
 // FECHA PERÚ - SÚPER COMPACTO

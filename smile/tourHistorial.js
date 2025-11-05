@@ -2,9 +2,9 @@
 import $ from 'jquery';
 import { db } from '../firebase/init.js';
 import { getDocs, deleteDoc, collection, doc } from 'firebase/firestore';
-import { Notificacion, savels, getls, Capi, mis10, fechaPeru } from './widev.js';
+import { Notificacion, savels, getls, Capi, mis10, savebd, getbd } from './widev.js'; // ✅ ACTUALIZADO
 import { cargarDatosEnFormulario, limpiarEstadoFormulario} from './tourRegistrar.js';
-import { userAuth, currentMonth, currentPage, ventasPorPagina, todasLasVentas, todosLosEmpleados, setVentasPorPagina, setCurrentPage, setCurrentMonth } from './smile.js';
+import { wiUsuario, currentMonth, currentPage, ventasPorPagina, todasLasVentas, todosLosEmpleados, setVentasPorPagina, setCurrentPage, setCurrentMonth } from './smile.js';
 import { renderizarEmpleados, calcularPuntosEmpleados, actualizarResumenCompetencia, cargarUltimoGanador } from './tourRanking.js';
 
 // === EXPORTS ===
@@ -152,7 +152,13 @@ async function cargarVentas() {
       ...snap.docs.map(d => ({ id: d.id, ...d.data() }))
     );
     
-    todasLasVentas.sort((a, b) => new Date(b.fechaTour || '1970') - new Date(a.fechaTour || '1970'));
+    // ✅ ACTUALIZADO - Ordenar por fecha usando getbd
+    todasLasVentas.sort((a, b) => {
+      const fechaA = a.fechaTour?.toDate ? a.fechaTour.toDate() : new Date(a.fechaTour || '1970');
+      const fechaB = b.fechaTour?.toDate ? b.fechaTour.toDate() : new Date(b.fechaTour || '1970');
+      return fechaB - fechaA;
+    });
+    
     renderizarTablaVentas();
     
   } catch (e) {
@@ -163,12 +169,28 @@ async function cargarVentas() {
 
 // === RENDERIZAR TABLA ===
 function renderizarTablaVentas(filtro = '', soloHoy = false) {
-  let ventas = todasLasVentas.filter(v => v.fechaTour?.startsWith(currentMonth));
+  const [añoActual, mesActual] = currentMonth.split('-').map(Number);
+  const hoy = new Date();
+  const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+  
+  let ventas = todasLasVentas.filter(v => {
+    const f = v.fechaTour;
+    if (!f) return false;
+    if (f.toDate) { const fd = f.toDate(); return fd.getFullYear() === añoActual && fd.getMonth() + 1 === mesActual; } // Timestamp
+    if (typeof f === 'string') { const [a, m] = f.split('-').map(Number); return a === añoActual && m === mesActual; } // String
+    return false;
+  });
   
   if (filtro) ventas = ventas.filter(v => v.vendedor === filtro);
+  
   if (soloHoy) {
-    const hoy = fechaPeru('input').split('T')[0];
-    ventas = ventas.filter(v => v.fechaTour === hoy);
+    ventas = ventas.filter(v => {
+      const f = v.fechaTour;
+      if (!f) return false;
+      if (typeof f === 'string') return f === hoyStr; // String
+      if (f.toDate) { const fd = f.toDate(); return `${fd.getFullYear()}-${String(fd.getMonth() + 1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}` === hoyStr; } // Timestamp
+      return false;
+    });
   }
   
   const totalPags = Math.ceil(ventas.length / ventasPorPagina);
@@ -176,7 +198,7 @@ function renderizarTablaVentas(filtro = '', soloHoy = false) {
   const ventasPag = ventas.slice(inicio, inicio + ventasPorPagina);
   
   const filas = ventasPag.map(v => {
-    const esProp = v.vendedor === userAuth?.displayName;
+    const esProp = v.vendedor === wiUsuario?.displayName;
     const btns = esProp 
       ? `<button class="btn-view" onclick="verDetalleVenta('${v.id}')"><i class="fas fa-eye"></i></button>
          <button class="btn-edit" onclick="editarVenta('${v.id}')"><i class="fas fa-edit"></i></button>
@@ -218,8 +240,17 @@ function renderizarTablaVentas(filtro = '', soloHoy = false) {
 // === AUXILIARES ===
 function formatearFecha(fecha) {
   if (!fecha) return 'Sin fecha';
-  const [y, m, d] = fecha.split('-');
-  return `${d}/${m}/${y}`;
+  
+  // ✅ ACTUALIZADO - Usar getbd para Timestamps
+  if (fecha?.toDate) return getbd(fecha);
+  
+  // Para strings formato YYYY-MM-DD
+  if (typeof fecha === 'string') {
+    const [y, m, d] = fecha.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  
+  return 'Sin fecha';
 }
 
 function obtenerEstado(estado) {

@@ -4,15 +4,15 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { auth, db } from '../firebase/init.js';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { wiTema, Mensaje, savels, getls, mesPeru } from './widev.js';
-import { cargarNotas, cargarUltimoGanador, actualizarResumenCompetencia } from './tourRanking.js';
+import { wiTema, Mensaje, savels, getls, savebd, getbd } from './widev.js';
+import { cargarNotas, cargarUltimoGanador, resumenes } from './tourRanking.js';
 import { cargarVentas, actualizarFiltroEmpleados, cargarEmpleados } from './tourHistorial.js';
 import { cargarTours, initTourSelector, getFormularioHTML } from './tourRegistrar.js';
 import { getInfoTabsHTML } from './tourInfo.js';
 import { wifresh } from './wiupdate.js';
 
 // === EXPORTS ===
-export let userAuth = null;
+export let wiUsuario = null;
 export let currentMonth = '2025-09';
 export let currentPage = 1;
 export let ventasPorPagina = 5;
@@ -24,31 +24,44 @@ export const setVentasPorPagina = (val) => { ventasPorPagina = val; };
 export const setCurrentPage = (val) => { currentPage = val; };
 export const setCurrentMonth = (val) => { currentMonth = val; };
 
+// === FUNCIÓN MESES DINÁMICOS ===
+function mesActual() {
+  const hoy = new Date();
+  const wiYear = hoy.getFullYear();
+  const mesActual = hoy.getMonth(); // 0-11
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  
+  const opciones = [];
+  for (let i = -3; i <= 3; i++) {
+    const mesNum = mesActual + i;
+    const yearCalc = wiYear + Math.floor(mesNum / 12);
+    const mesCalc = ((mesNum % 12) + 12) % 12;
+    const value = `${yearCalc}-${String(mesCalc + 1).padStart(2, '0')}`;
+    opciones.push(`<option value="${value}">${meses[mesCalc]} ${yearCalc}</option>`);
+  }
+  return opciones.join('');
+}
+
 // === AUTH ===
 onAuthStateChanged(auth, async user => {
   if (!user) return window.location.href = '/';
-  userAuth = user;
-  
+  wiUsuario = user;
   try {
-    const wi = getls('wiSmile') || await obtenerDatosUsuario(user);
-    smileContenido(wi);
-    wiTema(db, userAuth);
+    const wi = getls('wiSmile');
+    if (wi) return smileContenido(wi), wiTema(db, wiUsuario);
+    const busq = await getDocs(query(collection(db, 'smiles'), where('usuario', '==', user.displayName)));
+    const widt = busq.docs[0].data();
+    savels('wiSmile', widt, 450);
+    smileContenido(widt);
+    wiTema(db, wiUsuario);
   } catch (e) { console.error(e); }
 });
 
-// Obtener datos de Firebase
-const obtenerDatosUsuario = async (user) => {
-  const snap = await getDocs(query(collection(db, 'smiles'), where('usuario', '==', user.displayName)));
-  const data = snap.docs[0].data();
-  savels('wiSmile', data, 450);
-  return data;
-};
-
-// Cerrar sesión
+// === CERRAR SESIÓN ===
 $(document).on('click', '.bt_salir', async () => {
   await signOut(auth);
-  localStorage.clear();
   window.location.href = '/';
+  try { localStorage.clear(); } catch (_) { Object.keys(localStorage).forEach(k => localStorage.removeItem(k)); }
 });
 
 // === RENDER ===
@@ -60,9 +73,7 @@ function smileContenido(wi) {
       <div class="header-container miwp">
         <div class="header-left">
           <h1 class="main-title"><i class="fas fa-trophy"></i>RETO DEL MES</h1>
-          <select id="monthSelector" class="month-selector">
-            ${['09', '10', '11', '12'].map(m => `<option value="2025-${m}">${['Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][m-9]} 2025</option>`).join('')}
-          </select>
+          <select id="monthSelector" class="month-selector">${mesActual()}</select>
         </div>
         <div class="header-right">
           <div class="wifresh"><i class="fa-solid fa-rotate-right"></i></div>
@@ -103,13 +114,7 @@ function smileContenido(wi) {
           </ul>
           <div class="workers-grid" id="workersGrid"><div class="loading-workers"><i class="fas fa-spinner fa-spin"></i>Cargando empleados...</div></div>
           <div class="last-winner" id="lastWinner"><div class="loading-workers"><i class="fas fa-spinner fa-spin"></i>Cargando ganador...</div></div>
-          <div class="competition-summary" id="competitionSummary">
-            ${['Tours de Hoy:toursHoy', 'Total Tours:totalTours', 'Puntos Totales:totalPuntos', 'Meta del Mes:2500'].map(s => {
-              const [label, id] = s.split(':');
-              const valor = id === '2500' ? '2500' : '0';
-              return `<div class="summary-stat"><span class="summary-label">${label}</span><span class="summary-value" id="${id}">${valor}</span></div>`;
-            }).join('')}
-          </div>
+          ${resumenes()}
         </section>
       </div>
 
@@ -143,14 +148,13 @@ function smileContenido(wi) {
 // === INIT ===
 async function inicializarDashboard() {
   try {
-    currentMonth = mesPeru();
+    const hoy = new Date();
+    currentMonth = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
     $('#monthSelector').val(currentMonth);
-    $('#fechaTour').val(mesPeru('fecha'));
     
     await Promise.all([cargarEmpleados(), cargarVentas(), cargarUltimoGanador(), cargarTours(), cargarNotas()]);
     
     actualizarFiltroEmpleados();
-    actualizarResumenCompetencia();
     initTourSelector();
   } catch (e) {
     console.error('Error init:', e);

@@ -2,176 +2,13 @@
 import $ from 'jquery';
 import { db } from '../firebase/init.js';
 import { doc, setDoc, getDocs, collection, query, where, serverTimestamp } from 'firebase/firestore';
-import { Notificacion, savels, getls, mesPeru } from './widev.js';
-import { userAuth, todasLasVentas } from './smile.js';
+import { Notificacion, savels, getls, savebd } from './widev.js';
+import { wiUsuario, todasLasVentas } from './smile.js';
 import { cargarVentas } from './tourHistorial.js';
 import { calcularPuntosEmpleados, renderizarEmpleados, actualizarResumenCompetencia } from './tourRanking.js';
 
 // === EXPORTS ===
-export { cargarDatosEnFormulario, cargarTours, initTourSelector, getFormularioHTML, limpiarEstadoFormulario};
-
-// === VARIABLES ===
-let htours = [];
-let selTour = null;
-
-// === EVENTOS PRINCIPALES ===
-// Guardar venta
-$(document).on('click', '.btn-save', async (e) => {
-  e.preventDefault();
-  if ($('.btn-save').prop('disabled')) return;
-  
-  try {
-    if (!selTour) {
-      Notificacion('⚠️ Selecciona un tour primero', 'error');
-      return $('#tourDisplay').focus();
-    }
-    
-    const $btn = $('.btn-save');
-    const txtOrig = $btn.html();
-    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Guardando...');
-    
-    const editId = $btn.attr('data-edit-id');
-    const pax = parseInt($('#cantidadPax').val()) || 1;
-    const esEsp = $('#vtJulio, #vtSonia, #vtExterna').is(':checked');
-    
-    const formData = {
-      tipoTour: selTour.tour,
-      registroEn: $('#registroEn').val(),
-      nombreCliente: $('#nombreCliente').val(),
-      numeroHabitacion: $('#numeroHabitacion').val(),
-      tipoDocumento: $('#tipoDocumento').val(),
-      numeroDocumento: $('#numeroDocumento').val(),
-      cantidadPax: pax,
-      precioUnitario: parseFloat($('#precioUnitario').val()) || 0,
-      metodoPago: $('#metodoPago').val(),
-      importeTotal: parseFloat($('#importeTotal').val()) || 0,
-      ganancia: parseFloat($('#ganancia').val()) || 0,
-      horaSalida: $('#horaSalida').val(),
-      Operador: $('#Operador').val(),
-      PagoOperador: parseFloat($('#PagoOperador').val()) || 0,
-      Comentario: $('#Comentario').val(),
-      fechaTour: $('#fechaTour').val(),
-      estadoPago: $('#estadoPago').val(),
-      vendedor: userAuth.displayName,
-      puntos: esEsp ? 0 : (selTour.pts * pax),
-      email: userAuth.email,
-      qventa: 1,
-      fechaRegistro: serverTimestamp(),
-      esVentaJulio: !!$('#vtJulio').prop('checked'),
-      esVentaSonia: !!$('#vtSonia').prop('checked'),
-      esVentaExterna: !!$('#vtExterna').prop('checked')
-    };
-
-    // Validar campos
-    const campos = [
-      [selTour, '#tourDisplay', 'tour'],
-      [formData.nombreCliente, '#nombreCliente', 'Cliente'],
-      [formData.horaSalida, '#horaSalida', 'Hora'],
-      [formData.fechaTour, '#fechaTour', 'Fecha'],
-      [formData.Operador, '#Operador', 'Operador'],
-      [formData.numeroDocumento, '#numeroDocumento', 'Documento'],
-      [formData.metodoPago, '#metodoPago', 'Método de pago']
-    ];
-
-    $('.faltaValor, .okValor').removeClass('faltaValor okValor');
-    const faltantes = campos.filter(([val, sel]) => {
-      const ok = val && val.toString().trim();
-      $(sel).addClass(ok ? 'okValor' : 'faltaValor');
-      return !ok;
-    }).map(([,,nom]) => nom);
-
-    if (faltantes.length) {
-      $btn.prop('disabled', false).html(txtOrig);
-      Notificacion(`⚠️ Completa: ${faltantes.join(', ')}`, 'error');
-      return $('.faltaValor').first().focus();
-    }
-
-    // Guardar o actualizar
-    const docId = editId || `venta_${Date.now()}`;
-    formData.idVenta = docId;
-    
-    await setDoc(doc(db, 'registrosdb', docId), formData);
-    savels(`vendedor_${userAuth.displayName}`, formData, 450);
-    
-    if (editId) {
-      const idx = todasLasVentas.findIndex(v => v.id === editId);
-      if (idx !== -1) todasLasVentas[idx] = { id: editId, ...formData };
-      Notificacion('¡Venta actualizada!', 'success');
-    } else {
-      Notificacion('¡Venta registrada!', 'success');
-    }
-    
-    $('.faltaValor, .okValor').removeClass('faltaValor okValor');
-    limpiarEstadoFormulario();
-    await cargarVentas();
-    await calcularPuntosEmpleados();
-    renderizarEmpleados();
-    actualizarResumenCompetencia();
-    
-  } catch (error) {
-    console.error('Error guardando:', error);
-    Notificacion('Error al guardar. Inténtalo nuevamente.', 'error');
-    $('.btn-save').prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Venta');
-  }
-});
-
-// Validación en tiempo real
-$(document).on('input change', '#formularioVenta input, #formularioVenta select', function() {
-  $(this).toggleClass('okValor faltaValor', !!$(this).val()?.toString().trim());
-});
-
-$(document).on('click', '.tour-row', () => $('#tourDisplay').removeClass('faltaValor').addClass('okValor'));
-
-// Calcular total y puntos
-$(document).on('change', '#vtJulio, #vtSonia, #vtExterna', actualizarPuntosPreview);
-$(document).on('input', '#cantidadPax, #precioUnitario', () => {
-  calcularTotal();
-  calcularComision();
-  actualizarPuntosPreview();
-});
-$(document).on('change', '#estadoPago', calcularComision);
-$(document).on('input', '#importeTotal, #PagoOperador', calcularComision);
-
-// Limpiar/Cancelar
-$(document).on('click', '.btn-clear-view, .btn-cancel-edit', () => {
-  limpiarEstadoFormulario();
-  Notificacion('Vista limpiada', 'info');
-});
-
-// === FUNCIONES CÁLCULO ===
-function calcularTotal() {
-  const pax = parseInt($('#cantidadPax').val()) || 1;
-  const precio = parseFloat($('#precioUnitario').val()) || 0;
-  $('#importeTotal').val((precio * pax).toFixed(2));
-  aplicarZoom('#importeTotal');
-}
-
-function calcularComision() {
-  const estado = $('#estadoPago').val();
-  const total = parseFloat($('#importeTotal').val()) || 0;
-  const pago = parseFloat($('#PagoOperador').val()) || 0;
-  
-  const esPagado = estado === 'pagado';
-  $('#ganancia').val((esPagado ? total : total - pago).toFixed(2));
-  $('#PagoOperador')
-    .prop('disabled', esPagado)
-    .attr('placeholder', esPagado ? 'Servicio nuestro' : '0.00')
-    .val(esPagado ? '0' : $('#PagoOperador').val());
-  
-  aplicarZoom('#ganancia');
-}
-
-function actualizarPuntosPreview() {
-  const pax = parseInt($('#cantidadPax').val()) || 1;
-  const ptsBase = selTour?.pts || 0;
-  const esEsp = $('#vtJulio, #vtSonia, #vtExterna').is(':checked');
-  $('#vistaPreviaLaPuntos').text(esEsp ? 0 : (ptsBase * pax));
-}
-
-function aplicarZoom(sel) {
-  $(sel).addClass('field-updated');
-  setTimeout(() => $(sel).removeClass('field-updated'), 1000);
-}
+export { cargarDatosEnFormulario, cargarTours, initTourSelector, getFormularioHTML, limpiarEstadoFormulario };
 
 // === HTML FORMULARIO ===
 function getFormularioHTML() {
@@ -270,16 +107,16 @@ function getFormularioHTML() {
 
         <div class="form-field">
           <label><i class="fas fa-money-bill"></i>Pago al operador (S/) *</label>
-          <input type="number" id="PagoOperador" step="0.01" placeholder="0.00" required disabled>
+          <input type="number" id="PagoOperador" step="0.01" placeholder="0.00" required>
         </div>
 
         <div class="form-field">
           <label><i class="fas fa-money-check-alt"></i>Estado del Pago:</label>
           <select id="estadoPago">
-            <option id="ep01" value="pagado">Pagado (Tour con nosotros)</option>
-            <option id="ep03" value="cobrar">Yo pase al operador (->)</option>
-            <option id="ep02" value="pagado">Nos ha pasado a nosotros (<-)</option>
-            <option id="ep04" value="cobrado">Deuda Arreglada (<->)</option>
+            <option value="pagado">Pagado (Tour con nosotros)</option>
+            <option value="cobrar">Yo pase al operador (->)</option>
+            <option value="pagado2">Nos ha pasado a nosotros (<-)</option>
+            <option value="cobrado">Deuda Arreglada (<->)</option>
           </select>
         </div>
 
@@ -290,12 +127,12 @@ function getFormularioHTML() {
 
         <div class="form-field">
           <label><i class="fas fa-calendar-day"></i>Fecha *</label>
-          <input type="date" id="fechaTour" required>
+          <input type="date" id="fechaTour" required value="${new Date().toISOString().split('T')[0]}">
         </div>
 
         <div class="form-field">
           <label><i class="fa-solid fa-comment"></i>Comentario/Anotes (Opcional) *</label>
-          <input type="text" id="Comentario" placeholder="Escribe notas de tu venta(opcional)" required>
+          <input type="text" id="Comentario" placeholder="Escribe notas de tu venta(opcional)">
         </div>
       </div>
 
@@ -312,6 +149,151 @@ function getFormularioHTML() {
   `;
 }
 
+// === VARIABLES ===
+let htours = [];
+let selTour = null;
+
+// === EVENTOS PRINCIPALES ===
+$(document).on('click', '.btn-save', async (e) => {
+  e.preventDefault();
+  if ($('.btn-save').prop('disabled')) return;
+  
+  try {
+    if (!selTour) return Notificacion('⚠️ Selecciona un tour', 'error'), $('#tourDisplay').focus();
+    
+    const $btn = $('.btn-save');
+    const txtOrig = $btn.html();
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Guardando...');
+    
+    const editId = $btn.attr('data-edit-id');
+    const pax = parseInt($('#cantidadPax').val()) || 1;
+    const esEsp = $('#vtJulio, #vtSonia, #vtExterna').is(':checked');
+    
+    const formData = {
+      tipoTour: selTour.tour,
+      registroEn: $('#registroEn').val(),
+      nombreCliente: $('#nombreCliente').val(),
+      numeroHabitacion: $('#numeroHabitacion').val(),
+      tipoDocumento: $('#tipoDocumento').val(),
+      numeroDocumento: $('#numeroDocumento').val(),
+      cantidadPax: pax,
+      precioUnitario: parseFloat($('#precioUnitario').val()) || 0,
+      metodoPago: $('#metodoPago').val(),
+      importeTotal: parseFloat($('#importeTotal').val()) || 0,
+      ganancia: parseFloat($('#ganancia').val()) || 0,
+      horaSalida: $('#horaSalida').val(),
+      Operador: $('#Operador').val(),
+      PagoOperador: parseFloat($('#PagoOperador').val()) || 0,
+      Comentario: $('#Comentario').val(),
+      fechaTour: savebd($('#fechaTour').val()),
+      estadoPago: $('#estadoPago').val(),
+      vendedor: wiUsuario.displayName,
+      puntos: esEsp ? 0 : (selTour.pts * pax),
+      email: wiUsuario.email,
+      qventa: 1,
+      fechaRegistro: serverTimestamp(),
+      esVentaJulio: !!$('#vtJulio').prop('checked'),
+      esVentaSonia: !!$('#vtSonia').prop('checked'),
+      esVentaExterna: !!$('#vtExterna').prop('checked')
+    };
+
+    // Validar
+    const campos = [
+      [selTour, '#tourDisplay', 'tour'],
+      [formData.nombreCliente, '#nombreCliente', 'Cliente'],
+      [formData.horaSalida, '#horaSalida', 'Hora'],
+      [$('#fechaTour').val(), '#fechaTour', 'Fecha'],
+      [formData.Operador, '#Operador', 'Operador'],
+      [formData.numeroDocumento, '#numeroDocumento', 'Documento'],
+      [formData.metodoPago, '#metodoPago', 'Método de pago']
+    ];
+
+    $('.faltaValor, .okValor').removeClass('faltaValor okValor');
+    const faltantes = campos.filter(([val, sel]) => {
+      const ok = val && val.toString().trim();
+      $(sel).addClass(ok ? 'okValor' : 'faltaValor');
+      return !ok;
+    }).map(([,,nom]) => nom);
+
+    if (faltantes.length) {
+      $btn.prop('disabled', false).html(txtOrig);
+      Notificacion(`⚠️ Completa: ${faltantes.join(', ')}`, 'error');
+      return $('.faltaValor').first().focus();
+    }
+
+    // Guardar
+    const docId = editId || `venta_${Date.now()}`;
+    formData.idVenta = docId;
+    
+    await setDoc(doc(db, 'registrosdb', docId), formData);
+    savels(`vendedor_${wiUsuario.displayName}`, formData, 450);
+    
+    if (editId) {
+      const idx = todasLasVentas.findIndex(v => v.id === editId);
+      if (idx !== -1) todasLasVentas[idx] = { id: editId, ...formData };
+      Notificacion('¡Venta actualizada!', 'success');
+    } else {
+      Notificacion('¡Venta registrada!', 'success');
+    }
+    
+    $('.faltaValor, .okValor').removeClass('faltaValor okValor');
+    limpiarEstadoFormulario();
+    await cargarVentas();
+    await calcularPuntosEmpleados();
+    renderizarEmpleados();
+    actualizarResumenCompetencia();
+    
+  } catch (error) {
+    console.error('Error guardando:', error);
+    Notificacion('Error al guardar', 'error');
+    $('.btn-save').prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Venta');
+  }
+});
+
+// Validación en tiempo real
+$(document).on('input change', '#formularioVenta input, #formularioVenta select', function() {
+  $(this).toggleClass('okValor faltaValor', !!$(this).val()?.toString().trim());
+});
+
+$(document).on('click', '.tour-row', () => $('#tourDisplay').removeClass('faltaValor').addClass('okValor'));
+
+// Calcular total y puntos
+$(document).on('change', '#vtJulio, #vtSonia, #vtExterna', actualizarPuntosPreview);
+$(document).on('input', '#cantidadPax, #precioUnitario', () => { calcularTotal(); calcularComision(); actualizarPuntosPreview(); });
+$(document).on('change', '#estadoPago', calcularComision);
+$(document).on('input', '#importeTotal, #PagoOperador', calcularComision);
+
+// Limpiar/Cancelar
+$(document).on('click', '.btn-clear-view, .btn-cancel-edit', () => { limpiarEstadoFormulario(); Notificacion('Vista limpiada', 'info'); });
+
+// === FUNCIONES CÁLCULO ===
+function calcularTotal() {
+  const pax = parseInt($('#cantidadPax').val()) || 1;
+  const precio = parseFloat($('#precioUnitario').val()) || 0;
+  $('#importeTotal').val((precio * pax).toFixed(2));
+  aplicarZoom('#importeTotal');
+}
+
+function calcularComision() {
+  const estado = $('#estadoPago').val();
+  const total = parseFloat($('#importeTotal').val()) || 0;
+  const pago = parseFloat($('#PagoOperador').val()) || 0;
+  const esPagado = estado === 'pagado' || estado === 'pagado2'; // Ambos estados de "pagado"
+  
+  $('#ganancia').val((esPagado ? total : total - pago).toFixed(2));
+  $('#PagoOperador').prop('disabled', esPagado).attr('placeholder', esPagado ? 'Servicio nuestro' : '0.00').val(esPagado ? '0' : $('#PagoOperador').val());
+  aplicarZoom('#ganancia');
+}
+
+function actualizarPuntosPreview() {
+  const pax = parseInt($('#cantidadPax').val()) || 1;
+  const ptsBase = selTour?.pts || 0;
+  const esEsp = $('#vtJulio, #vtSonia, #vtExterna').is(':checked');
+  $('#vistaPreviaLaPuntos').text(esEsp ? 0 : (ptsBase * pax));
+}
+
+function aplicarZoom(sel) { $(sel).addClass('field-updated'); setTimeout(() => $(sel).removeClass('field-updated'), 1000); }
+
 // === CARGAR TOURS ===
 async function cargarTours() {
   try {
@@ -326,11 +308,7 @@ async function cargarTours() {
     }
     
     const snap = await getDocs(query(collection(db, 'listatours'), where('activo', '==', true)));
-    if (snap.empty) {
-      console.log('❌ No hay tours');
-      htours = [];
-      return;
-    }
+    if (snap.empty) return console.log('❌ No hay tours'), htours = [];
     
     const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     htours = data.map(t => ({ nt: t.num || Math.random(), tour: t.tour, price: t.precio, pts: t.puntos, com: t.comision || 5 }));
@@ -345,7 +323,6 @@ async function cargarTours() {
   }
 }
 
-// === SELECTOR TOURS ===
 function initTourSelector() {
   renderTourTable(htours);
   
@@ -379,11 +356,7 @@ function initTourSelector() {
     $('.tour-row').removeClass('selected');
     $(this).addClass('selected');
     
-    setTimeout(() => {
-      aplicarZoom('#precioUnitario');
-      calcularTotal();
-      actualizarPuntosPreview();
-    }, 50);
+    setTimeout(() => { aplicarZoom('#precioUnitario'); calcularTotal(); calcularComision(); actualizarPuntosPreview(); }, 50);
   });
   
   $(document).on('click', e => {
@@ -415,38 +388,23 @@ function renderizarPuntos() {
   if (!htours.length) return $('#pointsGrid').html('<p style="text-align:center;color:#666;">Sin datos</p>');
   
   const sorted = [...htours].sort((a, b) => b.pts - a.pts);
-  $('#pointsGrid').html(sorted.map(t => `
-    <div class="point-item">
-      <span class="service-name">${t.tour}</span>
-      <span class="point-value">${t.pts}</span>
-    </div>
-  `).join(''));
+  $('#pointsGrid').html(sorted.map(t => `<div class="point-item"><span class="service-name">${t.tour}</span><span class="point-value">${t.pts}</span></div>`).join(''));
 }
 
 function renderizarPrecios() {
   if (!htours.length) return $('#pricesGrid').html('<p style="text-align:center;color:#666;">Sin datos</p>');
-  
-  $('#pricesGrid').html(htours.map(t => `
-    <div class="price-item">
-      <span class="service-name">${t.tour}</span>
-      <span class="service-price">S/ ${t.price.toFixed(2)}</span>
-    </div>
-  `).join(''));
+  $('#pricesGrid').html(htours.map(t => `<div class="price-item"><span class="service-name">${t.tour}</span><span class="service-price">S/ ${t.price.toFixed(2)}</span></div>`).join(''));
 }
 
-// === GESTIÓN FORMULARIO ===
 function limpiarEstadoFormulario() {
-  const fecha = mesPeru('fecha');
   selTour = null;
-  
   $('#formularioVenta input, #formularioVenta select').prop('disabled', false);
   $('#formularioVenta').removeClass('view-only edit-mode');
   $('.btn-save').prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Venta').removeAttr('data-edit-id');
   $('.btn-clear-view, .btn-cancel-edit').remove();
   $('#formularioVenta')[0].reset();
-  
   $('#cantidadPax').val(1);
-  $('#fechaTour').val(fecha);
+  $('#fechaTour').val(new Date().toISOString().split('T')[0]); // ✅ Resetear a hoy
   $('#vistaPreviaLaPuntos').text('0');
   $('#tourDisplay .tour-text').text('🔍 Seleccionar tour...');
   $('.tour-row').removeClass('selected');
@@ -470,7 +428,10 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
   // Cargar campos
   Object.entries(venta).forEach(([key, val]) => {
     const $el = $(`#${key}`);
-    if ($el.length) $el.val(val || '');
+    if ($el.length) {
+      if (key === 'fechaTour' && val?.toDate) $el.val(val.toDate().toISOString().split('T')[0]); // Timestamp
+      else $el.val(val || '');
+    }
   });
   
   $('#vtJulio').prop('checked', venta.esVentaJulio || false);
@@ -484,17 +445,11 @@ function cargarDatosEnFormulario(venta, soloVista = false) {
     $('#formularioVenta input, #formularioVenta select, .tour-display').prop('disabled', true);
     $('.btn-save').prop('disabled', true).html('<i class="fas fa-eye"></i> Solo Vista');
     $('#formularioVenta').addClass('view-only');
-    
-    if (!$('.btn-clear-view').length) {
-      $('.form-actions').prepend('<button type="button" class="btn-clear-view" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:5px;margin-right:10px"><i class="fas fa-times"></i> Limpiar Vista</button>');
-    }
+    if (!$('.btn-clear-view').length) $('.form-actions').prepend('<button type="button" class="btn-clear-view" style="background:#6c757d;color:#fff;border:none;padding:10px 20px;border-radius:5px;margin-right:10px"><i class="fas fa-times"></i> Limpiar Vista</button>');
   } else {
     $('#formularioVenta input, #formularioVenta select').prop('disabled', false);
     $('.tour-display').prop('disabled', false);
     $('#formularioVenta').addClass('edit-mode');
-    
-    if (!$('.btn-cancel-edit').length) {
-      $('.form-actions').prepend('<button type="button" class="btn-cancel-edit" style="background:#dc3545;color:#fff;border:none;padding:10px 20px;border-radius:5px;margin-right:10px"><i class="fas fa-times"></i> Cancelar Edición</button>');
-    }
+    if (!$('.btn-cancel-edit').length) $('.form-actions').prepend('<button type="button" class="btn-cancel-edit" style="background:#dc3545;color:#fff;border:none;padding:10px 20px;border-radius:5px;margin-right:10px"><i class="fas fa-times"></i> Cancelar Edición</button>');
   }
 }
