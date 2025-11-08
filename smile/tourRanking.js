@@ -3,32 +3,23 @@ import $ from 'jquery';
 import { db } from '../firebase/init.js';
 import { doc, setDoc, getDoc, getDocs, collection, serverTimestamp } from 'firebase/firestore';
 import { savels, getls, savebd, getbd, Capi } from './widev.js';
-import { currentMonth, todasLasVentas, todosLosEmpleados } from './smile.js';
+import { mesActual, todasLasVentas, todosLosEmpleados } from './smile.js';
 
 // === EXPORTS ===
 export { cargarNotas, cargarUltimoGanador, actualizarResumenCompetencia, calcularPuntosEmpleados, renderizarEmpleados, resumenes };
 
-// === RESUMEN COMPETENCIA ===
-function resumenes() {
-  return `<div class="competition-summary" id="competitionSummary">
-    ${['Tours de Hoy:toursHoy', 'Total Tours:totalTours', 'Puntos Totales:totalPuntos', 'Meta del Mes:2500'].map(s => {
-      const [label, id] = s.split(':');
-      const valor = id === '2500' ? '2500' : '0';
-      return `<div class="summary-stat"><span class="summary-label">${label}</span><span class="summary-value" id="${id}">${valor}</span></div>`;
-    }).join('')}
-  </div>`;
-}
-
 // === RENDERIZAR EMPLEADOS ===
 function renderizarEmpleados() {
-  const cacheKey = `empleadosPuntos_${currentMonth}`;
-  const cache = getls(cacheKey);
+  const cache = getls(`empleadosPuntos_${mesActual}`);
+  if (cache) return pintarRanking(cache);
+  if (!todosLosEmpleados.length) return $('.app').html(`<div class="estado-vacio"><i class="fa-solid fa-spinner fa-spin"></i><p>Cargando empleados...</p></div>`);
   
-  if (cache?.length > 0 && todosLosEmpleados.length === 0) {
-    todosLosEmpleados.push(...cache);
-  }
-  
-  const html = todosLosEmpleados.map((emp, i) => {
+  savels(`empleadosPuntos_${mesActual}`, todosLosEmpleados, 5);
+  pintarRanking(todosLosEmpleados);
+}
+
+function pintarRanking(empleados) {
+  const html = empleados.map((emp, i) => {
     const rank = i + 1;
     const cls = rank === 1 ? 'champion' : rank === 2 ? 'runner-up' : '';
     const icn = rank === 1 ? 'crown' : rank === 2 ? 'medal' : 'user';
@@ -64,10 +55,8 @@ function renderizarEmpleados() {
 // === CALCULAR PUNTOS ===
 async function calcularPuntosEmpleados() {
   try {
-    const cacheKey = `empleadosPuntos_${currentMonth}`;
-    const cache = getls(cacheKey);
-    
-    if (cache?.length > 0) {
+    const cache = getls(`empleadosPuntos_${mesActual}`);
+    if (cache?.length) {
       console.log(`✅ ${cache.length} empleados desde cache`);
       todosLosEmpleados.splice(0, todosLosEmpleados.length, ...cache);
       return;
@@ -77,13 +66,13 @@ async function calcularPuntosEmpleados() {
     
     console.log('🔄 Calculando puntos...');
     const snap = await getDocs(collection(db, 'registrosdb'));
-    const [añoActual, mesActual] = currentMonth.split('-').map(Number);
+    const [actualYear, actualMes] = mesActual.split('-').map(Number);
     
     const ventasMes = snap.docs.filter(d => {
       const f = d.data().fechaTour;
       if (!f) return false;
-      if (f.toDate) { const fd = f.toDate(); return fd.getFullYear() === añoActual && fd.getMonth() + 1 === mesActual; } // Timestamp
-      if (typeof f === 'string') { const [a, m] = f.split('-').map(Number); return a === añoActual && m === mesActual; } // String legacy
+      if (f.toDate) { const fd = f.toDate(); return fd.getFullYear() === actualYear && fd.getMonth() + 1 === actualMes; }
+      if (typeof f === 'string') { const [a, m] = f.split('-').map(Number); return a === actualYear && m === actualMes; }
       return false;
     });
 
@@ -92,49 +81,35 @@ async function calcularPuntosEmpleados() {
       emp.totalPuntos = ventas.reduce((sum, d) => sum + (d.data().puntos || 0), 0);
       emp.totalVentas = ventas.reduce((sum, d) => sum + (d.data().qventa || 0), 0);
     });
-    todosLosEmpleados.sort((a, b) => b.totalPuntos - a.totalPuntos);
     
-    savels(cacheKey, todosLosEmpleados, 30);
+    todosLosEmpleados.sort((a, b) => b.totalPuntos - a.totalPuntos);
+    savels(`empleadosPuntos_${mesActual}`, todosLosEmpleados, 5);
     console.log(`✅ ${todosLosEmpleados.length} empleados guardados en cache`);
     
-  } catch (e) {
-    console.error('❌ Error:', e);
-  }
+  } catch (e) { console.error('❌ Error:', e); }
 }
 
 // === CARGAR NOTAS ===
 async function cargarNotas() {
   try {
-    console.log('🔄 Cargando notas...');
-    
     const cache = getls('notasSmile');
-    if (cache?.length > 0) {
-      console.log(`✅ ${cache.length} notas desde cache`);
-      renderizarNotas(cache);
-      return;
-    }
+    if (cache?.length) return console.log(`✅ ${cache.length} notas desde cache`), renderizarNotas(cache);
     
+    console.log('🔄 Cargando notas...');
     const snap = await getDocs(collection(db, 'notas'));
-    if (snap.empty) {
-      console.log('📭 No hay notas');
-      renderizarNotas([]);
-      return;
-    }
+    
+    if (snap.empty) return console.log('📭 No hay notas'), renderizarNotas([]);
     
     const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     savels('notasSmile', data, 600);
     console.log(`✅ ${data.length} notas cargadas`);
     renderizarNotas(data);
     
-  } catch (e) {
-    console.error('❌ Error notas:', e);
-    renderizarNotas([]);
-  }
+  } catch (e) { console.error('❌ Error notas:', e); renderizarNotas([]); }
 }
 
-// === RENDERIZAR NOTAS ===
 function renderizarNotas(notas) {
-  const html = notas.length > 0 ? `
+  const html = notas.length ? `
     ${notas.map(n => `<li>${n.nota}</li>`).join('')}
     <div style="font-size:var(--fz_s2);padding:.5vh 0">
       <i class="fas fa-sync"></i> Actualizado: ${new Date().toLocaleString('es-ES')}
@@ -146,110 +121,69 @@ function renderizarNotas(notas) {
   $('.descripcion_com').html(html);
 }
 
-// === ACTUALIZAR RESUMEN ===
-function actualizarResumenCompetencia() {
-  const [añoActual, mesActual] = currentMonth.split('-').map(Number);
-  const hoy = new Date();
-  const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
-  
-  const ventasMes = todasLasVentas.filter(v => {
-    const f = v.fechaTour;
-    if (!f) return false;
-    if (f.toDate) { const fd = f.toDate(); return fd.getFullYear() === añoActual && fd.getMonth() + 1 === mesActual; } // Timestamp
-    if (typeof f === 'string') { const [a, m] = f.split('-').map(Number); return a === añoActual && m === mesActual; } // String
-    return false;
-  });
-  
-  const ventasHoy = ventasMes.filter(v => {
-    const f = v.fechaTour;
-    if (!f) return false;
-    if (typeof f === 'string') return f === hoyStr; // String
-    if (f.toDate) { const fd = f.toDate(); return `${fd.getFullYear()}-${String(fd.getMonth() + 1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}` === hoyStr; } // Timestamp
-    return false;
-  });
-  
-  const totalTours = ventasMes.reduce((sum, v) => sum + (v.qventa || 0), 0);
-  const totalPuntos = ventasMes.reduce((sum, v) => sum + (v.puntos || 0), 0);
-  const toursHoy = ventasHoy.reduce((sum, v) => sum + (v.qventa || 0), 0);
-  
-  $('#totalTours').text(totalTours);
-  $('#totalPuntos').text(totalPuntos);
-  $('#toursHoy').text(toursHoy);
-  
-  const meta = 2500;
-  const stats = [Math.min((toursHoy / 5) * 100, 100), Math.min((totalTours / 50) * 100, 100), Math.min((totalPuntos / meta) * 100, 100), 100];
-  
-  $('.summary-stat').each((i, el) => {
-    const grados = (stats[i] / 100) * 360;
-    $(el).css({ '--progress': `${grados}deg`, '--width': `${stats[i]}%` });
-  });
-}
 
 // === CARGAR ÚLTIMO GANADOR ===
 async function cargarUltimoGanador() {
   try {
-    const mesAnt = calcularMesAnterior(currentMonth);
-    const docId = mesAnt.replace('-', '');
-    
-    const ganadorDoc = await getDoc(doc(db, 'ganadores', docId));
-    if (ganadorDoc.exists()) return renderizarUltimoGanador(ganadorDoc.data());
-    
-    // Calcular ganador automáticamente
+    const mesAnt = calcularMesAnterior(mesActual);
+    const key = `ganadorMes_${mesAnt}`;
+    const cache = getls(key);
+    if (cache) return renderizarUltimoGanador(cache);
+
+    const id = mesAnt.replace('-', '');
+    const docu = await getDoc(doc(db, 'ganadores', id));
+    if (docu.exists()) { const dat = docu.data(); savels(key, dat, 1440); return renderizarUltimoGanador(dat); }
+
+    const [ano, mes] = mesAnt.split('-').map(Number);
+    const esMes = f => {
+      if (!f) return false;
+      if (typeof f === 'string') { const [a, m] = f.split('-').map(Number); return a === ano && m === mes; }
+      if (f.toDate) { const d = f.toDate(); return d.getFullYear() === ano && d.getMonth() + 1 === mes; }
+      return false;
+    };
+
     const snap = await getDocs(collection(db, 'registrosdb'));
-    const puntos = {};
-    const [añoAnt, mesAnt2] = mesAnt.split('-').map(Number);
-    
-    snap.docs.forEach(d => {
-      const v = d.data();
-      const f = v.fechaTour;
-      if (!f) return;
-      
-      let esMesAnt = false;
-      if (typeof f === 'string') { const [a, m] = f.split('-').map(Number); esMesAnt = a === añoAnt && m === mesAnt2; } // String
-      else if (f.toDate) { const fd = f.toDate(); esMesAnt = fd.getFullYear() === añoAnt && fd.getMonth() + 1 === mesAnt2; } // Timestamp
-      
-      if (esMesAnt) {
-        if (!puntos[v.vendedor]) puntos[v.vendedor] = { puntos: 0, ventas: 0 };
-        puntos[v.vendedor].puntos += (v.puntos || 0);
-        puntos[v.vendedor].ventas += (v.qventa || 0);
-      }
-    });
-    
-    const arr = Object.entries(puntos);
-    if (!arr.length) {
-      $('#lastWinner').html(`
-        <div class="winner-header"><i class="fas fa-trophy"></i><h3>Ganador del Mes Anterior</h3></div>
-        <div class="no-winner"><i class="fas fa-question-circle"></i><span>No hay datos</span></div>
-      `);
-      return;
-    }
-    
-    arr.sort((a, b) => b[1].puntos - a[1].puntos);
-    const [ganador, datos] = arr[0];
-    
-    const ganadorData = {
-      ganador,
-      puntosGanados: datos.puntos,
-      totalVentas: datos.ventas,
-      mes: mesAnt2,
-      year: añoAnt,
+    const mapa = snap.docs
+      .map(x => x.data())
+      .filter(v => esMes(v.fechaTour))
+      .reduce((acc, v) => {
+        const ven = v.vendedor;
+        if (!acc[ven]) acc[ven] = { puntos: 0, ventas: 0 };
+        acc[ven].puntos += (v.puntos || 0);
+        acc[ven].ventas += (v.qventa || 0);
+        return acc;
+      }, {});
+
+    const lista = Object.entries(mapa);
+    if (!lista.length) return $('#lastWinner').html(`
+      <div class="winner-header"><i class="fas fa-trophy"></i><h3>Ganador del Mes Anterior</h3></div>
+      <div class="no-winner"><i class="fas fa-question-circle"></i><span>No hay datos</span></div>
+    `);
+
+    const [gan, inf] = lista.sort((a, b) => b[1].puntos - a[1].puntos)[0];
+    const dat = {
+      ganador: gan,
+      puntosGanados: inf.puntos,
+      totalVentas: inf.ventas,
+      mes: mes,
+      year: ano,
       mesCompleto: savebd(`${mesAnt}-01`),
       fechaRegistro: serverTimestamp()
     };
-    
-    await setDoc(doc(db, 'ganadores', docId), ganadorData);
-    renderizarUltimoGanador(ganadorData);
-    
-  } catch (e) {
-    console.error('Error ganador:', e);
+
+    await setDoc(doc(db, 'ganadores', id), dat);
+    savels(key, dat, 1440);
+    renderizarUltimoGanador(dat);
+
+  } catch (err) {
+    console.error('Error ganador:', err);
     $('#lastWinner').html(`
       <div class="winner-header"><i class="fas fa-trophy"></i><h3>Ganador del Mes Anterior</h3></div>
-      <div class="error-winner"><i class="fas fa-exclamation-triangle"></i><span>Error</span></div>
+      <div class="error-winner"><i class="fas fa-exclamation-triangle"></i><span>Error al cargar</span></div>
     `);
   }
 }
 
-// === AUXILIARES ===
 function calcularMesAnterior(mes) {
   const [y, m] = mes.split('-');
   const f = new Date(parseInt(y), parseInt(m) - 2);
@@ -258,7 +192,6 @@ function calcularMesAnterior(mes) {
 
 function renderizarUltimoGanador(data) {
   const emp = todosLosEmpleados.find(e => e.usuario === data.ganador || e.nombre === data.ganador);
-  const fechaMes = getbd(data.mesCompleto); // ✅ ACTUALIZADO
   
   $('#lastWinner').html(`
     <div class="winner-header"><i class="fas fa-trophy"></i><h3>Ganador del Mes Anterior</h3></div>
@@ -273,4 +206,57 @@ function renderizarUltimoGanador(data) {
       <div class="winner-achievement"><i class="fas fa-crown"></i><span>¡Campeón!</span></div>
     </div>
   `);
+}
+
+// === ACTUALIZAR RESUMEN ===
+function resumenes() {
+  return `<div class="competition-summary" id="competitionSummary">
+    ${['Tours Hoy:toursHoy','Total Tours:totalTours','Puntos Totales:totalPuntos','Meta Mes:metaMes'].map(s=>{
+      const [lab,id]=s.split(':');return `<div class="summary-stat"><span class="summary-label">${lab}</span><span class="summary-value" id="${id}">...</span></div>`;
+    }).join('')}
+  </div>`;
+}
+
+// === RESUMEN (cache resumenMes_YYYY-MM) ===
+function actualizarResumenCompetencia() {
+  const hoy=new Date(), hoyStr=`${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
+  const [yr,mm]=mesActual.split('-').map(Number);
+  const key=`resumenMes_${mesActual}`;
+  const cache=getls(key);
+  if(cache && cache.mes===mesActual && cache.dia===hoyStr){
+    $('#toursHoy').text(cache.toursHoy);
+    $('#totalTours').text(cache.totalTours);
+    $('#totalPuntos').text(cache.totalPuntos);
+    $('#metaMes').text(cache.meta);
+    return;
+  }
+  let toursMes=0,puntosMes=0,toursHoy=0;
+  todasLasVentas.forEach(v=>{
+    const f=v.fechaTour;
+    if(!f) return;
+    let a,m,dStr;
+    if(typeof f==='string'){
+      const [A,M,D]=f.split('-');a=+A;m=+M;dStr=f;
+    } else if(f.toDate){
+      const fd=f.toDate();a=fd.getFullYear();m=fd.getMonth()+1;
+      dStr=`${a}-${String(m).padStart(2,'0')}-${String(fd.getDate()).padStart(2,'0')}`;
+    } else return;
+    if(a===yr && m===mm){
+      toursMes+=(v.qventa||0);
+      puntosMes+=(v.puntos||0);
+      if(dStr===hoyStr) toursHoy+=(v.qventa||0);
+    }
+  });
+  const meta=2500;
+  $('#toursHoy').text(toursHoy);
+  $('#totalTours').text(toursMes);
+  $('#totalPuntos').text(puntosMes);
+  $('#metaMes').text(meta);
+  savels(key,{mes:mesActual,dia:hoyStr,toursHoy:toursHoy,totalTours:toursMes,totalPuntos:puntosMes,meta},0.25); // 15 min
+  // opcional estilos progreso
+  const stats=[Math.min((toursHoy/5)*100,100),Math.min((toursMes/50)*100,100),Math.min((puntosMes/meta)*100,100),100];
+  $('.summary-stat').each((i,el)=>{
+    const grados=(stats[i]/100)*360;
+    $(el).css({'--progress':`${grados}deg`,'--width':`${stats[i]}%`});
+  });
 }

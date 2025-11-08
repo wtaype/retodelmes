@@ -14,7 +14,8 @@ export default defineConfig(({ mode }) => {
         input: {
           main: resolve(__dirname, 'index.html'),
           smile: resolve(__dirname, 'smile.html'), 
-          smiletop: resolve(__dirname, 'smiletop.html') 
+          smiletop: resolve(__dirname, 'smiletop.html'),
+          lab: resolve(__dirname, 'lab.html'),
         }
       }
     },

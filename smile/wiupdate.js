@@ -8,135 +8,79 @@ import { cargarNotas, calcularPuntosEmpleados, renderizarEmpleados, actualizarRe
 // === EXPORTS ===
 export { wifresh };
 
-// === SPIN HELPER ===
-const spin = ($btn, estado) => {
-  const $icono = $btn.find('i');
-  if (estado) {
-    $icono.removeClass().addClass('fas fa-spinner fa-spin');
-    $btn.prop('disabled', true);
-  } else {
-    $icono.removeClass().addClass('fa-solid fa-rotate-right');
-    $btn.prop('disabled', false);
-  }
+// === CONFIG ===
+const TTL = { empleados:300, tours:300, ventas:180, notas:600 }; // segundos
+const mark = k => localStorage.setItem(`${k}_timestamp`, Date.now());
+const expired = (k,ttl) => {
+  const ts = localStorage.getItem(`${k}_timestamp`);
+  return !ts || ((Date.now()-+ts)/1000) > ttl;
 };
 
-// === ACTUALIZAR DATOS ===
-$(document).on('click', '.bt_cargar', () => {
-  const regex = /^(im\d+|ki\d+|remote:im\d+|dirty:im\d+|dirty:ki\d+|toursSmile|notasSmile|empleadosSmile|empleadosPuntos_)$/;
-  Object.keys(localStorage)
-    .filter(k => regex.test(k))
-    .forEach(k => localStorage.removeItem(k));
-  
-  Mensaje('✅ Cache limpiado');
-  setTimeout(() => location.reload(), 800);
+// === SPINNER ===
+const spin = ($b,on) => {
+  const $i=$b.find('i');
+  on?($i.attr('class','fas fa-spinner fa-spin'),$b.prop('disabled',true))
+     :($i.attr('class','fa-solid fa-rotate-right'),$b.prop('disabled',false));
+};
+
+// === DETECTAR CAMBIOS (solo lo necesario) ===
+function detectarCambios(){
+  return {
+    empleados: expired('empleadosSmile',TTL.empleados),
+    tours:     expired('toursSmile',TTL.tours),
+    ventas:    expired('ventasSmile',TTL.ventas),
+    notas:     expired('notasSmile',TTL.notas)
+  };
+}
+
+// === ACTUALIZADORES PUNTUALES ===
+async function updEmpleados(){ removels('empleadosSmile'); await cargarEmpleados(); mark('empleadosSmile'); }
+async function updTours(){ removels('toursSmile'); await cargarTours(); mark('toursSmile'); }
+async function updVentas(){ await cargarVentas(); mark('ventasSmile'); }
+async function updNotas(){ removels('notasSmile'); await cargarNotas(); mark('notasSmile'); }
+
+// === WIFRESH PRINCIPAL ===
+async function wifresh(){
+  const $btn=$('.wifresh'); spin($btn,true); Notificacion('🔄 Revisando cambios','info');
+  const c = detectarCambios();
+  const tareas=[];
+  c.empleados && tareas.push(updEmpleados());
+  c.tours     && tareas.push(updTours());
+  c.ventas    && tareas.push(updVentas());
+  c.notas     && tareas.push(updNotas());
+  if(!tareas.length){ spin($btn,false); return Notificacion('✅ Todo al día','success'); }
+
+  Notificacion(`🔄 Aplicando ${tareas.length} actualizaciones`,'info');
+  try {
+    await Promise.all(tareas);
+
+    // Recalcular rankings/resumen solo si ventas o empleados cambiaron
+    if (c.ventas || c.empleados){
+      await calcularPuntosEmpleados();
+      actualizarResumenCompetencia();
+    }
+
+    // Render optimista según lo que cambió
+    c.empleados && renderizarEmpleados();
+    c.ventas    && renderizarTablaVentas();
+    c.tours     && initTourSelector();
+
+    spin($btn,false);
+    Notificacion('✅ Datos actualizados','success');
+  } catch(e){
+    console.error('wifresh error',e);
+    spin($btn,false);
+    Notificacion('❌ Falló actualización','error');
+  }
+}
+
+// === LIMPIEZA MANUAL CACHE ===
+$(document).on('click','.bt_cargar',()=>{
+  ['empleadosSmile','toursSmile','ventasSmile','notasSmile','empleadosPuntos_','topSmiles'].forEach(k=>{
+    Object.keys(localStorage).forEach(x=>x.startsWith(k)&&localStorage.removeItem(x));
+  });
+  Mensaje('✅ Cache limpiado'); setTimeout(()=>location.reload(),600);
 });
 
-// === WIFRESH INTELIGENTE ===
-async function wifresh() {
-  try {
-    const $btn = $('.wifresh');
-    spin($btn, true);
-    Notificacion('🔄 Verificando actualizaciones...', 'info');
-    
-    const cambios = await detectarCambios();
-    
-    if (!cambios.hayActualizaciones) {
-      spin($btn, false);
-      Notificacion('✅ Todo actualizado', 'success');
-      return;
-    }
-    
-    Notificacion(`🔄 Aplicando ${cambios.total} actualizaciones...`, 'info');
-    
-    const promesas = [];
-    if (cambios.empleados) promesas.push(actualizarEmpleados());
-    if (cambios.tours) promesas.push(actualizarTours());
-    if (cambios.ventas) promesas.push(actualizarVentas());
-    if (cambios.notas) promesas.push(actualizarNotas());
-    
-    await Promise.all(promesas);
-    await Promise.all([calcularPuntosEmpleados(), actualizarResumenCompetencia()]);
-    
-    renderizarEmpleados();
-    renderizarTablaVentas();
-    initTourSelector();
-    
-    spin($btn, false);
-    Notificacion(`✅ ${cambios.total} actualizaciones aplicadas`, 'success');
-    
-  } catch (e) {
-    console.error('❌ Error wifresh:', e);
-    spin($('.wifresh'), false);
-    Notificacion('❌ Error en actualización', 'error');
-  }
-}
-
-// === DETECTAR CAMBIOS ===
-async function detectarCambios() {
-  const cambios = { empleados: false, tours: false, ventas: true, notas: false, total: 0, hayActualizaciones: false };
-  
-  try {
-    if (!getls('empleadosSmile') || esCacheExpirado('empleadosSmile', 300)) {
-      cambios.empleados = true;
-      cambios.total++;
-    }
-    
-    if (!getls('toursSmile') || esCacheExpirado('toursSmile', 300)) {
-      cambios.tours = true;
-      cambios.total++;
-    }
-    
-    cambios.total++; // Ventas siempre
-    
-    if (!getls('notasSmile') || esCacheExpirado('notasSmile', 600)) {
-      cambios.notas = true;
-      cambios.total++;
-    }
-    
-    cambios.hayActualizaciones = cambios.total > 0;
-    
-  } catch (e) {
-    console.error('Error detectando:', e);
-  }
-  
-  return cambios;
-}
-
-// === CACHE EXPIRADO ===
-function esCacheExpirado(clave, max) {
-  try {
-    const ts = localStorage.getItem(`${clave}_timestamp`);
-    if (!ts) return true;
-    
-    const dif = (Date.now() - parseInt(ts)) / 1000;
-    return dif > max;
-  } catch {
-    return true;
-  }
-}
-
-// === FUNCIONES ACTUALIZAR ===
-async function actualizarEmpleados() {
-  removels('empleadosSmile');
-  await cargarEmpleados();
-}
-
-async function actualizarTours() {
-  removels('toursSmile');
-  await cargarTours();
-}
-
-async function actualizarVentas() {
-  await cargarVentas();
-}
-
-async function actualizarNotas() {
-  removels('notasSmile');
-  await cargarNotas();
-}
-
-// === EVENTO ===
-$(document).on('click', '.wifresh', e => {
-  e.preventDefault();
-  wifresh();
-});
+// === EVENTO BOTÓN REFRESH ===
+$(document).on('click','.wifresh',e=>{ e.preventDefault(); wifresh(); });

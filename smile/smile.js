@@ -5,7 +5,7 @@ import { auth, db } from '../firebase/init.js';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { wiTema, Mensaje, savels, getls, savebd, getbd } from './widev.js';
-import { cargarNotas, cargarUltimoGanador, resumenes } from './tourRanking.js';
+import { cargarNotas, cargarUltimoGanador, resumenes, actualizarResumenCompetencia  } from './tourRanking.js';
 import { cargarVentas, actualizarFiltroEmpleados, cargarEmpleados } from './tourHistorial.js';
 import { cargarTours, initTourSelector, getFormularioHTML } from './tourRegistrar.js';
 import { getInfoTabsHTML } from './tourInfo.js';
@@ -13,7 +13,7 @@ import { wifresh } from './wiupdate.js';
 
 // === EXPORTS ===
 export let wiUsuario = null;
-export let currentMonth = '2025-09';
+export let mesActual = '2025-09';
 export let currentPage = 1;
 export let ventasPorPagina = 5;
 export let todasLasVentas = [];
@@ -22,25 +22,8 @@ export let todosLosEmpleados = [];
 // 🔥 FUNCIONES SETTER
 export const setVentasPorPagina = (val) => { ventasPorPagina = val; };
 export const setCurrentPage = (val) => { currentPage = val; };
-export const setCurrentMonth = (val) => { currentMonth = val; };
+export const setCurrentMonth = (val) => { mesActual = val; };
 
-// === FUNCIÓN MESES DINÁMICOS ===
-function mesActual() {
-  const hoy = new Date();
-  const wiYear = hoy.getFullYear();
-  const mesActual = hoy.getMonth(); // 0-11
-  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  
-  const opciones = [];
-  for (let i = -3; i <= 3; i++) {
-    const mesNum = mesActual + i;
-    const yearCalc = wiYear + Math.floor(mesNum / 12);
-    const mesCalc = ((mesNum % 12) + 12) % 12;
-    const value = `${yearCalc}-${String(mesCalc + 1).padStart(2, '0')}`;
-    opciones.push(`<option value="${value}">${meses[mesCalc]} ${yearCalc}</option>`);
-  }
-  return opciones.join('');
-}
 
 // === AUTH ===
 onAuthStateChanged(auth, async user => {
@@ -65,7 +48,7 @@ $(document).on('click', '.bt_salir', async () => {
 });
 
 // === RENDER ===
-function smileContenido(wi) {
+async function smileContenido(wi) {
   Mensaje(`Bienvenido ${wi.nombre}!`);
   
   $('.app').html(`
@@ -73,7 +56,7 @@ function smileContenido(wi) {
       <div class="header-container miwp">
         <div class="header-left">
           <h1 class="main-title"><i class="fas fa-trophy"></i>RETO DEL MES</h1>
-          <select id="monthSelector" class="month-selector">${mesActual()}</select>
+          <select id="monthSelector" class="month-selector">${selectMes()}</select>
         </div>
         <div class="header-right">
           <div class="wifresh"><i class="fa-solid fa-rotate-right"></i></div>
@@ -108,10 +91,7 @@ function smileContenido(wi) {
             <h2><i class="fas fa-fire"></i> Competencia del Mes</h2>
             <span class="subtitle">¡Quien venda más gana!</span>
           </div>
-          <ul class="descripcion_com">
-            <li>¡Buenos días Rubi y Piero! He actualizado la plataforma con mejoras en la búsqueda de tours y otras funcionalidades.</li>
-            <li>Hemos actualizado el campo de motivo de viaje para mantener todo al día con SUNAT.</li>
-          </ul>
+          <ul class="descripcion_com"></ul>
           <div class="workers-grid" id="workersGrid"><div class="loading-workers"><i class="fas fa-spinner fa-spin"></i>Cargando empleados...</div></div>
           <div class="last-winner" id="lastWinner"><div class="loading-workers"><i class="fas fa-spinner fa-spin"></i>Cargando ganador...</div></div>
           ${resumenes()}
@@ -142,21 +122,32 @@ function smileContenido(wi) {
     <footer class='foo hwb txc'><p>Creado con<i class='wicon wi-corazon'></i>by<a class='ftx lkme' href='https://wtaype.github.io/' target='_blank'>@wilder.taype</a>2025 - <span class='wty'></span><span class='abw tm11042025'>| Acerca del app | Actualizado</span></p></footer>
   `);
 
-  inicializarDashboard();
+  // DIOS TE AMA BRO [START]
+  $('#monthSelector').val(mesActual); //Mes actual 
+  try {
+    await Promise.all([
+      cargarEmpleados(),    // ← Lee 1 vez
+      cargarVentas(),       // ← Lee 1 vez
+      cargarUltimoGanador(),// ← Lee 1 vez
+      cargarTours(),        // ← Lee 1 vez
+      cargarNotas()         // ← Lee 1 vez
+    ]);
+    actualizarFiltroEmpleados(); // ← Usa datos ya cargados (0 reads)
+    initTourSelector();          // ← Usa datos ya cargados (0 reads)
+    actualizarResumenCompetencia(); // ← llena los valores (reemplaza '...')
+  } catch (e){console.error('ErrorIn:',e);}
+  // DIOS TE AMA BRO [END]
+
 }
 
-// === INIT ===
-async function inicializarDashboard() {
-  try {
-    const hoy = new Date();
-    currentMonth = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-    $('#monthSelector').val(currentMonth);
-    
-    await Promise.all([cargarEmpleados(), cargarVentas(), cargarUltimoGanador(), cargarTours(), cargarNotas()]);
-    
-    actualizarFiltroEmpleados();
-    initTourSelector();
-  } catch (e) {
-    console.error('Error init:', e);
-  }
+// DETECCIÓN AUTOMATICA DE FECHAS 
+function selectMes(){
+  const hoy = new Date(), anio = hoy.getFullYear(), mes = hoy.getMonth();
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  mesActual = `${anio}-${String(mes + 1).padStart(2,'0')}`;
+  return $.map(new Array(7), (_,i) => {
+    const cada = i - 3, des = mes + cada, cyear = anio + Math.floor(des/12), mesv = ((des % 12) + 12) % 12;
+    const tval = `${cyear}-${String(mesv + 1).padStart(2,'0')}`;
+    return `<option value="${tval}"${cada === 0 ? ' selected' : ''}>${meses[mesv]} ${cyear}</option>`;
+  }).join('');
 }

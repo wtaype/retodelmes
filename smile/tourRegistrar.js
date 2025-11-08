@@ -3,8 +3,8 @@ import $ from 'jquery';
 import { db } from '../firebase/init.js';
 import { doc, setDoc, getDocs, collection, query, where, serverTimestamp } from 'firebase/firestore';
 import { Notificacion, savels, getls, savebd } from './widev.js';
-import { wiUsuario, todasLasVentas } from './smile.js';
-import { cargarVentas } from './tourHistorial.js';
+import { wiUsuario, todasLasVentas, mesActual } from './smile.js';
+import { cargarVentas, renderizarTablaVentas } from './tourHistorial.js';
 import { calcularPuntosEmpleados, renderizarEmpleados, actualizarResumenCompetencia } from './tourRanking.js';
 
 // === EXPORTS ===
@@ -153,100 +153,102 @@ function getFormularioHTML() {
 let htours = [];
 let selTour = null;
 
-// === EVENTOS PRINCIPALES ===
-$(document).on('click', '.btn-save', async (e) => {
-  e.preventDefault();
-  if ($('.btn-save').prop('disabled')) return;
-  
+// ACTUALIZANDO TOURS 
+function invalidateRankingCaches() {
   try {
-    if (!selTour) return Notificacion('⚠️ Selecciona un tour', 'error'), $('#tourDisplay').focus();
-    
-    const $btn = $('.btn-save');
-    const txtOrig = $btn.html();
-    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Guardando...');
-    
-    const editId = $btn.attr('data-edit-id');
-    const pax = parseInt($('#cantidadPax').val()) || 1;
-    const esEsp = $('#vtJulio, #vtSonia, #vtExterna').is(':checked');
-    
-    const formData = {
-      tipoTour: selTour.tour,
-      registroEn: $('#registroEn').val(),
-      nombreCliente: $('#nombreCliente').val(),
-      numeroHabitacion: $('#numeroHabitacion').val(),
-      tipoDocumento: $('#tipoDocumento').val(),
-      numeroDocumento: $('#numeroDocumento').val(),
-      cantidadPax: pax,
-      precioUnitario: parseFloat($('#precioUnitario').val()) || 0,
-      metodoPago: $('#metodoPago').val(),
-      importeTotal: parseFloat($('#importeTotal').val()) || 0,
-      ganancia: parseFloat($('#ganancia').val()) || 0,
-      horaSalida: $('#horaSalida').val(),
-      Operador: $('#Operador').val(),
-      PagoOperador: parseFloat($('#PagoOperador').val()) || 0,
-      Comentario: $('#Comentario').val(),
-      fechaTour: savebd($('#fechaTour').val()),
-      estadoPago: $('#estadoPago').val(),
-      vendedor: wiUsuario.displayName,
-      puntos: esEsp ? 0 : (selTour.pts * pax),
-      email: wiUsuario.email,
-      qventa: 1,
-      fechaRegistro: serverTimestamp(),
-      esVentaJulio: !!$('#vtJulio').prop('checked'),
-      esVentaSonia: !!$('#vtSonia').prop('checked'),
-      esVentaExterna: !!$('#vtExterna').prop('checked')
-    };
+    localStorage.removeItem('topSmiles');
+    localStorage.removeItem(`empleadosPuntos_${mesActual}`);
+    localStorage.removeItem(`resumenMes_${mesActual}`);
+  } catch(e){ console.warn('Cache clear warn', e); }
+}
 
-    // Validar
-    const campos = [
-      [selTour, '#tourDisplay', 'tour'],
-      [formData.nombreCliente, '#nombreCliente', 'Cliente'],
-      [formData.horaSalida, '#horaSalida', 'Hora'],
-      [$('#fechaTour').val(), '#fechaTour', 'Fecha'],
-      [formData.Operador, '#Operador', 'Operador'],
-      [formData.numeroDocumento, '#numeroDocumento', 'Documento'],
-      [formData.metodoPago, '#metodoPago', 'Método de pago']
-    ];
+$(document).off('click.btnsave').on('click.btnsave', '.btn-save', async (e) => {
+  e.preventDefault();
+  const $btn = $('.btn-save');
+  if ($btn.prop('disabled')) return;
+  
+  // Selección tour requerida
+  if (!selTour) return Notificacion('Selecciona un tour', 'error'), $('#tourDisplay').addClass('faltaValor').focus();
 
-    $('.faltaValor, .okValor').removeClass('faltaValor okValor');
-    const faltantes = campos.filter(([val, sel]) => {
-      const ok = val && val.toString().trim();
-      $(sel).addClass(ok ? 'okValor' : 'faltaValor');
-      return !ok;
-    }).map(([,,nom]) => nom);
+  // Campos requeridos mínimos
+  const req = [
+    ['#nombreCliente','Cliente'],
+    ['#horaSalida','Hora'],
+    ['#fechaTour','Fecha'],
+    ['#Operador','Operador'],
+    ['#metodoPago','Pago']
+  ];
+  const falt = req.filter(([sel]) => !$(sel).val()?.trim());
+  if (falt.length) {
+    falt.forEach(([sel]) => $(sel).addClass('faltaValor'));
+    return Notificacion('Completa: ' + falt.map(([,n])=>n).join(', '), 'error');
+  }
 
-    if (faltantes.length) {
-      $btn.prop('disabled', false).html(txtOrig);
-      Notificacion(`⚠️ Completa: ${faltantes.join(', ')}`, 'error');
-      return $('.faltaValor').first().focus();
-    }
+  // Preparar datos
+  const pax = parseInt($('#cantidadPax').val()) || 1;
+  const esEsp = $('#vtJulio,#vtSonia,#vtExterna').is(':checked');
+  const ventaId = $btn.attr('data-edit-id') || `venta_${Date.now()}`;
 
-    // Guardar
-    const docId = editId || `venta_${Date.now()}`;
-    formData.idVenta = docId;
-    
-    await setDoc(doc(db, 'registrosdb', docId), formData);
-    savels(`vendedor_${wiUsuario.displayName}`, formData, 450);
-    
-    if (editId) {
-      const idx = todasLasVentas.findIndex(v => v.id === editId);
-      if (idx !== -1) todasLasVentas[idx] = { id: editId, ...formData };
-      Notificacion('¡Venta actualizada!', 'success');
-    } else {
-      Notificacion('¡Venta registrada!', 'success');
-    }
-    
-    $('.faltaValor, .okValor').removeClass('faltaValor okValor');
+  const venta = {
+    idVenta: ventaId,
+    tipoTour: selTour.tour,
+    registroEn: $('#registroEn').val(),
+    nombreCliente: $('#nombreCliente').val(),
+    numeroHabitacion: $('#numeroHabitacion').val(),
+    tipoDocumento: $('#tipoDocumento').val(),
+    numeroDocumento: $('#numeroDocumento').val(),
+    cantidadPax: pax,
+    precioUnitario: parseFloat($('#precioUnitario').val()) || 0,
+    metodoPago: $('#metodoPago').val(),
+    importeTotal: parseFloat($('#importeTotal').val()) || 0,
+    ganancia: parseFloat($('#ganancia').val()) || 0,
+    horaSalida: $('#horaSalida').val(),
+    Operador: $('#Operador').val(),
+    PagoOperador: parseFloat($('#PagoOperador').val()) || 0,
+    Comentario: $('#Comentario').val(),
+    fechaTour: savebd($('#fechaTour').val()),
+    estadoPago: $('#estadoPago').val(),
+    vendedor: wiUsuario.displayName,
+    puntos: esEsp ? 0 : selTour.pts * pax,
+    email: wiUsuario.email,
+    qventa: 1,
+    fechaRegistro: serverTimestamp(),
+    esVentaJulio: !!$('#vtJulio').prop('checked'),
+    esVentaSonia: !!$('#vtSonia').prop('checked'),
+    esVentaExterna: !!$('#vtExterna').prop('checked')
+  };
+
+  // Optimista: deshabilitar botón + spinner
+  const txt = '<i class="fas fa-save"></i> Guardar Venta';
+  $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Guardando...');
+
+  try {
+    await setDoc(doc(db, 'registrosdb', ventaId), venta); // guardado
+
+    // === DESPUÉS DE GUARDAR (ordenar y mostrar arriba) ===
+    venta.id = ventaId;                                   // id para tabla
+    const i = todasLasVentas.findIndex(v=>v.id===ventaId||v.idVenta===ventaId);
+    i>-1 ? (todasLasVentas[i]=venta) : todasLasVentas.push(venta); // upsert
+    todasLasVentas.sort((a,b)=>{                          // orden por fecha DESC
+      const fa=a.fechaTour?.toDate?a.fechaTour.toDate():new Date(a.fechaTour||0);
+      const fb=b.fechaTour?.toDate?b.fechaTour.toDate():new Date(b.fechaTour||0);
+      return fb-fa;
+    });
+    // opcional: forzar página 1
+    if (window.currentPage!==undefined) window.currentPage = 1;    // pag=1
+    renderizarTablaVentas();                              // re-render inmediato
+    // === FIN ===
+
+    invalidateRankingCaches();
+    Notificacion(i>-1?'Venta actualizada':'Venta registrada','success');
     limpiarEstadoFormulario();
-    await cargarVentas();
-    await calcularPuntosEmpleados();
-    renderizarEmpleados();
-    actualizarResumenCompetencia();
+    setTimeout(async()=>{ await calcularPuntosEmpleados(); renderizarEmpleados(); actualizarResumenCompetencia(); },40);
     
-  } catch (error) {
-    console.error('Error guardando:', error);
-    Notificacion('Error al guardar', 'error');
-    $('.btn-save').prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Venta');
+  } catch(err) {
+    console.error('Err venta:', err);
+    Notificacion('Error guardando', 'error');
+  } finally {
+    $btn.prop('disabled', false).html(txt).removeAttr('data-edit-id');
   }
 });
 

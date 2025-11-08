@@ -4,7 +4,7 @@ import { db } from '../firebase/init.js';
 import { getDocs, deleteDoc, collection, doc } from 'firebase/firestore';
 import { Notificacion, savels, getls, Capi, mis10, savebd, getbd } from './widev.js'; // ✅ ACTUALIZADO
 import { cargarDatosEnFormulario, limpiarEstadoFormulario} from './tourRegistrar.js';
-import { wiUsuario, currentMonth, currentPage, ventasPorPagina, todasLasVentas, todosLosEmpleados, setVentasPorPagina, setCurrentPage, setCurrentMonth } from './smile.js';
+import { wiUsuario, mesActual, currentPage, ventasPorPagina, todasLasVentas, todosLosEmpleados, setVentasPorPagina, setCurrentPage, setCurrentMonth } from './smile.js';
 import { renderizarEmpleados, calcularPuntosEmpleados, actualizarResumenCompetencia, cargarUltimoGanador } from './tourRanking.js';
 
 // === EXPORTS ===
@@ -105,33 +105,41 @@ window.eliminarVenta = (id) => {
 async function eliminarVentaCompleta(id) {
   try {
     Notificacion('Eliminando...', 'info');
+    const v = todasLasVentas.find(x=>x.id===id); // v
+    const mv = (()=>{ // mv=mes venta
+      const f=v?.fechaTour; 
+      if(!f) return mesActual;
+      if(typeof f==='string'){ const [a,m]=f.split('-'); return `${a}-${m}`; }
+      const d=f.toDate(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    })();
+    const [y,m]=mesActual.split('-').map(Number); // y,m UI
+    const pm = (()=>{ const d=new Date(y,m-2,1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })(); // pm=mes prev UI
     
-    await deleteDoc(doc(db, 'registrosdb', id));
-    
-    // Limpiar localStorage
-    Object.keys(localStorage)
-      .filter(k => k.startsWith('vendedor_'))
-      .forEach(k => {
-        try {
-          const data = JSON.parse(localStorage.getItem(k));
-          if (data?.idVenta === id) localStorage.removeItem(k);
-        } catch (_) {}
-      });
-    
-    const index = todasLasVentas.findIndex(v => v.id === id);
-    if (index !== -1) {
-      todasLasVentas.splice(index, 1);
+    await deleteDoc(doc(db,'registrosdb',id)); // del
+
+    // caches
+    localStorage.removeItem(`empleadosPuntos_${mv}`); // rm pts
+    localStorage.removeItem(`resumenMes_${mv}`);      // rm sum
+    if(mv===pm) localStorage.removeItem(`ganadorMes_${pm}`); // rm win
+    Object.keys(localStorage) // rm por-vendedor
+      .filter(k=>k.startsWith('vendedor_'))
+      .forEach(k=>{ try{ const d=JSON.parse(localStorage.getItem(k)); if(d?.idVenta===id) localStorage.removeItem(k);}catch(_){}});
+
+    const i=todasLasVentas.findIndex(x=>x.id===id); if(i>-1) todasLasVentas.splice(i,1); // rm mem
+
+    // UI/compute
+    if(mv===mesActual){ 
+      await calcularPuntosEmpleados();               // pts
+      actualizarResumenCompetencia();                // kpi
+      renderizarEmpleados();                         // rank
+      renderizarTablaVentas();                       // tabla
+    } else {
+      renderizarTablaVentas();                       // tabla
     }
-    
-    await calcularPuntosEmpleados();
-    renderizarEmpleados();
-    renderizarTablaVentas();
-    actualizarResumenCompetencia();
-    
-    if ($('.btn-save').attr('data-edit-id') === id) limpiarEstadoFormulario();
-    
+    if(mv===pm) await cargarUltimoGanador();         // win
+
+    if($('.btn-save').attr('data-edit-id')===id) limpiarEstadoFormulario(); // form
     Notificacion('¡Venta eliminada!', 'success');
-    
   } catch (e) {
     console.error('Error eliminando:', e);
     Notificacion('Error al eliminar', 'error');
@@ -169,15 +177,15 @@ async function cargarVentas() {
 
 // === RENDERIZAR TABLA ===
 function renderizarTablaVentas(filtro = '', soloHoy = false) {
-  const [añoActual, mesActual] = currentMonth.split('-').map(Number);
+  const [actualYear, actualMes] = mesActual.split('-').map(Number);
   const hoy = new Date();
   const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
   
   let ventas = todasLasVentas.filter(v => {
     const f = v.fechaTour;
     if (!f) return false;
-    if (f.toDate) { const fd = f.toDate(); return fd.getFullYear() === añoActual && fd.getMonth() + 1 === mesActual; } // Timestamp
-    if (typeof f === 'string') { const [a, m] = f.split('-').map(Number); return a === añoActual && m === mesActual; } // String
+    if (f.toDate) { const fd = f.toDate(); return fd.getFullYear() === actualYear && fd.getMonth() + 1 === actualMes; } // Timestamp
+    if (typeof f === 'string') { const [a, m] = f.split('-').map(Number); return a === actualYear && m === actualMes; } // String
     return false;
   });
   

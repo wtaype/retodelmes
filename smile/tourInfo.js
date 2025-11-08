@@ -8,8 +8,7 @@ export { getInfoTabsHTML };
 // === EVENTOS ===
 $(document).on('click', '.tab-btn', function() {
   const tab = $(this).data('tab');
-  adrm(this, 'active');
-  adrm(`#${tab}-tab`, 'active');
+  adrm(this, 'active');   adrm(`#${tab}-tab`, 'active');
 });
 
 // === HTML ===
