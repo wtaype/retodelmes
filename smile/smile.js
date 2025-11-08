@@ -1,5 +1,6 @@
 // === IMPORTS ===
 import $ from 'jquery';
+import {footer} from './foo.js';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { auth, db } from '../firebase/init.js';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -118,7 +119,7 @@ async function smileContenido(wi) {
     </main>
     <div id="notifications-container"></div>
     <div id="modal-container"></div>
-    <footer class='foo hwb txc'><p>Creado con<i class='wicon wi-corazon'></i>by<a class='ftx lkme' href='https://wtaype.github.io/' target='_blank'>@wilder.taype</a>2025 - <span class='wty'></span><span class='abw tm11042025'>| Acerca del app | Actualizado</span></p></footer>
+    ${footer()}
   `);
 
   // DIOS TE AMA BRO [START]

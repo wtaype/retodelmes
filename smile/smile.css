@@ -2046,32 +2046,6 @@ h1 i {
   color: var(--txa);
 }
 
-.foo{text-align: center;padding-block: 1.5vh 1vh;background:var(--wb); border-radius: 1vh 1vh 0 0; }
-
-.foo *{
-font-size:var(--fz_s2);
-margin-inline:.3vh;
-}
-
-.foo a{
-    color: var(--bg2);
-}
-
-.abwc{
-background:var(--bg);
-top:0;
-width:99%;
-height:100%;
-padding:2vh 2vw;
-overflow:scroll;
-line-height:1.80;
-}
-
-.abwok{
-background:var(--mco);
-color:var(--txa);
-}
-
 @media (max-width: 768px) {
   :root {
     --fz_s1: 12px;

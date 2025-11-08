@@ -112,13 +112,6 @@ export function adtm(se,cl,ti,tf){
   $(se).text(ti).addClass(cl).delay(1800).queue(q=>$(se).text(tf).removeClass(cl).dequeue())
 } 
 
-export const infoo = (() => {
-  const f = () => {const d=new Date(); $('.wty').text(d.getFullYear()); $('.wtu').text(d.toLocaleString()); $(document).off('click.infoo','.abw,.abwok').on('click.infoo','.abw,.abwok',function(){const id=this.id||''; if(navigator.clipboard&&id) navigator.clipboard.writeText(id).catch(()=>{}); $('.abwc').toggleClass('dpn');});};
-  $('.wty,.wtu,.abw,.abwok').length ? f() : new MutationObserver(m => m.some(({addedNodes}) => [...addedNodes].some(n => n.querySelector?.('.wty,.wtu,.abw,.abwok'))) && (f(), true)).observe(document.body, {childList: true, subtree: true});
-  return f;
-})();
-
-
 export const adup = (x, y) => {
   $(x).addClass('updating').text(y);
   setTimeout(() => $(x).removeClass('updating'), 500);
