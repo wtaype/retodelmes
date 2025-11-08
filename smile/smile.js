@@ -102,9 +102,8 @@ async function smileContenido(wi) {
         <div class="table-header">
           <h2><i class="fas fa-clipboard-list"></i> Registro de Ventas</h2>
           <div class="table-filters">
+          <select id="filterEmployee" class="filter-select"><option value="">Todos los vendedores</option></select>
             <select id="mostrarn" class="filter-select">${[5,7,10,15].map(n => `<option value="${n}">Mostrar ${n} ventas</option>`).join('')}</select>
-            <select id="filterEmployee" class="filter-select"><option value="">Todos los vendedores</option></select>
-            <button class="filter-btn" id="todayFilter"><i class="fas fa-calendar-day"></i> Hoy</button>
           </div>
         </div>
         <div class="table-container">
