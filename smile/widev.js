@@ -66,40 +66,6 @@ export const wiTema = (() => {
   };
 })();
 
-// 🇵🇪 OBTENER FECHA/HORA ACTUAL DE PERÚ
-export const fechaPeru = (tipo = 'full') => {
-  const ahora = new Date();
-  const peru = new Date(ahora.getTime() - (5 * 60 * 60 * 1000)); // UTC-5
-  const y = peru.getFullYear();
-  const m = String(peru.getMonth() + 1).padStart(2, '0');
-  const d = String(peru.getDate()).padStart(2, '0');
-  const h = String(peru.getHours()).padStart(2, '0');
-  const min = String(peru.getMinutes()).padStart(2, '0');
-  
-  if (tipo === 'date') return `${y}-${m}-${d}`; // 2025-11-05 para input type="date"
-  if (tipo === 'datetime') return `${y}-${m}-${d}T${h}:${min}`; // 2025-11-05T12:22 para input type="datetime-local"
-  
-  // Para mostrar: 05/11/2025 12:22 pm
-  const hora12 = peru.getHours() % 12 || 12;
-  const ampm = peru.getHours() >= 12 ? 'pm' : 'am';
-  return `${d}/${m}/${y} ${hora12}:${min} ${ampm}`;
-};
-
-// FECHA PERÚ - SÚPER COMPACTO
-export const mesPeru = (formato = 'mes') => {
-  const ahora = new Date();
-  const peru = new Date(ahora.getTime() - (5 * 60 * 60 * 1000)); // UTC-5
-  const y = peru.getFullYear();
-  const m = String(peru.getMonth() + 1).padStart(2, '0');
-  const d = String(peru.getDate()).padStart(2, '0');
-  
-  return {
-    'mes': `${y}-${m}`,
-    'fecha': `${y}-${m}-${d}`,
-    'dia': d,
-    'año': y
-  }[formato] || `${y}-${m}`;
-};
 
 // ==============================
 // SISTEMA DE ACTUALIZACION DE CLASES

@@ -1,6 +1,6 @@
 // === IMPORTS ===
 import $ from 'jquery';
-import {footer} from './foo.js';
+import { footer } from './foo.js';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { auth, db } from '../firebase/init.js';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
