@@ -37,7 +37,7 @@ onAuthStateChanged(auth, async user => {
     if(wi) return initAdmin(wi), wiTema(db, userAuth);//Cache Primero con Contenido + temas Cache
 
     const busq = await getDocs(query(collection(db, 'smiles'), where('usuario', '==', user.displayName)));
-    const widt = busq.docs[0].data(); savels('wiSmile', widt, 450);
+    const widt = busq.docs[0].data(); savels('wiSmileTop', widt, 450);
 
     initAdmin(widt); wiTema(db, userAuth); //Contenido + temas Online
   }catch(e){console.error(e)}
@@ -248,81 +248,104 @@ async function loadUsuarios() {
 
 async function loadVentas(page = 0, resetPagination = true) {
     try {
-        console.log(`🔄 Cargando ventas página ${page}...`);
+        const cacheKey = `ventasSmileTop_${currentMonth}_${currentUser}`;
+        if (resetPagination) page = 0;
+        console.log(`🔄 Cargando ventas pág ${page} (cacheKey: ${cacheKey})`);
         
-        // Query base para el mes
-        let q = query(
+        // 1. Cache primero
+        const cache = getls(cacheKey);
+        if (cache && Array.isArray(cache)) {
+            console.log(`⚡ Ventas desde cache (${cache.length})`);
+            return aplicarVentas(cache, page);
+        }
+
+        // 2. Preparar rango (Date) para Timestamp
+        const [yy, mm] = currentMonth.split('-').map(Number);
+        const start = new Date(yy, mm - 1, 1, 0, 0, 0, 0);
+        const end = new Date(yy, mm, 1, 0, 0, 0, 0); // inicio mes siguiente
+
+        // Helper construir query por tipo de fecha
+        const qTimestamp = query(
             collection(db, 'registrosdb'),
-            where('fechaTour', '>=', currentMonth + '-01'),
-            where('fechaTour', '<=', currentMonth + '-31'),
+            where('fechaTour', '>=', start),
+            where('fechaTour', '<', end),
             orderBy('fechaTour', 'desc')
         );
 
-        const snapshot = await getDocs(q);
-        let ventasDelMes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        // Filtrar por usuario ANTES de la paginación
-        if (currentUser !== 'todos') {
-            ventasDelMes = ventasDelMes.filter(venta => venta.vendedor === currentUser);
-            console.log(`🔍 Filtrado por usuario ${currentUser}: ${ventasDelMes.length} ventas`);
+        let snapshot = await getDocs(qTimestamp);
+
+        // 3. Fallback si vienen guardadas como string 'YYYY-MM-DD'
+        if (snapshot.empty) {
+            console.warn('⚠️ Sin resultados Timestamp; probando strings...');
+            const qString = query(
+                collection(db, 'registrosdb'),
+                where('fechaTour', '>=', `${currentMonth}-01`),
+                where('fechaTour', '<=', `${currentMonth}-32`),
+                orderBy('fechaTour', 'desc')
+            );
+            snapshot = await getDocs(qString);
         }
-        
-        // Recalcular paginación basada en ventas filtradas
-        totalPages = Math.ceil(ventasDelMes.length / ITEMS_PER_PAGE);
-        
-        // Si no hay ventas para este usuario, resetear página
-        if (ventasDelMes.length === 0) {
-            currentPage = 0;
+
+        let ventas = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // 4. Filtrar usuario (si aplica)
+        if (currentUser !== 'todos') {
+            ventas = ventas.filter(v => v.vendedor === currentUser);
+        }
+
+        // 5. Guardar cache (10 min)
+        savels(cacheKey, ventas, 10);
+
+        // 6. Aplicar paginación + render
+        aplicarVentas(ventas, page);
+
+    } catch (error) {
+        console.error('❌ Error loadVentas:', error);
+        Notificacion('Error al cargar ventas', 'error');
+        todasLasVentas = [];
+    }
+
+    function aplicarVentas(lista, page) {
+        // Recalcular páginas
+        totalPages = Math.max(1, Math.ceil(lista.length / ITEMS_PER_PAGE));
+        if (page >= totalPages) page = 0;
+        currentPage = page;
+
+        if (lista.length === 0) {
             todasLasVentas = [];
-            console.log('❌ No hay ventas para este filtro');
+            console.log('📭 Sin ventas para filtros');
             return;
         }
-        
-        // Si la página actual está fuera de rango, ir a la primera página
-        if (currentPage >= totalPages) {
-            currentPage = 0;
-        }
-        
-        const startIndex = currentPage * ITEMS_PER_PAGE;
-        const endIndex = startIndex + ITEMS_PER_PAGE;
-        
-        todasLasVentas = ventasDelMes.slice(startIndex, endIndex);
-        
-        console.log(`✅ ${todasLasVentas.length}/${ventasDelMes.length} ventas cargadas para página ${currentPage + 1}/${totalPages}`);
-    } catch (error) {
-        console.error('❌ Error load ventas:', error);
-        Notificacion('Error al cargar ventas', 'error');
+
+        const startIdx = currentPage * ITEMS_PER_PAGE;
+        const endIdx = startIdx + ITEMS_PER_PAGE;
+        todasLasVentas = lista.slice(startIdx, endIdx);
+
+        console.log(`✅ Página ${currentPage + 1}/${totalPages} mostrando ${todasLasVentas.length} de ${lista.length}`);
     }
 }
 
-async function refreshData() {
+async function refreshData(force = false) {
     try {
-        console.log('🔄 Refrescando datos...');
-        
-        // Mostrar loading
+        console.log(`🔄 Refrescando datos (force=${force})`);
         $('#tableContainer').html(`
             <div class="loading-state">
                 <i class="fas fa-spinner fa-spin"></i>
                 <p>Actualizando datos...</p>
             </div>
         `);
-        
-        // Resetear página al cambiar filtros
         currentPage = 0;
-        
-        // Recargar usuarios primero
-        await loadUsuarios();
-        
-        // Luego cargar ventas con filtros actuales
-        await loadVentas(currentPage);
-        
-        // Renderizar tabla
+
+        if (force) {
+            removels(`ventasSmileTop_${currentMonth}_${currentUser}`);
+        }
+
+        await loadUsuarios(); // puede actualizar nombres en filas
+        await loadVentas(0, true);
         renderTable();
-        
-        Notificacion('✅ Datos actualizados correctamente', 'success');
-        
+        Notificacion('✅ Datos actualizados', 'success');
     } catch (error) {
-        console.error('❌ Error refresh:', error);
+        console.error('❌ Error refreshData:', error);
         Notificacion('Error al actualizar datos', 'error');
     }
 }
@@ -466,15 +489,19 @@ function filtrarVentas() {
 
 function renderVentaRow(venta, editing = false) {
     const usuario = todosLosUsuarios.find(u => u.usuario === venta.vendedor || u.id === venta.vendedor);
-    const fechaFormateada = venta.fechaTour 
-        ? new Date(venta.fechaTour).toLocaleDateString('es-PE', { timeZone: 'America/Lima' }) 
-        : 'Sin fecha';
-    const montoIndividual = parseFloat(venta.precioUnitario) || 0;
-    const montoTotal = parseFloat(venta.importeTotal) || 0;
-    const comision = parseFloat(venta.comision) || (montoTotal * 0.1);
-    const ganancia = parseFloat(venta.ganancia) || (montoTotal - comision);
-    const puntos = parseInt(venta.puntos) || 0;
     
+    const fechaFormateada = formatearFechaVenta(venta.fechaTour);
+    const montoIndividual = toNum(venta.precioUnitario);
+    const montoTotal = toNum(venta.importeTotal);
+    const comision = toNum(venta.comision, montoTotal * 0.10);
+    const ganancia = toNum(venta.ganancia, montoTotal - comision);
+    const puntos = parseInt(venta.puntos) || 0;
+
+    function toNum(v, def = 0) {
+        const n = parseFloat(v);
+        return isNaN(n) ? def : n;
+    }
+
     if (editing) {
         return `
             <tr class="editing-row" data-id="${venta.id}">
@@ -503,7 +530,7 @@ function renderVentaRow(venta, editing = false) {
             </tr>
         `;
     }
-    
+
     return `
         <tr data-id="${venta.id}">
             <td>${fechaFormateada}</td>
@@ -530,6 +557,34 @@ function renderVentaRow(venta, editing = false) {
             </td>
         </tr>
     `;
+}
+
+// Helper fecha (robusto savebd/getbd)
+function formatearFechaVenta(f) {
+    if (!f) return 'Sin fecha';
+    // Firestore Timestamp
+    if (typeof f === 'object' && typeof f.toDate === 'function') {
+        return f.toDate().toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+    }
+    // objeto {seconds,nanoseconds}
+    if (f.seconds && !isNaN(f.seconds)) {
+        return new Date(f.seconds * 1000).toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+    }
+    // ISO completa
+    if (typeof f === 'string' && f.includes('T')) {
+        return new Date(f).toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+    }
+    // YYYY-MM-DD
+    if (typeof f === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(f)) {
+        const [y,m,d] = f.split('-');
+        return `${d}/${m}/${y}`;
+    }
+    // fallback
+    try {
+        return new Date(f).toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+    } catch {
+        return 'Fecha?';
+    }
 }
 
 function updateStats(ventas, totalIngresos, totalPuntos) {
@@ -1276,17 +1331,10 @@ function initEvents() {
     });
     
     // Actualizar el botón "Actualizar" para incluir tours (línea 1430)
-    $(document).on('click', '.bt_cargar', async () => {
-    removels('usuariosSmileTop');
-    removels('toursSmileTop');
-    removels('notasSmileTop'); // ← AGREGAR ESTA LÍNEA
-    removels('configCrearCuenta'); // ← AGREGAR
-    
-    await refreshData();
-    await loadTours();
-    await loadNotas(); // ← AGREGAR ESTA LÍNEA
-    await loadConfigCuenta(); // ← AGREGAR
-    });
+$(document).on('click', '.bt_cargar', async () => {
+    removels(`ventasSmileTop_${currentMonth}_${currentUser}`);
+    await refreshData(true);
+});
     
     // 📊 EXPORTAR A EXCEL
     $(document).on('click', '.bt_exportar', async () => {
