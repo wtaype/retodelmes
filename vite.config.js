@@ -1,24 +1,26 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
 
-export default defineConfig(({ mode }) => {
-  const isGitHubPages = process.env.GITHUB_PAGES === 'true' || mode === 'github' || process.env.NODE_ENV === 'production';
-  const base = isGitHubPages ? '/retodelmes/' : '/';
-  return {
-    base,
-    build: {
-      outDir: 'dist',
-      minify: 'esbuild',
-      sourcemap: false,
-      rollupOptions: {
-        input: {
-          main: resolve(__dirname, 'index.html'),
-          smile: resolve(__dirname, 'smile.html'), 
-          smiletop: resolve(__dirname, 'smiletop.html'),
-          lab: resolve(__dirname, 'lab.html'),
+export default defineConfig({
+  base: '/',
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    modulePreload: false,
+    rollupOptions: {
+      input: 'index.html',
+      output: {
+        manualChunks: id => {
+          if (id.includes('node_modules')) return id.includes('firebase') ? 'firebase' : 'vendor';
         }
-      }
-    },
-    publicDir: 'public'
-  };
+      },
+      plugins: [{
+        name: 'minify-html',
+        generateBundle(_, b) {
+          for (let f in b) if (f.endsWith('.html') && b[f].type === 'asset') 
+            b[f].source = b[f].source.replace(/\n\s*/g, '').replace(/>\s+</g, '><').replace(/\s{2,}/g, ' ').replace(/<!--.*?-->/g, '').trim();
+        }
+      }]
+    }
+  },
+  publicDir: 'public'
 });
