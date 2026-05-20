@@ -1,4 +1,3 @@
-import './inicio.css';
 import $ from 'jquery';
 import { app, version, by, linkme } from '../wii.js';
 import { wiVista, year, wiTip, Saludar } from '../widev.js';
