@@ -46,8 +46,8 @@ const CK_KEY = 'cookies';
 
 const cerrarBanner = (val) => {
   savels(CK_KEY, val);
-  $('#cookiess').removeClass('cookiess_show');
-  setTimeout(() => $('#cookiess').remove(), 400);
+  $('#cookies').removeClass('cookies_show');
+  setTimeout(() => $('#cookies').remove(), 400);
 };
 
 // Los listeners siempre se registran (independiente del prerender)
@@ -57,21 +57,21 @@ $(document).on('click', '#ck_rechazar', () => cerrarBanner(false));
 if (!getls(CK_KEY)) {
   // Si el prerender ya lo inyectó en el HTML, solo mostrarlo
   // Si no existe todavía (entorno de dev), crearlo
-  if (!$('#cookiess').length) {
+  if (!$('#cookies').length) {
     $('body').append(`
-      <div class="cookiess" id="cookiess" role="dialog" aria-live="polite">
-        <p class="cookiess_txt"> <i class="fas fa-cookie-bite cookiess_ico"></i>
+      <div class="cookies" id="cookies" role="dialog" aria-live="polite">
+        <p class="cookies_txt"> <i class="fas fa-cookie-bite cookies_ico"></i>
           Usamos cookies para mejorar tu experiencia y mostrarte anuncios relevantes
-          <a href="/cookies" class="cookiess_link nv_item" data-page="cookies">más info.</a>
+          <a href="/cookies" class="cookies_link nv_item" data-page="cookies">más info.</a>
         </p>
-        <div class="cookiess_btns">
-          <button class="cookiess_aceptar" id="ck_aceptar"><i class="fas fa-check"></i> Aceptar</button>
-          <button class="cookiess_rechazar" id="ck_rechazar">Rechazar</button>
+        <div class="cookies_btns">
+          <button class="cookies_aceptar" id="ck_aceptar"><i class="fas fa-check"></i> Aceptar</button>
+          <button class="cookies_rechazar" id="ck_rechazar">Rechazar</button>
         </div>
       </div>`);
   }
-  setTimeout(() => $('#cookiess').addClass('cookiess_show'), 800);
+  setTimeout(() => $('#cookies').addClass('cookies_show'), 800);
 } else {
   // Ya aceptó — eliminar banner prerenderizado si existe en el DOM
-  $('#cookiess').remove();
+  $('#cookies').remove();
 }

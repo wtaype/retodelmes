@@ -28,6 +28,5 @@ css: [
   'https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap',
   'https://fonts.googleapis.com/css2?family=Rubik:wght@300..900&display=swap',
 ],
-js: ['https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1362457560630815'],
 });
 
