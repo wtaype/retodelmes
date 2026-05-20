@@ -1,0 +1,134 @@
+/* ── LAYOUT ───────────────────────────────────────────────────────────────── */
+.mwb { padding-bottom: 4vh; }
+.mus_layout { display:grid; gap:3vh; align-items:start; grid-template-columns:1fr; }
+.mus_layout.autenticado { grid-template-columns: 55% minmax(0,1fr); }
+
+/* ── PLAYER ───────────────────────────────────────────────────────────────── */
+.mus_player {
+  display:flex; align-items:center; gap:2.5vh;
+  background:var(--wb); border:0.1vh solid var(--brd);
+  border-radius:2vh; padding:2vh; box-shadow:0 0.8vh 2.5vh rgba(0,0,0,0.12);
+  position:sticky; top:1.5vh; z-index:10; backdrop-filter:blur(1vh);
+}
+.mus_cover {
+  width:11vh; height:11vh; border-radius:1.5vh; object-fit:cover; flex-shrink:0;
+  box-shadow:0 0.5vh 1.5vh rgba(0,0,0,0.25); transition:transform 0.3s;
+}
+.mus_player:hover .mus_cover { transform:scale(1.04); }
+.mus_pcore { flex:1; display:flex; flex-direction:column; gap:1vh; min-width:0; }
+.mus_now   { display:flex; flex-direction:column; gap:0.3vh; overflow:hidden; }
+.mus_now strong { font-family:var(--ff_R); font-size:var(--fz_m4); color:var(--F); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mus_now span   { font-family:var(--ff_P); font-size:var(--fz_m); color:var(--mco); font-weight:500; }
+
+/* Controles */
+.mus_ctrls { display:flex; align-items:center; gap:1.5vh; }
+.mc {
+  background:var(--bg5); border:none; border-radius:50%;
+  width:4.2vh; height:4.2vh; display:flex; align-items:center; justify-content:center;
+  color:var(--tx); font-size:var(--fz_m); cursor:pointer; transition:all 0.2s;
+}
+.mc:hover { background:var(--mco); color:var(--F); transform:scale(1.1); box-shadow:0 0.4vh 1.2vh rgba(var(--mco_rgb),.35); }
+.mc.on  { color:var(--mco); }
+.mc_play { width:5.2vh; height:5.2vh; background:var(--F); color:var(--bg2); font-size:var(--fz_m2); box-shadow:0 0.4vh 1.2vh rgba(0,0,0,.2); }
+.mc_play:hover { background:var(--mco); color:var(--F); }
+
+/* Barra de progreso */
+.mus_prog { display:flex; align-items:center; gap:1.2vh; font-family:var(--ff_P); font-size:var(--fz_s4); color:var(--tx2); font-weight:500; }
+.mus_bar  { flex:1; height:0.7vh; background:var(--bg4); border-radius:1vh; cursor:pointer; overflow:hidden; transition:height 0.2s; }
+.mus_bar:hover { height:1.1vh; }
+.mus_fill { height:100%; width:0%; background:linear-gradient(90deg,var(--mco),var(--hva)); border-radius:1vh; transition:width 0.08s linear; }
+
+/* ── TOOLS ────────────────────────────────────────────────────────────────── */
+.mus_tools { display:flex; flex-direction:column; gap:1.5vh; margin-top:3vh; }
+.mus_sbox  { position:relative; }
+.mus_sbox i { position:absolute; left:1.5vh; top:50%; transform:translateY(-50%); color:var(--tx3); }
+#musSrc {
+  width:100%; background:var(--inp); border:0.15vh solid var(--brd); border-radius:1.5vh;
+  padding:1.3vh 1.5vh 1.3vh 4vh; color:var(--tx); font-size:var(--fz_m);
+  font-family:var(--ff_P); transition:all 0.2s; box-sizing:border-box;
+}
+#musSrc:focus { background:var(--bg3); border-color:var(--mco); box-shadow:0 0 0 0.3vh rgba(var(--mco_rgb),.15); outline:none; }
+.mus_cats { display:flex; gap:1vh; flex-wrap:wrap; }
+.cat {
+  background:var(--bg5); border:none; color:var(--tx); font-family:var(--ff_R); font-weight:600;
+  font-size:var(--fz_s4); padding:0.7vh 1.8vh; border-radius:3vh; cursor:pointer; transition:all 0.2s;
+}
+.cat:hover { background:var(--bg4); transform:translateY(-0.15vh); }
+.cat.active { background:var(--mco); color:var(--F); box-shadow:0 0.4vh 1.2vh rgba(var(--mco_rgb),.3); }
+
+/* ── LISTA ────────────────────────────────────────────────────────────────── */
+.mus_list { display:flex; flex-direction:column; gap:1vh; margin-top:2vh; }
+.mpi {
+  display:flex; align-items:center; gap:1.8vh; padding:1.2vh 1.5vh;
+  background:var(--wb); border:0.1vh solid var(--brd); border-radius:1.5vh;
+  cursor:pointer; transition:all 0.18s; position:relative; overflow:hidden;
+}
+.mpi::after { content:''; position:absolute; left:0; inset-block:0; width:0.35vh; background:var(--mco); opacity:0; transition:opacity 0.2s; }
+.mpi:hover { background:var(--bg4); transform:translateX(0.4vh); }
+.mpi.on { background:var(--bg3); }
+.mpi.on::after { opacity:1; }
+.mpi.fav { border-right:0.35vh solid #ffc107; }
+
+.mpi_cov { width:5.5vh; height:5.5vh; border-radius:1vh; overflow:hidden; flex-shrink:0; position:relative; box-shadow:0 0.3vh 0.8vh rgba(0,0,0,.15); }
+.mpi_cov img { width:100%; height:100%; object-fit:cover; }
+.mpi_ico { position:absolute; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; color:#fff; font-size:var(--fz_m); opacity:0; transition:opacity 0.18s; }
+.mpi:hover .mpi_ico, .mpi.on .mpi_ico { opacity:1; }
+
+.mpi_info { flex:1; display:flex; flex-direction:column; min-width:0; }
+.mpi_info b     { font-family:var(--ff_R); font-size:var(--fz_m); color:var(--tx); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mpi_info small { font-family:var(--ff_P); font-size:var(--fz_s4); color:var(--tx2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mpi.on .mpi_info b { color:var(--mco); }
+
+.mpi_acts { display:flex; gap:0.5vh; opacity:0; transition:opacity 0.18s; }
+.mpi:hover .mpi_acts { opacity:1; }
+.ma { background:transparent; border:none; color:var(--tx3); font-size:var(--fz_m); padding:0.8vh; border-radius:0.6vh; cursor:pointer; transition:all 0.18s; }
+.ma:hover { background:var(--bg5); color:var(--tx); transform:scale(1.15); }
+.fav_t.on { color:#ffc107; }
+
+
+.mus_empty { display:flex; flex-direction:column; align-items:center; padding:5vh; color:var(--tx3); text-align:center; gap:1.5vh; }
+.mus_empty i { font-size:5vh; opacity:.4; }
+
+/* ── FORMULARIO ───────────────────────────────────────────────────────────── */
+.mus_right { position:sticky; top:1.5vh; }
+.mus_card {
+  background:var(--wb); border:0.1vh solid var(--brd); border-radius:2vh;
+  padding:2.5vh; display:flex; flex-direction:column; gap:2vh;
+  box-shadow:0 0.8vh 2.5vh rgba(0,0,0,.1);
+}
+.mus_card h3 { font-family:var(--ff_R); font-size:var(--fz_m4); color:var(--tx); display:flex; align-items:center; gap:1vh; }
+.mus_card h3 i { color:var(--mco); }
+
+#fmMusica { display:flex; flex-direction:column; gap:1.8vh; }
+.fg { display:flex; flex-direction:column; gap:0.7vh; }
+.fg label { font-family:var(--ff_R); font-size:var(--fz_s4); font-weight:600; color:var(--tx2); text-transform:uppercase; letter-spacing:.05em; }
+.fi {
+  background:var(--inp); border:0.15vh solid var(--brd); border-radius:1vh;
+  padding:1.1vh 1.4vh; color:var(--tx); font-size:var(--fz_m);
+  font-family:var(--ff_P); width:100%; box-sizing:border-box; transition:all 0.2s;
+}
+.fi:focus { background:var(--bg3); border-color:var(--mco); outline:none; box-shadow:0 0 0 0.25vh rgba(var(--mco_rgb),.15); }
+.fg small { font-size:var(--fz_s3); color:var(--tx3); }
+
+.fchecks { display:flex; gap:2.5vh; }
+.fck { display:flex; align-items:center; gap:0.7vh; font-family:var(--ff_P); font-size:var(--fz_m); color:var(--tx); cursor:pointer; }
+.fck input { accent-color:var(--mco); transform:scale(1.2); cursor:pointer; }
+
+.fbtns { display:flex; gap:1.2vh; justify-content:flex-end; }
+.btn_sec { background:var(--bg5); color:var(--tx); border:none; padding:1.1vh 2vh; border-radius:1vh; font-family:var(--ff_R); font-weight:600; font-size:var(--fz_m); cursor:pointer; display:flex; align-items:center; gap:0.8vh; transition:all 0.2s; }
+.btn_sec:hover { background:var(--bg4); transform:translateY(-0.15vh); }
+.btn_pri { background:var(--mco); color:var(--F); border:none; padding:1.1vh 2.5vh; border-radius:1vh; font-family:var(--ff_R); font-weight:600; font-size:var(--fz_m); cursor:pointer; display:flex; align-items:center; gap:0.8vh; box-shadow:0 0.4vh 1.2vh rgba(var(--mco_rgb),.3); transition:all 0.2s; }
+.btn_pri:hover { background:var(--hva); transform:translateY(-0.15vh); box-shadow:0 0.6vh 1.8vh rgba(var(--mco_rgb),.4); }
+
+/* ── RESPONSIVE ───────────────────────────────────────────────────────────── */
+@media (max-width:900px){
+  .mus_layout.autenticado { grid-template-columns:1fr; }
+  .mus_right { position:static; }
+  .mpi_acts  { opacity:1; }
+  .mus_player { flex-wrap:wrap; }
+  .mus_cover  { width:8vh; height:8vh; }
+}
+@media (max-width:600px){
+  .mc { width:3.8vh; height:3.8vh; font-size:var(--fz_s4); }
+  .mc_play { width:4.8vh; height:4.8vh; }
+}
