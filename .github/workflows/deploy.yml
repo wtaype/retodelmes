@@ -22,9 +22,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3    # ← pnpm se instala primero
+      - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11 # o la versión de pnpm que uses
 
       - uses: actions/setup-node@v4
         with:
