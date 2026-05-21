@@ -1,0 +1,456 @@
+/* ═══════════════════════════════════════════════════════════
+   rrhh.css — Gestión de Colaboradores
+   Reto del Mes · Gestor Module
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Container ──────────────────────────────────────────── */
+.rrhh_wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  animation: rrhh_fadeIn 0.35s ease;
+}
+
+@keyframes rrhh_fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.rrhh_header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.rrhh_header_text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.rrhh_title {
+  font-family: var(--ff_O, sans-serif);
+  font-size: var(--fz_l1, 1.75rem);
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.rrhh_title i {
+  color: var(--mco, #f59e0b);
+}
+
+.rrhh_subtitle {
+  font-size: var(--fz_s2, 0.85rem);
+  color: var(--tx3, #888);
+  margin: 0;
+}
+
+/* ── Refresh button ──────────────────────────────────────── */
+.rrhh_refresh_btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid var(--brd, #e2e8f0);
+  background: var(--bg, #fff);
+  color: var(--tx2, #555);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.rrhh_refresh_btn:hover {
+  background: var(--mco, #f59e0b);
+  color: #fff;
+  border-color: var(--mco, #f59e0b);
+  transform: rotate(30deg);
+}
+
+.rrhh_refresh_btn.rrhh_spinning i {
+  animation: rrhh_spin 0.8s linear infinite;
+}
+
+@keyframes rrhh_spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Search bar ──────────────────────────────────────────── */
+.rrhh_search_bar {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.rrhh_search_icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--tx3, #aaa);
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.rrhh_search_input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border: 2px solid var(--brd, #e2e8f0);
+  border-radius: 0.75rem;
+  background: var(--bg, #fff);
+  color: var(--tx, #111);
+  font-size: var(--fz_m1, 0.95rem);
+  font-family: var(--ff_P, sans-serif);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.rrhh_search_input::placeholder {
+  color: var(--tx3, #aaa);
+}
+
+.rrhh_search_input:focus {
+  outline: none;
+  border-color: var(--mco, #f59e0b);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mco, #f59e0b) 18%, transparent);
+}
+
+/* ── Stats bar ───────────────────────────────────────────── */
+.rrhh_stats_bar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.rrhh_stat_chip {
+  flex: 1 1 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  background: var(--bg5, #f8fafc);
+  border: 1.5px solid var(--brd, #e2e8f0);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.rrhh_stat_chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.07);
+}
+
+.rrhh_stat_num {
+  font-family: var(--ff_O, sans-serif);
+  font-size: var(--fz_l2, 2rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.rrhh_stat_label {
+  font-size: var(--fz_s1, 0.75rem);
+  color: var(--tx3, #888);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.rrhh_stat_total   .rrhh_stat_num { color: var(--tx, #111); }
+.rrhh_stat_activos .rrhh_stat_num { color: #22c55e; }
+.rrhh_stat_inactivos .rrhh_stat_num { color: #ef4444; }
+
+/* ── Table wrapper ───────────────────────────────────────── */
+.rrhh_table_wrap {
+  background: var(--bg, #fff);
+  border: 1.5px solid var(--brd, #e2e8f0);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Table ───────────────────────────────────────────────── */
+.rrhh_table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+}
+
+.rrhh_table thead th {
+  padding: 0.9rem 1rem;
+  text-align: left;
+  font-size: var(--fz_s1, 0.72rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--tx3, #aaa);
+  background: var(--bg5, #f8fafc);
+  border-bottom: 1.5px solid var(--brd, #e2e8f0);
+  white-space: nowrap;
+}
+
+.rrhh_table thead th:first-child { border-radius: 1.25rem 0 0 0; }
+.rrhh_table thead th:last-child  { border-radius: 0 1.25rem 0 0; }
+
+.rrhh_table tbody tr {
+  border-bottom: 1px solid var(--brd, #e2e8f0);
+  transition: background 0.18s;
+}
+
+.rrhh_table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.rrhh_table tbody tr:hover {
+  background: color-mix(in srgb, var(--mco, #f59e0b) 6%, var(--bg, #fff));
+}
+
+.rrhh_table tbody tr.rrhh_row_inactive {
+  opacity: 0.6;
+}
+
+.rrhh_table tbody td {
+  padding: 0.8rem 1rem;
+  font-size: var(--fz_m1, 0.93rem);
+  color: var(--tx, #111);
+  vertical-align: middle;
+}
+
+.rrhh_usuario {
+  color: var(--tx2, #666);
+  font-size: var(--fz_s2, 0.85rem);
+  font-family: monospace;
+}
+
+.rrhh_email {
+  color: var(--tx3, #aaa);
+  font-size: var(--fz_s2, 0.83rem);
+  word-break: break-all;
+}
+
+/* ── Avatar ──────────────────────────────────────────────── */
+.rrhh_avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--mco, #f59e0b);
+  border: 2px solid var(--brd, #e2e8f0);
+  letter-spacing: 0.03em;
+}
+
+.rrhh_avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Avatar color by rol */
+.rrhh_avatar_initials[data-rol="smile"]   { background: #3b82f6; }
+.rrhh_avatar_initials[data-rol="gestor"]  { background: #f97316; }
+.rrhh_avatar_initials[data-rol="empresa"] { background: #a855f7; }
+.rrhh_avatar_initials[data-rol="admin"]   { background: #ef4444; }
+
+/* ── Rol badge ───────────────────────────────────────────── */
+.rrhh_rol_badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25em 0.75em;
+  border-radius: 999px;
+  font-size: var(--fz_s1, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.rrhh_rol_smile   { background: rgba(59,130,246,0.13); color: #3b82f6; }
+.rrhh_rol_gestor  { background: rgba(249,115,22,0.13);  color: #f97316; }
+.rrhh_rol_empresa { background: rgba(168,85,247,0.13);  color: #a855f7; }
+.rrhh_rol_admin   { background: rgba(239,68,68,0.13);   color: #ef4444; }
+
+/* ── CSS Toggle switch ───────────────────────────────────── */
+.rrhh_toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.rrhh_toggle input[type="checkbox"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.rrhh_toggle_slider {
+  position: absolute;
+  inset: 0;
+  background: var(--brd, #cbd5e1);
+  border-radius: 999px;
+  transition: background 0.25s;
+}
+
+.rrhh_toggle_slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.22);
+  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+.rrhh_toggle input[type="checkbox"]:checked + .rrhh_toggle_slider {
+  background: #22c55e;
+}
+
+.rrhh_toggle input[type="checkbox"]:checked + .rrhh_toggle_slider::before {
+  transform: translateY(-50%) translateX(20px);
+}
+
+.rrhh_toggle input[type="checkbox"]:focus-visible + .rrhh_toggle_slider {
+  box-shadow: 0 0 0 3px color-mix(in srgb, #22c55e 30%, transparent);
+}
+
+/* ── Edit role button ────────────────────────────────────── */
+.rrhh_btn_rol {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35em 0.85em;
+  border-radius: 0.5rem;
+  border: 1.5px solid var(--brd, #e2e8f0);
+  background: var(--bg5, #f8fafc);
+  color: var(--tx2, #555);
+  font-size: var(--fz_s2, 0.82rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  white-space: nowrap;
+}
+
+.rrhh_btn_rol:hover {
+  background: var(--mco, #f59e0b);
+  border-color: var(--mco, #f59e0b);
+  color: #fff;
+}
+
+.rrhh_btn_rol.rrhh_btn_cancel {
+  background: rgba(239,68,68,0.1);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.rrhh_btn_rol.rrhh_btn_cancel:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* ── Inline role select ──────────────────────────────────── */
+.rrhh_rol_select {
+  padding: 0.3em 0.65em;
+  border-radius: 0.5rem;
+  border: 1.5px solid var(--mco, #f59e0b);
+  background: var(--bg, #fff);
+  color: var(--tx, #111);
+  font-size: var(--fz_s2, 0.82rem);
+  font-family: var(--ff_P, sans-serif);
+  cursor: pointer;
+  outline: none;
+  transition: box-shadow 0.2s;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mco, #f59e0b) 18%, transparent);
+}
+
+.rrhh_rol_select:focus {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--mco, #f59e0b) 28%, transparent);
+}
+
+/* ── Loading & Empty states ──────────────────────────────── */
+.rrhh_loading_cell {
+  text-align: center;
+  padding: 2.5rem !important;
+}
+
+.rrhh_spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--tx3, #aaa);
+  font-size: var(--fz_m1, 0.95rem);
+}
+
+.rrhh_empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: var(--tx3, #aaa);
+  text-align: center;
+}
+
+.rrhh_empty i {
+  font-size: 2.5rem;
+  opacity: 0.4;
+}
+
+.rrhh_empty p {
+  margin: 0;
+  font-size: var(--fz_m1, 0.95rem);
+}
+
+.rrhh_empty_error i  { color: #ef4444; opacity: 0.7; }
+.rrhh_empty_error p  { color: #ef4444; }
+
+/* ── Mobile ──────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .rrhh_wrap {
+    padding: 1.25rem 0.75rem 3rem;
+  }
+
+  .rrhh_title {
+    font-size: var(--fz_m4, 1.35rem);
+  }
+
+  .rrhh_stats_bar {
+    gap: 0.6rem;
+  }
+
+  .rrhh_stat_chip {
+    padding: 0.75rem;
+  }
+
+  .rrhh_stat_num {
+    font-size: var(--fz_l1, 1.6rem);
+  }
+
+  .rrhh_table_wrap {
+    border-radius: 0.9rem;
+  }
+}

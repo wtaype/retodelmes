@@ -5,7 +5,7 @@ import * as inicioMod from './web/inicio.js';
 
 // ── NAV COMUN — rutas compartidas entre todos los roles ────────────────────────
 const COMUN = [
-  { href: '/acerca', page: 'acerca', ico: 'fa-circle-info', txt: 'Acerca' }
+  // { href: '/acerca', page: 'acerca', ico: 'fa-circle-info', txt: 'Acerca' }
 ];
 
 // ── NAV — Config visual por rol (nvleft = izquierda, nvright = derecha) ────────
@@ -18,18 +18,32 @@ export const NAV = {
     ],
   },
   smile: {
-    nvleft:  [{ href: '/smile', page: 'smile', ico: 'fa-house', txt: 'Dashboard' }, ...COMUN],
+    nvleft: [
+      { href: '/smile',     page: 'smile',     ico: 'fa-house',           txt: 'Inicio'    },
+      { href: '/registrar', page: 'registrar', ico: 'fa-plus-circle',      txt: 'Registrar Ventas' },
+      { href: '/ranking',   page: 'ranking',   ico: 'fa-trophy',           txt: 'Ranking'   },
+      { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Tablero' },
+      { href: '/tours',     page: 'tours',     ico: 'fa-route',            txt: 'Tours'     },
+      { href: '/avisar',    page: 'avisar',    ico: 'fa-bell',             txt: 'Avisar'    },
+      ...COMUN,
+    ],
     nvright: [
-      { href: '/word',      page: 'word',      ico: 'fa-rocket', txt: 'Planificar'     },
-      { href: '/nuevo',    page: 'nuevo',    ico: 'fa-plus',        txt: 'Nuevo Post' },
-      { href: '/notas',    page: 'notas',    ico: 'fa-note-sticky', txt: 'Notas'      },
-      { href: '/mensajes', page: 'mensajes', ico: 'fa-comments',    txt: 'Mensajes'   },
+      { href: '/mensajes', page: 'mensajes', ico: 'fa-comments', txt: 'Mensajes' },
       { isPerfil: true }, { isSalir: true },
     ],
   },
   gestor: {
-    nvleft:  [{ href: '/gestor', page: 'gestor', ico: 'fa-house', txt: 'Dashboard' }, ...COMUN],
+    nvleft: [
+      { href: '/smile',     page: 'smile',     ico: 'fa-house',           txt: 'Inicio'    },
+      { href: '/registrar', page: 'registrar', ico: 'fa-plus-circle',      txt: 'Registrar Ventas' },
+      { href: '/ranking',   page: 'ranking',   ico: 'fa-trophy',           txt: 'Ranking'   },
+      { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Tablero' },
+      { href: '/tours',     page: 'tours',     ico: 'fa-route',            txt: 'Tours'     },
+      { href: '/avisar',    page: 'avisar',    ico: 'fa-bell',             txt: 'Avisar'    },
+      ...COMUN,
+    ],
     nvright: [
+      { href: '/rrhh',      page: 'rrhh',      ico: 'fa-users-gear',     txt: 'RRHH'      },
       { href: '/mensajes', page: 'mensajes', ico: 'fa-comments', txt: 'Mensajes' },
       { isPerfil: true }, { isSalir: true },
     ],
@@ -87,6 +101,15 @@ export const RUTAS = [
   { path: '/word',     area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
   { path: '/musica',   area: 'web/', roles: ['smile','gestor','empresa','admin'] },
   { path: '/nuevo',    area: 'web/blog/', roles: ['smile','gestor','empresa','admin'] },
+
+  // ── Tours App — smile ────────────────────────────────────────────────
+  { path: '/registrar', area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
+  { path: '/ranking',   area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
+  { path: '/historial', area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
+  { path: '/tours',     area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
+  { path: '/avisar',    area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
+  // ── Tours App — gestor ────────────────────────────────────────────────
+  { path: '/rrhh',      area: 'gestor/', roles: ['gestor','empresa','admin'] },
 
   // ── Autenticadas (roles superiores) ───────────────────────────────────────────────
   { path: '/gestor',   area: 'gestor/',  roles: ['gestor','empresa','admin'] },
