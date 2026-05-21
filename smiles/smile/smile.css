@@ -179,3 +179,119 @@
   .smw_blog_item { flex-direction: column; }
   .smw_blog_img { width: 100%; height: 18vh; }
 }
+
+/* ── QUICK NAV CARDS (Dashboard) ── */
+.smw_quick_nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 2vh;
+  padding: 0 0 2vh;
+}
+
+.smw_qcard {
+  display: flex;
+  align-items: center;
+  gap: 2.5vh;
+  padding: 2.5vh 3vh;
+  background: var(--wb);
+  border: 1px solid var(--brd);
+  border-radius: 2vh;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  animation: smw_entry 0.6s both;
+  position: relative;
+  overflow: hidden;
+}
+.smw_qcard::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--qc);
+  border-radius: 4px 0 0 4px;
+}
+.smw_qcard:hover {
+  transform: translateY(-6px) translateX(4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.06);
+  border-color: var(--qc);
+}
+
+.smw_qcard_ico {
+  width: 6.5vh;
+  height: 6.5vh;
+  border-radius: 1.5vh;
+  background: color-mix(in srgb, var(--qc) 12%, transparent);
+  color: var(--qc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fz_m3);
+  flex-shrink: 0;
+}
+
+.smw_qcard_txt { flex: 1; }
+.smw_qcard_txt strong { display: block; font-size: var(--fz_m2); font-weight: 800; color: var(--tx); }
+.smw_qcard_txt span { font-size: var(--fz_s2); color: var(--tx3); font-weight: 500; }
+
+.smw_qcard_arr { color: var(--brd); transition: all 0.3s; }
+.smw_qcard:hover .smw_qcard_arr { color: var(--qc); transform: translateX(4px); }
+
+/* ── KPI BAND (hero) ── */
+.smw_kpi_band {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 3vh;
+  background: var(--wb);
+  border: 1px solid var(--brd);
+  border-radius: 2vh;
+  padding: 2.5vh 4vh;
+  backdrop-filter: blur(8px);
+}
+
+.smw_kpi_item { text-align: center; flex: 1; }
+.smw_kpi_val {
+  display: block;
+  font-size: var(--fz_l1);
+  font-weight: 900;
+  font-family: var(--ff_O);
+  line-height: 1;
+}
+.smw_kpi_lbl {
+  display: block;
+  font-size: var(--fz_s1);
+  color: var(--tx3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 0.5vh;
+}
+.smw_kpi_sep {
+  width: 1px;
+  height: 4vh;
+  background: var(--brd);
+}
+
+.smw_month_selector_container {
+  display: flex;
+  align-items: center;
+}
+
+/* ── SKELETON LOADERS (Dashboard Refinements) ── */
+@keyframes smw_shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.smw_sk_kpi {
+  display: inline-block;
+  width: 60px;
+  height: 3.5vh;
+  border-radius: 1vh;
+  vertical-align: middle;
+  background: linear-gradient(90deg, var(--bg3) 25%, var(--bg5) 50%, var(--bg3) 75%);
+  background-size: 200% 100%;
+  animation: smw_shimmer 1.4s infinite;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.01);
+}
+

@@ -60,16 +60,12 @@ if (!getls(CK_KEY)) {
   // Si no existe todavía (entorno de dev), crearlo
   if (!$('#cookies').length) {
     $('body').append(`
-      <div class="cookies" id="cookies" role="dialog" aria-live="polite">
-        <p class="cookies_txt"> <i class="fas fa-cookie-bite cookies_ico"></i>
-          Usamos cookies para mejorar tu experiencia y mostrarte anuncios relevantes
-          <a href="/cookies" class="cookies_link nv_item" data-page="cookies">más info.</a>
-        </p>
-        <div class="cookies_btns">
-          <button class="cookies_aceptar" id="ck_aceptar"><i class="fas fa-check"></i> Aceptar</button>
-          <button class="cookies_rechazar" id="ck_rechazar">Rechazar</button>
-        </div>
-      </div>`);
+<div class="cookiess cookiess_show" id="cookies" role="dialog" aria-live="polite" aria-label="Consentimiento de Cookies">
+    <p class="cookiess_txt"><i class="fas fa-cookie-bite cookiess_ico"></i>Usamos cookies para mejorar tu experiencia y mostrarte anuncios relevantes
+    <a class="cookiess_link nv_item" href="/cookies">Más info</a></p>
+    <div class="cookiess_btns"><button class="cookiess_aceptar" id="ck_aceptar"><i class="fas fa-check"></i> Aceptar</button>
+    <button class="cookiess_rechazar" id="ck_rechazar">Rechazar</button></div>
+  </div>`);
   }
   setTimeout(() => $('#cookies').addClass('cookies_show'), 800);
 } else {
