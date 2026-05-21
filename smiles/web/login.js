@@ -306,7 +306,9 @@ $(document)
         const wi = userDocs.docs[0].data();
         if (wi.estado === 'pendiente') {
           await signOut(auth);
-          throw new Error('Tu cuenta está pendiente de activación.');
+          if (esModal()) cerrarTodos();
+          rutas.navigate('/registrado');
+          return;
         }
         entrar(wi);
       } else {
@@ -371,7 +373,7 @@ $(document)
         nombre:    partes[0],
         apellidos: partes.slice(1).join(' ') || '',
         rol:       rolSeleccionado,
-        estado:    'activo',
+        estado:    'pendiente',
         uid:       user.uid,
         terminos:  true,
         tema:      localStorage.wiTema || 'Cielo|#0EBEFF',
@@ -386,8 +388,9 @@ $(document)
       };
 
       await setDoc(doc(db, 'smiles', u), { ...wi, creado: serverTimestamp() });
-      entrar(wi);
-      Mensaje('<i class="fa-solid fa-rocket"></i> ¡Tu cuenta está lista!', 'success');
+      await signOut(auth);
+      if (esModal()) cerrarTodos();
+      rutas.navigate('/registrado');
     });
     $(this).data('busy', false);
   })
@@ -427,9 +430,11 @@ $(document)
       const wi = wiPre ?? (await getDoc(doc(db, 'smiles', auth.currentUser.displayName || input))).data();
 
       // Verificar si la cuenta está pendiente de activación
-      if (wi.status === 'pendiente') {
+      if (wi.estado === 'pendiente') {
         await signOut(auth);
-        throw new Error('Tu cuenta está pendiente de activación. Te notificaremos por email.');
+        if (esModal()) cerrarTodos();
+        rutas.navigate('/registrado');
+        return;
       }
       entrar(wi);
     });
@@ -464,9 +469,8 @@ $(document)
       await Promise.all([updateProfile(user, { displayName: d.usuario }), sendEmailVerification(user)]);
 
       // Determinar status: Ahora Negocio (gestor) entra activo directo
-      const esPendiente = rolSeleccionado === 'empresa';
       const rolFinal    = rolSeleccionado;
-      const estado      = esPendiente ? 'pendiente' : 'activo';
+      const estado      = 'pendiente';
       
 
       const wi = {
@@ -500,14 +504,12 @@ $(document)
 
       await setDoc(doc(db, 'smiles', d.usuario), { ...wi, creado: serverTimestamp() });
 
-      if (esPendiente) {
-        // No hacer login — solo notificar
+      if (estado === 'pendiente') {
         await signOut(auth);
-        Mensaje('<i class="fa-solid fa-clock"></i> Registro enviado. Tu cuenta será activada pronto.', 'success');
-        setTimeout(() => swap('login'), 2500);
+        if (esModal()) cerrarTodos();
+        rutas.navigate('/registrado');
       } else {
         entrar(wi);
-        Mensaje('<i class="fa-solid fa-check-circle"></i> ¡Cuenta creada! Verifica tu email', 'success');
       }
     });
     $(this).data('busy', false);
@@ -554,6 +556,7 @@ export const abrirLogin = (tipo = 'login') => {
 };
 
 export const salir = async (keep = []) => {
+  sessionStorage.removeItem('vault_unlocked');
   try { await signOut(auth); } catch(e) { console.error('signOut:', e); }
   wiAuth.logout(keep);
 };

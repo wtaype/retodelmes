@@ -62,6 +62,10 @@ export const NAV = {
       { isPerfil: true }, { isSalir: true },
     ],
   },
+  verificar: {
+    nvleft:  [],
+    nvright: [],
+  },
 };
 
 // ── RUTAS — Fuente única de verdad - roles: null = público · ['rol',...] = protegido · area = carpeta del módulo ───────────────────────────────────────────────
@@ -69,10 +73,8 @@ export const RUTAS = [
   // ── Core público ───────────────────────────────────────────────
   { path: '/inicio',   area: 'web/' },
   { path: '/login',    area: 'web/' },
-  { path: '/citas',    area: 'web/' },
-  { path: '/biblia',   area: 'web/' },
   { path: '/emojis',   area: 'web/' },
-  { path: '/1lab',     area: 'web/' },
+  { path: '/registrado',   area: 'web/' },
 
   // ── Submódulos públicos ───────────────────────────────────────────────
   { path: '/blog',     area: 'web/blog/' },
@@ -95,7 +97,6 @@ export const RUTAS = [
   { path: '/perfil',   area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/mensajes', area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/word',     area: 'smile/', roles: ['smile','gestor','admin'] },
-  { path: '/musica',   area: 'web/', roles: ['smile','gestor','admin'] },
   { path: '/nuevo',    area: 'web/blog/', roles: ['smile','gestor','admin'] },
 
   // ── Tours App — smile ────────────────────────────────────────────────
@@ -116,11 +117,12 @@ export const RUTAS = [
   { path: '/permisos', area: 'admin/',   roles: ['admin']          },
   { path: '/sistema',  area: 'admin/',   roles: ['admin']          },
   { path: '/mifcm',    area: 'admin/',   roles: ['admin']          },
+  { path: '/verificar',area: 'verificar/',roles: ['admin']          },
 ];
 
 // ── GLOB — Vite mapea todos los módulos en build time ───────────────────────────────────────────────
 const MODS = import.meta.glob([
-  './{web,smile,gestor,admin}/**/*.js',
+  './{web,smile,gestor,admin,verificar}/**/*.js',
   '!./web/inicio.js',
   '!./web/chatwil/head/**/*.js',
   '!./web/chatwil/memoria.js',
@@ -192,6 +194,14 @@ class WiRutas {
     this.cargand = true;
     const norm = wiPath.limpiar(ruta) === '/' ? `/${this.HOME}` : wiPath.limpiar(ruta);
 
+    // ── GUARD ADMIN ───────────────────────────────────────────────────────────
+    if (['/admin','/usuarios','/permisos','/sistema','/mifcm'].includes(norm)) {
+      const { getls } = await import('./widev.js');
+      const wi = getls('wiSmile'), go = r => (this.cargand = false, this.navigate(r, true));
+      const dest = !wi || wi.rol !== 'admin' ? '/' : wi.estado !== 'activo' ? '/registrado' : !sessionStorage.getItem('vault_unlocked') ? '/verificar' : null;
+      if (dest) return go(dest);
+    }
+
     try {
       this.modActual?.cleanup?.();
       const slug = !this.rutas[norm] ? norm.slice(1) : null;
@@ -203,6 +213,7 @@ class WiRutas {
       
       document.body.classList.remove('is-public-profile');
       this.marcarNav(norm);
+      window.dispatchEvent(new CustomEvent('winavigate', { detail: { norm } }));
 
       // Hydration: Solo preservar contenido prerenderizado si la ruta ES la del inicio
       // (el index.html genérico solo tiene prerender del inicio; en otras rutas siempre inyectar)

@@ -14,8 +14,9 @@ const buildNav = (items, wi) => items.map(i => {
   return `<a href="${i.href}" class="nv_item" data-page="${i.page}"><i class="fas ${i.ico}"></i> <span>${i.txt}</span></a>`;
 }).join('');
 
-const renderHeader = (wi) => {
-  const cfg = NAV[wi?.rol] ?? NAV.todos;
+const renderHeader = (wi, ruta = window.location.pathname) => {
+  let cfg = NAV[wi?.rol] ?? NAV.todos;
+  if (ruta === '/verificar') cfg = NAV.verificar;
   const left = buildNav(cfg.nvleft, wi), right = buildNav(cfg.nvright, wi);
   
   const wilogo = document.querySelector('.wilogo');
@@ -48,6 +49,9 @@ $(document).on('click', '.movil_close, .movil_overlay, .movil_nav .nv_item, .mov
 // ── AUTH LISTENER ─────────────────────────────────────────────────────────────
 wiAuth.on(wi => wi ? renderHeader(wi) : (renderHeader(), rutas.navigate('/')));
 const wi = wiAuth.user; wi ? renderHeader(wi) : renderHeader();
+
+// ── ROUTE LISTENER — re-renderiza el nav en cada navegación SPA ───────────────
+window.addEventListener('winavigate', ({ detail: { norm } }) => renderHeader(wiAuth.user, norm));
 
 // ── EVENTOS GLOBALES ──────────────────────────────────────────────────────────
 $(document).on('click', '.bt_salir', async () => {

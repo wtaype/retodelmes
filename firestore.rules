@@ -3,33 +3,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
   
-    match /{document=**} {
-      allow read, write: if request.auth != null; 
-    } //General y todas bds con Auth
+    // ── FUNCIONES DE AYUDA (Zero Trust) ──────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
     
-    match /smiles/{document} {
-      allow read: if true; 
-      allow write: if true; 
-      //allow create, delete: if true; 
-      //allow update: if request.auth != null; 
-    } // Consulta para validar, crear, eliminar publico.Actualizar solo Autenticados
+    function isOwner(usuario) {
+      return isAuth() && request.auth.token.name == usuario;
+    }
+    
+    // ── COLECCIÓN SMILES (USUARIOS) ──────────────────────────────────────────
+    match /smiles/{usuario} {
+      // GET público: permite verificar si un username ya existe al registrarse
+      allow get: if true;
+      
+      // LIST: Solo autenticados (RRHH, ranking, etc.)
+      allow list: if isAuth();
+      
+      // CREATE: Solo el dueño, sin poder asignarse rol=admin ni estado=activo
+      allow create: if isAuth()
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.rol != 'admin'
+                    && request.resource.data.estado == 'pendiente';
+                    
+      // UPDATE: El propio usuario o usuarios autenticados (RRHH)
+      allow update: if isAuth();
+      
+      // DELETE: Bloqueado siempre
+      allow delete: if false;
+    }
 
+    // ── REGISTROS DE VENTAS ───────────────────────────────────────────────────
     match /registrosdb/{document} {
-      allow read: if true; 
-      allow write: if true; 
-      //allow create, delete: if true; 
-      //allow update: if request.auth != null; 
-    } // Consulta para validar, crear, eliminar publico.Actualizar solo Autenticados
-         
-    match /smilestop/{document} {
-      allow read: if true;
-      allow write: if true; 
-    } // Acceso lectura general 
+      allow read:   if isAuth();
+      allow write:  if isAuth();
+    }
 
+    // ── CONFIGURACIÓN GENERAL ─────────────────────────────────────────────────
     match /configuracion/{document} {
-      allow read: if true;
-      allow write: if true; 
-    } // Acceso lectura general 
+      allow read:  if isAuth();
+      allow write: if false; // Solo desde Firebase Console o Admin SDK
+    }
+
+    // ── CONFIGWII (Bóveda TOTP por usuario) ──────────────────────────────────
+    // Solo el propio usuario autenticado puede leer/escribir su config de bóveda
+    match /configwii/{usuario} {
+      allow get:    if isAuth() && isOwner(usuario);
+      allow create: if isAuth() && isOwner(usuario);
+      allow update: if isAuth() && isOwner(usuario);
+      allow list:   if false;  // Nadie puede listar todas las configs
+      allow delete: if false;  // Nadie puede eliminar
+    }
     
   }
 }

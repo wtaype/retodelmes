@@ -295,8 +295,14 @@ body.rrhh_no_scroll {
 
 .rrhh_table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   min-width: 780px;
+  background: var(--wb, #fff);
+  border: 1.5px solid var(--brd, #e2e8f0);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
 }
 
 /* Gradient header */
@@ -315,15 +321,15 @@ body.rrhh_no_scroll {
   white-space: nowrap;
 }
 
-.rrhh_table thead th:first-child { border-radius: 1.5rem 0 0 0; }
-.rrhh_table thead th:last-child  { border-radius: 0 1.5rem 0 0; }
-
 .rrhh_table tbody tr {
-  border-bottom: 1px solid var(--brd, #e2e8f0);
   transition: background 0.18s;
 }
 
-.rrhh_table tbody tr:last-child {
+.rrhh_table tbody td {
+  border-bottom: 1px solid var(--brd, #e2e8f0);
+}
+
+.rrhh_table tbody tr:last-child td {
   border-bottom: none;
 }
 
@@ -393,7 +399,6 @@ body.rrhh_no_scroll {
 
 .rrhh_avatar_initials[data-rol="smile"]   { background: #3b82f6; }
 .rrhh_avatar_initials[data-rol="gestor"]  { background: #f97316; }
-.rrhh_avatar_initials[data-rol="empresa"] { background: #a855f7; }
 .rrhh_avatar_initials[data-rol="admin"]   { background: #ef4444; }
 
 /* ── Rol badge ───────────────────────────────────────────── */
@@ -410,7 +415,6 @@ body.rrhh_no_scroll {
 
 .rrhh_rol_smile   { background: rgba(59,130,246,0.13);  color: #3b82f6; }
 .rrhh_rol_gestor  { background: rgba(249,115,22,0.13);  color: #f97316; }
-.rrhh_rol_empresa { background: rgba(168,85,247,0.13);  color: #a855f7; }
 .rrhh_rol_admin   { background: rgba(239,68,68,0.13);   color: #ef4444; }
 
 /* ── Estado badges ───────────────────────────────────────── */
@@ -772,6 +776,17 @@ body.rrhh_no_scroll {
   outline: none;
   border-color: #7C3AED;
   box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+}
+
+.rrhh_input_locked {
+  background: var(--bg5, #f8fafc);
+  color: var(--tx3, #888);
+  cursor: not-allowed;
+  border-color: var(--brd, #e2e8f0);
+}
+.rrhh_input_locked:focus {
+  border-color: var(--brd, #e2e8f0);
+  box-shadow: none;
 }
 
 .rrhh_form_textarea {

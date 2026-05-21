@@ -7,15 +7,8 @@ rutas.registerAll(() => getls('wiSmile')?.rol);
 
 rutas.register('/', (isPre = false) => {
   const u = getls('wiSmile');
-  if (!u) return rutas.inicio();
-  const map = {
-    smile:   { r: '/smile',   m: () => import('./smile/smile.js')     },
-    gestor:  { r: '/gestor',  m: () => import('./gestor/gestor.js')   },
-    admin:   { r: '/admin',   m: () => import('./admin/admin.js')     }
-  };
-  const t = map[u.rol] || map.smile;
-  if (!isPre && t.r !== '/') { rutas.navigate(t.r); return t.m(); }
-  return t.m();
+  if (u && !isPre) setTimeout(() => rutas.navigate(({smile:'/smile',gestor:'/gestor',admin:'/admin'})[u.rol]||'/smile'), 0);
+  return rutas.inicio();
 });
 rutas.init();
 import('./header.js');

@@ -37,9 +37,14 @@ const _rolBadge = (rol) => {
   return `<span class="rrhh_rol_badge rrhh_rol_${safe}">${Capi(safe)}</span>`;
 };
 
-const _estadoBadge = (estado) => {
-  const s = (estado || 'activo').toLowerCase();
-  return `<span class="rrhh_status rrhh_status_${s}">${Capit(s)}</span>`;
+const _estadoToggleHtml = (id, estado) => {
+  const isActive = estado === 'activo';
+  return /* html */`
+    <label class="rrhh_toggle" title="${isActive ? 'Activo' : 'Inactivo'}">
+      <input type="checkbox" class="rrhh_toggle_estado_input" data-id="${id}" ${isActive ? 'checked' : ''} />
+      <span class="rrhh_toggle_slider" style="--c: #29C72E"></span>
+    </label>
+  `;
 };
 
 const _toggleHtml = (id, participa) => {
@@ -55,7 +60,12 @@ const _toggleHtml = (id, participa) => {
 // ─── Filter logic ─────────────────────────────────────────────────────────────
 const _applyFilters = () => {
   const term = filtroSearch.toLowerCase().trim();
+  const miRol = getls('wiSmile')?.rol || 'smile';
+
   return usuarios.filter(u => {
+    // Seguridad: Si soy gestor, no veo admins
+    if (miRol === 'gestor' && u.rol === 'admin') return false;
+
     // Tab filter
     if (filtroTab === 'activos'    && u.participa !== 'si') return false;
     if (filtroTab === 'pendientes' && u.estado !== 'pendiente') return false;
@@ -85,10 +95,6 @@ export const render = () => /* html */`
           <p class="rrhh_subtitle">Administra el equipo, roles, estado y participación en el reto</p>
         </div>
         <div class="rrhh_header_actions">
-          <button class="rrhh_btn_crear" id="rrhh_btn_crear">
-            <i class="fas fa-user-plus"></i>
-            <span>Nuevo</span>
-          </button>
           <button class="rrhh_refresh_btn" id="rrhh_refresh" title="Actualizar lista">
             <i class="fas fa-sync-alt"></i>
           </button>
@@ -145,29 +151,27 @@ export const render = () => /* html */`
     </div>
 
     <!-- ══ TABLE ══ -->
-    <div class="rrhh_table_wrap">
-      <table class="rrhh_table" id="rrhhTable">
-        <thead>
-          <tr>
-            <th>Avatar</th>
-            <th>Nombre</th>
-            <th>Usuario</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th>Estado</th>
-            <th>Participa</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="rrhh_tbody">
-          <tr>
-            <td colspan="8" class="rrhh_loading_cell">
-              <div class="rrhh_spinner"><i class="fas fa-circle-notch fa-spin"></i> Cargando colaboradores…</div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <table class="rrhh_table" id="rrhhTable">
+      <thead>
+        <tr>
+          <th>Avatar</th>
+          <th>Nombre</th>
+          <th>Usuario</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Participa</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="rrhh_tbody">
+        <tr>
+          <td colspan="8" class="rrhh_loading_cell">
+            <div class="rrhh_spinner"><i class="fas fa-circle-notch fa-spin"></i> Cargando colaboradores…</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
   </div>
 
@@ -204,11 +208,11 @@ export const render = () => /* html */`
           </div>
           <div class="rrhh_form_row">
             <label class="rrhh_form_label" for="edit_usuario">Usuario</label>
-            <input class="rrhh_form_input" id="edit_usuario" type="text" placeholder="usuario" />
+            <input class="rrhh_form_input rrhh_input_locked" id="edit_usuario" type="text" disabled />
           </div>
           <div class="rrhh_form_row">
             <label class="rrhh_form_label" for="edit_email">Email</label>
-            <input class="rrhh_form_input" id="edit_email" type="email" placeholder="correo@email.com" />
+            <input class="rrhh_form_input rrhh_input_locked" id="edit_email" type="email" disabled />
           </div>
           <div class="rrhh_form_row">
             <label class="rrhh_form_label" for="edit_descripcion">Descripción</label>
@@ -228,7 +232,6 @@ export const render = () => /* html */`
             <select class="rrhh_form_select" id="edit_rol">
               <option value="smile">Smile</option>
               <option value="gestor">Gestor</option>
-              <option value="empresa">Empresa</option>
               <option value="admin">Admin</option>
             </select>
           </div>
@@ -284,57 +287,6 @@ export const render = () => /* html */`
       </form>
     </div>
   </aside>
-
-  <!-- ══ CREATE MODAL ══ -->
-  <div class="rrhh_modal_overlay" id="rrhh_modal_overlay" aria-hidden="true">
-    <div class="rrhh_modal" role="dialog" aria-modal="true" aria-labelledby="rrhh_modal_title">
-      <div class="rrhh_modal_header">
-        <h3 class="rrhh_modal_title" id="rrhh_modal_title">
-          <i class="fas fa-user-plus"></i> Crear Trabajador
-        </h3>
-        <button class="rrhh_modal_close" id="rrhh_modal_close" aria-label="Cerrar">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <form id="rrhh_create_form" autocomplete="off">
-        <div class="rrhh_modal_body">
-          <div class="rrhh_form_row">
-            <label class="rrhh_form_label" for="new_nombre">Nombre *</label>
-            <input class="rrhh_form_input" id="new_nombre" type="text" placeholder="Nombre" required />
-          </div>
-          <div class="rrhh_form_row">
-            <label class="rrhh_form_label" for="new_apellidos">Apellidos *</label>
-            <input class="rrhh_form_input" id="new_apellidos" type="text" placeholder="Apellidos" required />
-          </div>
-          <div class="rrhh_form_row">
-            <label class="rrhh_form_label" for="new_usuario">Usuario (ID único) *</label>
-            <input class="rrhh_form_input rrhh_input_slug" id="new_usuario" type="text" placeholder="usuario.slug" required />
-            <span class="rrhh_form_hint">Solo letras, números y puntos. Será el ID del documento.</span>
-          </div>
-          <div class="rrhh_form_row">
-            <label class="rrhh_form_label" for="new_email">Email *</label>
-            <input class="rrhh_form_input" id="new_email" type="email" placeholder="correo@email.com" required />
-          </div>
-          <div class="rrhh_form_row">
-            <label class="rrhh_form_label" for="new_rol">Rol</label>
-            <select class="rrhh_form_select" id="new_rol">
-              <option value="smile">Smile</option>
-              <option value="gestor">Gestor</option>
-              <option value="empresa">Empresa</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-        </div>
-        <div class="rrhh_modal_footer">
-          <button type="button" class="rrhh_btn_cancel_modal" id="rrhh_modal_cancel">Cancelar</button>
-          <button type="submit" class="rrhh_btn_save" id="rrhh_btn_create_save">
-            <i class="fas fa-user-plus"></i>
-            <span>Crear trabajador</span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
 `;
 
 // ─── _updateStats ─────────────────────────────────────────────────────────────
@@ -353,6 +305,14 @@ const _updateStats = () => {
 const _renderTable = () => {
   _updateStats();
   const lista = _applyFilters();
+
+  // Ordenar dinámicamente: Participan primero, luego alfabéticamente
+  lista.sort((a, b) => {
+    const aPart = a.participa === 'si' ? 0 : 1;
+    const bPart = b.participa === 'si' ? 0 : 1;
+    if (aPart !== bPart) return aPart - bPart;
+    return (a.nombre || a.usuario || '').localeCompare(b.nombre || b.usuario || '', 'es');
+  });
 
   if (!lista.length) {
     const term = filtroSearch.toLowerCase().trim();
@@ -378,8 +338,8 @@ const _renderTable = () => {
         <td class="rrhh_usuario">@${u.usuario || '—'}</td>
         <td class="rrhh_email">${u.email || '—'}</td>
         <td>${_rolBadge(u.rol)}</td>
-        <td>${_estadoBadge(u.estado)}</td>
         <td>${_toggleHtml(u.id, u.participa)}</td>
+        <td>${_estadoToggleHtml(u.id, u.estado)}</td>
         <td class="rrhh_actions_cell">
           <button class="rrhh_btn_editar" data-id="${u.id}" title="Editar colaborador">
             <i class="fas fa-pen-to-square"></i> Editar
@@ -427,6 +387,14 @@ const _openPanel = (id) => {
   $('#edit_numeroCuenta').val(u.numeroCuenta || '');
   $('#edit_titularCuenta').val(u.titularCuenta || '');
 
+  // Security options
+  const miRol = getls('wiSmile')?.rol || 'smile';
+  if (miRol === 'gestor') {
+    $('#edit_rol option[value="admin"]').hide();
+  } else {
+    $('#edit_rol option[value="admin"]').show();
+  }
+
   // Show panel
   $('#rrhh_panel').addClass('open').attr('aria-hidden', 'false');
   $('#rrhh_overlay').addClass('visible');
@@ -440,19 +408,7 @@ const _closePanel = () => {
   $('body').removeClass('rrhh_no_scroll');
 };
 
-// ─── Modal helpers ────────────────────────────────────────────────────────────
-const _openModal = () => {
-  $('#rrhh_create_form')[0].reset();
-  $('#rrhh_modal_overlay').addClass('open').attr('aria-hidden', 'false');
-  $('body').addClass('rrhh_no_scroll');
-  setTimeout(() => $('#new_nombre').trigger('focus'), 120);
-};
-
-const _closeModal = () => {
-  $('#rrhh_modal_overlay').removeClass('open').attr('aria-hidden', 'true');
-  $('body').removeClass('rrhh_no_scroll');
-};
-
+// ─── Modal helpers (eliminados) ────────────────────────────────────────────────
 // ─── _toggleParticipa ─────────────────────────────────────────────────────────
 const _toggleParticipa = async (id) => {
   const idx = usuarios.findIndex(u => u.id === id);
@@ -470,6 +426,27 @@ const _toggleParticipa = async (id) => {
   } catch (err) {
     console.error('[RRHH] toggleParticipa:', err);
     Notificacion('Error al actualizar participación', 'error');
+    _renderTable();
+  }
+};
+
+// ─── _toggleEstado ────────────────────────────────────────────────────────────
+const _toggleEstado = async (id) => {
+  const idx = usuarios.findIndex(u => u.id === id);
+  if (idx === -1) return;
+  const current = usuarios[idx].estado;
+  const newVal  = current === 'activo' ? 'inactivo' : 'activo';
+  const nombre  = Capi(usuarios[idx].nombre || usuarios[idx].usuario || id);
+  try {
+    await updateDoc(doc(db, 'smiles', id), { estado: newVal });
+    usuarios[idx].estado = newVal;
+    removels(CACHE_KEY);
+    savels(CACHE_KEY, usuarios, CACHE_TTL);
+    _renderTable();
+    Notificacion(`${nombre} ahora está ${newVal === 'activo' ? 'Activo ✅' : 'Inactivo ❌'}`, newVal === 'activo' ? 'success' : 'warning');
+  } catch (err) {
+    console.error('[RRHH] toggleEstado:', err);
+    Notificacion('Error al actualizar estado', 'error');
     _renderTable();
   }
 };
@@ -560,55 +537,7 @@ const _rechazar = async (id) => {
   }
 };
 
-// ─── _crearTrabajador ─────────────────────────────────────────────────────────
-const _crearTrabajador = async () => {
-  const nombre   = $('#new_nombre').val().trim();
-  const apellidos = $('#new_apellidos').val().trim();
-  const usuario  = $('#new_usuario').val().trim().toLowerCase().replace(/[^a-z0-9._-]/g, '');
-  const email    = $('#new_email').val().trim();
-  const rol      = $('#new_rol').val();
-
-  if (!nombre || !apellidos || !usuario || !email) {
-    Notificacion('Completa todos los campos requeridos', 'warning');
-    return;
-  }
-
-  // Check duplicate
-  if (usuarios.some(u => u.id === usuario || u.usuario === usuario)) {
-    Notificacion('Ya existe un colaborador con ese usuario', 'error');
-    return;
-  }
-
-  const $btn = $('#rrhh_btn_create_save');
-  $btn.addClass('loading').prop('disabled', true);
-  $('#rrhh_header_card').addClass('smw_loading');
-
-  try {
-    const newData = {
-      nombre, apellidos, usuario, email, rol,
-      participa: 'no',
-      estado: 'activo',
-      createdAt: serverTimestamp(),
-    };
-    await setDoc(doc(db, 'smiles', usuario), newData);
-    usuarios.push({ id: usuario, ...newData });
-    usuarios.sort((a, b) =>
-      (a.nombre || a.usuario || '').localeCompare(b.nombre || b.usuario || '', 'es')
-    );
-    removels(CACHE_KEY);
-    savels(CACHE_KEY, usuarios, CACHE_TTL);
-    _renderTable();
-    _closeModal();
-    Notificacion(`Trabajador "${Capi(nombre)}" creado ✅`, 'success');
-  } catch (err) {
-    console.error('[RRHH] crearTrabajador:', err);
-    Notificacion('Error al crear trabajador', 'error');
-  } finally {
-    $btn.removeClass('loading').prop('disabled', false);
-    $('#rrhh_header_card').removeClass('smw_loading');
-  }
-};
-
+// ─── _crearTrabajador (eliminado) ────────────────────────────────────────────────
 // ─── _loadUsuarios ────────────────────────────────────────────────────────────
 const _loadUsuarios = async (forceReload = false) => {
   if (!forceReload) {
@@ -631,9 +560,12 @@ const _loadUsuarios = async (forceReload = false) => {
   try {
     const snap = await getDocs(collection(db, 'smiles'));
     usuarios = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    usuarios.sort((a, b) =>
-      (a.nombre || a.usuario || '').localeCompare(b.nombre || b.usuario || '', 'es')
-    );
+    usuarios.sort((a, b) => {
+      const aPart = a.participa === 'si' ? 0 : 1;
+      const bPart = b.participa === 'si' ? 0 : 1;
+      if (aPart !== bPart) return aPart - bPart;
+      return (a.nombre || a.usuario || '').localeCompare(b.nombre || b.usuario || '', 'es');
+    });
     savels(CACHE_KEY, usuarios, CACHE_TTL);
     _renderTable();
   } catch (err) {
@@ -696,6 +628,11 @@ export const init = async () => {
     _toggleParticipa($(this).data('id'));
   });
 
+  // Toggle estado
+  $(document).on('change.rrhh', '.rrhh_toggle_estado_input', function () {
+    _toggleEstado($(this).data('id'));
+  });
+
   // Open side panel
   $(document).on('click.rrhh', '.rrhh_btn_editar', function (e) {
     e.stopPropagation();
@@ -733,35 +670,7 @@ export const init = async () => {
     e.stopPropagation();
     _rechazar($(this).data('id'));
   });
-
-  // Open create modal
-  $(document).on('click.rrhh', '#rrhh_btn_crear', _openModal);
-  $(document).on('click.rrhh', '#rrhh_modal_close, #rrhh_modal_cancel', _closeModal);
-
-  // Close modal on overlay click
-  $(document).on('click.rrhh', '#rrhh_modal_overlay', function (e) {
-    if ($(e.target).is('#rrhh_modal_overlay')) _closeModal();
-  });
-
-  // Create form submit
-  $(document).on('submit.rrhh', '#rrhh_create_form', function (e) {
-    e.preventDefault();
-    _crearTrabajador();
-  });
-
-  // Auto-slug usuario field in create modal
-  $(document).on('input.rrhh', '#new_nombre, #new_apellidos', function () {
-    const n = $('#new_nombre').val().trim().toLowerCase();
-    const a = $('#new_apellidos').val().trim().toLowerCase().split(/\s+/)[0] || '';
-    const slug = (n.split(/\s+/)[0] || '') + (a ? '.' + a : '');
-    $('#new_usuario').val(slug.replace(/[^a-z0-9._-]/g, ''));
-  });
-
-  // Sanitize slug input
-  $(document).on('input.rrhh', '#new_usuario', function () {
-    const v = $(this).val().toLowerCase().replace(/[^a-z0-9._-]/g, '');
-    $(this).val(v);
-  });
+  // (Eventos de creación eliminados)
 };
 
 // ─── cleanup ──────────────────────────────────────────────────────────────────
