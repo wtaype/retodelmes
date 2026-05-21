@@ -120,6 +120,8 @@ export const cleanup = () => {
 };
 
 async function _cargarCatalogo() {
+  const $header = $('.smw_tours_header');
+  $header.addClass('smw_loading');
   try {
     $('#preciosCatalogGrid').html(_generarSkeletonsTours(4));
     $('#puntosCatalogGrid').html(_generarSkeletonsTours(4));
@@ -153,14 +155,14 @@ async function _cargarCatalogo() {
     // Render Points Pane
     const puntosHtml = catalogTours.map(t => `
       <div class="smw_tour_cat_card puntos">
-        <div class="smw_tcard_badge" style="background: color-mix(in srgb, var(--Oro) 12%, transparent); color: var(--Oro)">
+        <div class="smw_tcard_badge" >
           <i class="fas fa-star"></i>
         </div>
         <h4 class="smw_tcard_title">${t.tour}</h4>
         <div class="smw_tcard_details">
           <div class="smw_tcard_stat">
             <span class="smw_tcard_stat_lbl">Puntos por pax</span>
-            <strong class="smw_tcard_stat_val" style="color: var(--Oro)">${t.pts} <i class="fas fa-star" style="font-size: 14px"></i></strong>
+            <strong class="smw_tcard_stat_val" >${t.pts} <i class="fas fa-star" style="font-size: 14px"></i></strong>
           </div>
           <div class="smw_tcard_stat">
             <span class="smw_tcard_stat_lbl">Multiplicador pax</span>
@@ -174,6 +176,8 @@ async function _cargarCatalogo() {
   } catch (error) {
     console.error('Error al cargar catalogo:', error);
     $('#preciosCatalogGrid').html('<div class="smw_empty_pane">Error al cargar información de tours.</div>');
+  } finally {
+    $header.removeClass('smw_loading');
   }
 }
 

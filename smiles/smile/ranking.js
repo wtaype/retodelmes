@@ -22,7 +22,7 @@ import { getMesActual, obtenerRankingMes } from './zsmile.js';
 export const render = () => `
   <div class="smw_rank_view">
     
-    <!-- CABECERA: Título, Subtítulo y Controles -->
+    <!-- CABECERA PREMIUM: idéntica a historial -->
     <header class="smw_rank_header wi_fadeUp">
       <div class="smw_rank_title_row">
         <h1><i class="fas fa-trophy smw_gold_glow"></i> Salón de Campeones</h1>
@@ -30,7 +30,7 @@ export const render = () => `
       </div>
       
       <div class="smw_rank_controls">
-        <!-- Selector de Mes Estilizado -->
+        <!-- Selector de Mes – cápsula con flechas -->
         <div class="smw_month_selector_wrap">
           <button class="smw_month_nav_btn" id="btnMesAnt" title="Mes Anterior">
             <i class="fas fa-chevron-left"></i>
@@ -44,20 +44,16 @@ export const render = () => `
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
-
-        <a href="/smile" class="smw_back_btn nv_item" data-page="smile">
-          <i class="fas fa-arrow-left"></i> Panel de Control
-        </a>
       </div>
     </header>
 
-    <!-- BANDA GLOBAL: KPIs del Mes -->
+    <!-- BANDA GLOBAL: KPIs del Mes – skeletons en render, datos via init -->
     <section class="smw_rank_kpis_grid wi_fadeUp" id="rankKpiGrid">
       
       <div class="smw_rkpi_card" style="--kpi-color: var(--Cielo)">
         <div class="smw_rkpi_icon"><i class="fas fa-car-side"></i></div>
         <div class="smw_rkpi_info">
-          <span class="smw_rkpi_val" id="rkpiToursHoy">0</span>
+          <span class="smw_rkpi_val" id="rkpiToursHoy"><span class="smw_sk_el" style="width:38px;height:22px;border-radius:6px"></span></span>
           <span class="smw_rkpi_lbl">Tours Hoy</span>
         </div>
       </div>
@@ -65,7 +61,7 @@ export const render = () => `
       <div class="smw_rkpi_card" style="--kpi-color: var(--Paz)">
         <div class="smw_rkpi_icon"><i class="fas fa-route"></i></div>
         <div class="smw_rkpi_info">
-          <span class="smw_rkpi_val" id="rkpiToursMes">0</span>
+          <span class="smw_rkpi_val" id="rkpiToursMes"><span class="smw_sk_el" style="width:38px;height:22px;border-radius:6px"></span></span>
           <span class="smw_rkpi_lbl">Total Tours Mes</span>
         </div>
       </div>
@@ -73,7 +69,7 @@ export const render = () => `
       <div class="smw_rkpi_card" style="--kpi-color: var(--Mora)">
         <div class="smw_rkpi_icon"><i class="fas fa-star"></i></div>
         <div class="smw_rkpi_info">
-          <span class="smw_rkpi_val" id="rkpiPuntosEquipo">0</span>
+          <span class="smw_rkpi_val" id="rkpiPuntosEquipo"><span class="smw_sk_el" style="width:52px;height:22px;border-radius:6px"></span></span>
           <span class="smw_rkpi_lbl">Puntos Equipo</span>
         </div>
       </div>
@@ -82,7 +78,7 @@ export const render = () => `
         <div class="smw_rkpi_icon"><i class="fas fa-bullseye"></i></div>
         <div class="smw_rkpi_info" style="width: 100%;">
           <div class="smw_meta_progress_wrap">
-            <span class="smw_rkpi_val" id="rkpiMetaMes">0%</span>
+            <span class="smw_rkpi_val" id="rkpiMetaMes"><span class="smw_sk_el" style="width:42px;height:22px;border-radius:6px"></span></span>
             <span class="smw_rkpi_lbl">Meta (2500 pts)</span>
           </div>
           <div class="smw_meta_progress_bar">
@@ -98,18 +94,31 @@ export const render = () => `
       <!-- Renderizado Dinámico -->
     </section>
 
-    <!-- SECCIÓN INFERIOR: Clasificación General y Sidebar -->
+    <!-- SECCIÓN INFERIOR: Top Ganancia + Tabla + Sidebar -->
     <div class="smw_rank_bottom_grid wi_fadeUp">
       
-      <!-- Columna Izquierda: Clasificación #4+ -->
+      <!-- Columna Izquierda: Top Ganancia + Tabla de Ventas -->
       <div class="smw_rank_list_card">
+
+        <!-- ① Top 3 · Mayor Ganancia -->
         <div class="smw_card_header">
-          <h2><i class="fas fa-list-ol" style="color:var(--mco)"></i> Clasificación General</h2>
-          <span class="smw_badge" id="lblCountParticipantes">0 Colaboradores</span>
+          <h2><i class="fas fa-sack-dollar" style="color:var(--Paz)"></i> Top Ventas · Mayor Ganancia</h2>
+          <span class="smw_badge" id="lblCountParticipantes">— registros</span>
         </div>
-        <div class="smw_leaderboard_list" id="leaderboardList">
-          <!-- Renderizado Dinámico -->
+        <div id="topGananciaSection" class="smw_top_ganancia_wrap">
+          <!-- Skeletons → cargando -->
+          ${_generarSkeletonTopGanancia()}
         </div>
+
+        <!-- ② Tabla de Ventas del Mes -->
+        <div class="smw_card_subheader">
+          <h3><i class="fas fa-table" style="color:var(--mco)"></i> Ventas del Mes</h3>
+        </div>
+        <div id="ventasTablaSection">
+          <!-- Skeletons → cargando -->
+          ${_generarSkeletonTablaVentas()}
+        </div>
+
       </div>
 
       <!-- Columna Derecha: Sidebar (Ganador anterior y Avisos) -->
@@ -153,21 +162,19 @@ export const init = async () => {
   const user = wiAuth.user;
   if (!user) return setTimeout(() => rutas.navigate('/login'), 100);
 
-  // Mostrar vistas con animación
+  // ① Mostrar HTML inmediatamente con animaciones
   $('.wi_fadeUp').addClass('visible wi_visible');
+  window.__WIREADY__ = true; // SPA lista para interacción
 
-  // Inicializar selector de meses
+  // ② Inicializar selector de meses
   _inicializarSelectorMes();
 
-  // Cargar datos para el mes actual
+  // ③ Cargar datos en background (skeletons ya visibles desde render)
   const mesActual = getMesActual();
-  await cargarDatosMes(mesActual);
+  cargarDatosMes(mesActual);    // sin await → no bloquea UI
+  cargarNotas();                // sin await → no bloquea UI
 
-  // Cargar avisos del equipo
-  await cargarNotas();
-
-  console.log('🏆 SPA Ranking cargado exitosamente');
-  window.__WIREADY__ = true;
+  console.log('🏆 SPA Ranking montado — cargando datos en paralelo...');
 };
 
 // --- LIMPIEZA DE EVENTOS AL DESMONTAR ---
@@ -248,28 +255,42 @@ function _inicializarSelectorMes() {
 
 // --- CARGAR TODOS LOS COMPONENTES PARA EL MES DADO ---
 async function cargarDatosMes(mes) {
+  const $header = $('.smw_rank_header');
+  $header.addClass('smw_loading');
   try {
-    // 1. Mostrar Skeletons Premium
+    // 1. Skeletons iniciales
     $('#podiumSection').html(_generarSkeletonsPodio());
-    $('#leaderboardList').html(_generarSkeletonsRankingList(4));
+    $('#topGananciaSection').html(_generarSkeletonTopGanancia());
+    $('#ventasTablaSection').html(_generarSkeletonTablaVentas());
 
-    // 2. Obtener lista desde base de datos
-    const ranking = await obtenerRankingMes(mes);
-    
-    // 3. Pintar Podio
+    // 2. Obtener ranking + ventas del mes en paralelo
+    const [ranking, ventasMes] = await Promise.all([
+      obtenerRankingMes(mes),
+      _cargarVentasMes(mes)
+    ]);
+
+    // Filtrar ventas: solo de empleados con participa === 'si'
+    const participantesSet = new Set(ranking.map(e => e.usuario));
+    const ventasFiltradas  = ventasMes.filter(v => participantesSet.has(v.vendedor));
+
+    // 3. Podio (top 3 por puntos)
     $('#podiumSection').html(renderPodio(ranking));
-    
-    // 4. Pintar Tabla
-    $('#leaderboardList').html(renderListadoRanking(ranking));
-    $('#lblCountParticipantes').text(`${ranking.length} Colaboradores`);
 
-    // 5. Cargar Resumen de KPIs
+    // 4. Top Ganancia
+    $('#topGananciaSection').html(renderTopGanancia(ventasFiltradas, ranking));
+
+    // 5. Tabla de ventas del mes
+    $('#ventasTablaSection').html(renderTablaVentas(ventasFiltradas, ranking));
+    $('#lblCountParticipantes').text(`${ventasFiltradas.length} registro${ventasFiltradas.length !== 1 ? 's' : ''}`);
+
+
+    // 6. KPIs
     await actualizarKpisGlobales(mes);
 
-    // 6. Cargar Ganador anterior
+    // 7. Ganador anterior
     await cargarUltimoGanador(mes, ranking);
 
-    // 7. Disparar animaciones
+    // 8. Animaciones
     setTimeout(() => {
       $('.smw_anim_bounce, .smw_anim_fade').addClass('visible');
     }, 50);
@@ -277,7 +298,31 @@ async function cargarDatosMes(mes) {
   } catch (error) {
     console.error('Error cargando mes:', error);
     Notificacion('Error cargando clasificación del mes', 'error');
+  } finally {
+    $header.removeClass('smw_loading');
   }
+}
+
+// --- CARGAR VENTAS DEL MES (cache-first) ---
+async function _cargarVentasMes(mes) {
+  const [yr, mm] = mes.split('-').map(Number);
+  const _filtrar = (ventas) => ventas.filter(v => {
+    const f = v.fechaTour;
+    if (!f) return false;
+    if (f.toDate) { const fd = f.toDate(); return fd.getFullYear() === yr && fd.getMonth() + 1 === mm; }
+    if (typeof f === 'string') { const [a, m] = f.split('-').map(Number); return a === yr && m === mm; }
+    return false;
+  });
+
+  // Intentar cache de historial
+  const cached = getls('todasVentasSmile');
+  if (cached) return _filtrar(cached);
+
+  // Fetch desde Firestore
+  const snap = await getDocs(collection(db, 'registrosdb'));
+  const ventas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  savels('todasVentasSmile', ventas, 5);
+  return _filtrar(ventas);
 }
 
 // --- RENDERIZACIÓN DEL PODIO 3D (TOP 3) ---
@@ -335,49 +380,126 @@ function renderPodio(ranking) {
   `;
 }
 
-// --- RENDERIZACIÓN DE LAS DEMÁS POSICIONES (#4+) ---
-function renderListadoRanking(ranking) {
-  const restOfRanking = ranking.slice(3);
-  if (!restOfRanking.length) {
-    return `
-      <div class="smw_list_empty">
-        <i class="fas fa-user-friends"></i>
-        <span>No hay más participantes registrados este mes.</span>
-      </div>
-    `;
-  }
+// --- TOP 3 VENTAS POR GANANCIA ---
+function renderTopGanancia(ventasMes, ranking) {
+  if (!ventasMes.length) return `
+    <div class="smw_list_empty"><i class="fas fa-inbox"></i><span>Sin ventas este mes.</span></div>`;
 
-  return restOfRanking.map((emp, index) => {
-    const pos = index + 4;
-    const iniciales = `${(emp.nombre || '?')[0]}${(emp.nombre || '')[1] || ''}`.toUpperCase();
-    const avatarHtml = emp.imagen 
-      ? `<img src="${emp.imagen}" alt="${emp.nombre}" class="smw_list_avatar">` 
-      : `<div class="smw_list_avatar_initials">${iniciales}</div>`;
+  // Agrupar ganancia por vendedor
+  const mapa = {};
+  ventasMes.forEach(v => {
+    const k = v.vendedor;
+    if (!mapa[k]) mapa[k] = { ganancia: 0, ventas: 0, puntos: 0 };
+    mapa[k].ganancia += parseFloat(v.ganancia || 0);
+    mapa[k].ventas   += 1;
+    mapa[k].puntos   += parseInt(v.puntos || 0);
+  });
+
+  const top3 = Object.entries(mapa)
+    .sort((a, b) => b[1].ganancia - a[1].ganancia)
+    .slice(0, 3);
+
+  const medals  = ['🥇', '🥈', '🥉'];
+  const colors  = ['#FFD700', '#A0A0A0', '#CD7F32'];
+  const bgCols  = ['rgba(255,215,0,0.08)', 'rgba(160,160,160,0.06)', 'rgba(205,127,50,0.07)'];
+
+  return `<div class="smw_top_ganancia_grid">
+    ${top3.map(([vendedor, stats], i) => {
+      const emp = ranking.find(e => e.usuario === vendedor);
+      const nombre = emp ? Capit(emp.nombre) : Capit(vendedor);
+      const iniciales = nombre.slice(0, 2).toUpperCase();
+      const avatar = emp?.imagen
+        ? `<img src="${emp.imagen}" alt="${nombre}" class="smw_tg_avatar" onerror="this.style.display='none'">`
+        : `<div class="smw_tg_avatar_initials" style="--tg-color:${colors[i]}">${iniciales}</div>`;
+
+      return `
+        <div class="smw_tg_card smw_anim_fade" style="--tg-color:${colors[i]};--tg-bg:${bgCols[i]};animation-delay:${i*0.08}s">
+          <div class="smw_tg_medal">${medals[i]}</div>
+          <div class="smw_tg_avatar_wrap">${avatar}</div>
+          <div class="smw_tg_info">
+            <strong>${nombre}</strong>
+            <span>${stats.ventas} venta${stats.ventas !== 1 ? 's' : ''} · <i class="fas fa-star" style="color:#F59E0B"></i> ${stats.puntos} pts</span>
+          </div>
+          <div class="smw_tg_ganancia">
+            <strong>S/ ${stats.ganancia.toFixed(2)}</strong>
+            <span>ganancia</span>
+          </div>
+        </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// --- TABLA DE VENTAS DEL MES ---
+function renderTablaVentas(ventasMes, ranking) {
+  if (!ventasMes.length) return `
+    <div class="smw_list_empty"><i class="fas fa-inbox"></i><span>Sin ventas este mes.</span></div>`;
+
+  // Ordenar por fecha descendente
+  const sorted = [...ventasMes].sort((a, b) => {
+    const dA = a.fechaTour?.toDate ? a.fechaTour.toDate() : new Date(a.fechaTour || 0);
+    const dB = b.fechaTour?.toDate ? b.fechaTour.toDate() : new Date(b.fechaTour || 0);
+    return dB - dA;
+  });
+
+  const filas = sorted.map(v => {
+    const emp    = ranking.find(e => e.usuario === v.vendedor);
+    const nombre = emp ? Capit(emp.nombre) : Capi(v.vendedor);
+    const iniciales = nombre.slice(0, 2).toUpperCase();
+    const avatar = emp?.imagen
+      ? `<img src="${emp.imagen}" alt="${nombre}" class="smw_vt_avatar" onerror="this.style.display='none'">`
+      : `<div class="smw_vt_avatar_initials">${iniciales}</div>`;
+    const fecha = _formatFechaRk(v.fechaTour);
 
     return `
-      <div class="smw_list_row smw_anim_fade" style="animation-delay: ${index * 0.05}s">
-        <div class="smw_list_pos">#${pos}</div>
-        <div class="smw_list_avatar_wrap">
-          ${avatarHtml}
-        </div>
-        <div class="smw_list_info">
-          <h4>${Capit(emp.nombre)}</h4>
-          <p>${Capi(emp.descripcion || 'Colaborador')}</p>
-        </div>
-        <div class="smw_list_stats">
-          <div class="smw_lstat">
-            <span class="smw_lstat_val">${emp.totalVentas}</span>
-            <span class="smw_lstat_lbl">tours</span>
+      <tr class="smw_vt_row">
+        <td><span class="smw_vt_fecha">${fecha}</span></td>
+        <td><span class="smw_vt_tour_pill">${v.tipoTour || '—'}</span></td>
+        <td>
+          <div class="smw_vt_user">
+            <div class="smw_vt_avatar_wrap">${avatar}</div>
+            <span>${nombre}</span>
           </div>
-          <div class="smw_lstat_sep"></div>
-          <div class="smw_lstat_pts">
-            <strong>${emp.totalPuntos}</strong>
-            <span>puntos</span>
-          </div>
-        </div>
-      </div>
-    `;
+        </td>
+        <td><strong class="smw_vt_total">S/ ${parseFloat(v.importeTotal || 0).toFixed(2)}</strong></td>
+        <td><span class="smw_vt_profit">S/ ${parseFloat(v.ganancia || 0).toFixed(2)}</span></td>
+        <td><span class="smw_vt_pts"><i class="fas fa-star"></i> ${v.puntos || 0}</span></td>
+      </tr>`;
   }).join('');
+
+  return `
+    <div class="smw_vt_responsive">
+      <table class="smw_vt_table">
+        <thead>
+          <tr>
+            <th><i class="fas fa-calendar"></i> Fecha</th>
+            <th><i class="fas fa-route"></i> Tour</th>
+            <th><i class="fas fa-user"></i> Usuario</th>
+            <th><i class="fas fa-calculator"></i> Total</th>
+            <th><i class="fas fa-hand-holding-usd"></i> Ganancia</th>
+            <th><i class="fas fa-star"></i> Puntos</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </div>`;
+}
+
+// --- HELPER: FORMATO FECHA ---
+function _formatFechaRk(fecha) {
+  if (!fecha) return '—';
+  if (fecha.toDate) {
+    const d = fecha.toDate();
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  }
+  if (typeof fecha === 'string') {
+    const p = fecha.split('T')[0].split('-');
+    return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : fecha;
+  }
+  if (fecha.seconds) {
+    const d = new Date(fecha.seconds * 1000);
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  }
+  return '—';
 }
 
 // --- ACTUALIZAR KPIS GLOBALES EN LA BANDA SUPERIOR ---
@@ -628,7 +750,7 @@ function _generarSkeletonsPodio() {
         <div class="smw_podium_avatar_wrap smw_sk_el smw_sk_circle" style="border-color: var(--brd); width: 11vh; height: 11vh;"></div>
         <div class="smw_sk_el" style="width: 80px; height: 16px; margin: 1.5vh 0 0.5vh; border-radius: 4px;"></div>
         <div class="smw_sk_el" style="width: 55px; height: 12px; margin-bottom: 1.5vh; border-radius: 4px;"></div>
-        <div class="smw_podium_pedestal smw_sk_el" style="height: 14vh; width: 100%; border-radius: 1.5vh 1.5vh 0 0;"></div>
+        <div class="smw_podium_pedestal smw_sk_el" style="height: 90px; width: 100%; border-radius: 1.5vh 1.5vh 0 0;"></div>
       </div>
       <!-- Lugar #1 -->
       <div class="smw_podium_place smw_pos_1">
@@ -636,14 +758,14 @@ function _generarSkeletonsPodio() {
         <div class="smw_podium_avatar_wrap smw_sk_el smw_sk_circle" style="border-color: var(--brd); width: 13.5vh; height: 13.5vh;"></div>
         <div class="smw_sk_el" style="width: 90px; height: 18px; margin: 1.5vh 0 0.5vh; border-radius: 4px;"></div>
         <div class="smw_sk_el" style="width: 60px; height: 12px; margin-bottom: 1.5vh; border-radius: 4px;"></div>
-        <div class="smw_podium_pedestal smw_sk_el" style="height: 20vh; width: 100%; border-radius: 1.5vh 1.5vh 0 0;"></div>
+        <div class="smw_podium_pedestal smw_sk_el" style="height: 120px; width: 100%; border-radius: 1.5vh 1.5vh 0 0;"></div>
       </div>
       <!-- Lugar #3 -->
       <div class="smw_podium_place smw_pos_3">
         <div class="smw_podium_avatar_wrap smw_sk_el smw_sk_circle" style="border-color: var(--brd); width: 11vh; height: 11vh;"></div>
         <div class="smw_sk_el" style="width: 80px; height: 16px; margin: 1.5vh 0 0.5vh; border-radius: 4px;"></div>
         <div class="smw_sk_el" style="width: 55px; height: 12px; margin-bottom: 1.5vh; border-radius: 4px;"></div>
-        <div class="smw_podium_pedestal smw_sk_el" style="height: 10vh; width: 100%; border-radius: 1.5vh 1.5vh 0 0;"></div>
+        <div class="smw_podium_pedestal smw_sk_el" style="height: 60px; width: 100%; border-radius: 1.5vh 1.5vh 0 0;"></div>
       </div>
     </div>
   `;
@@ -691,4 +813,46 @@ function _generarSkeletonNotas() {
     </div>
   `;
 }
+
+// --- SKELETON: TOP GANANCIA ---
+function _generarSkeletonTopGanancia() {
+  return `<div class="smw_top_ganancia_grid">${[0,1,2].map(i => `
+    <div class="smw_tg_card" style="--tg-color:var(--brd);--tg-bg:var(--bg5)">
+      <div class="smw_sk_el" style="width:32px;height:32px;border-radius:50%;flex-shrink:0"></div>
+      <div class="smw_sk_el smw_sk_circle" style="width:5vh;height:5vh;flex-shrink:0"></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:0.7vh">
+        <div class="smw_sk_el" style="width:90px;height:14px"></div>
+        <div class="smw_sk_el" style="width:70px;height:11px"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.5vh;align-items:flex-end">
+        <div class="smw_sk_el" style="width:65px;height:18px"></div>
+        <div class="smw_sk_el" style="width:45px;height:11px"></div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+// --- SKELETON: TABLA VENTAS ---
+function _generarSkeletonTablaVentas() {
+  return `<div class="smw_vt_responsive">
+    <table class="smw_vt_table">
+      <thead><tr>
+        <th>Fecha</th><th>Tour</th><th>Usuario</th><th>Total</th><th>Ganancia</th><th>Puntos</th>
+      </tr></thead>
+      <tbody>${Array(5).fill(0).map(() => `
+        <tr class="smw_vt_row">
+          <td><span class="smw_sk_el" style="width:65px;height:13px"></span></td>
+          <td><span class="smw_sk_el" style="width:90px;height:22px;border-radius:5px"></span></td>
+          <td><div style="display:flex;align-items:center;gap:8px">
+            <span class="smw_sk_el smw_sk_circle" style="width:26px;height:26px"></span>
+            <span class="smw_sk_el" style="width:75px;height:13px"></span>
+          </div></td>
+          <td><span class="smw_sk_el" style="width:55px;height:14px"></span></td>
+          <td><span class="smw_sk_el" style="width:50px;height:14px"></span></td>
+          <td><span class="smw_sk_el" style="width:44px;height:20px;border-radius:50px"></span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
 

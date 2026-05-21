@@ -12,7 +12,7 @@ let mesSeleccionado = getMesActual();
 let filtroVendedor = '';
 let filtroHoy = false;
 let pagActual = 1;
-let limitePorPagina = 10;
+let limitePorPagina = 9;
 let busquedaFiltro = '';
 
 export const render = () => {
@@ -20,7 +20,7 @@ export const render = () => {
   return `
     <div class="smw_hist_view">
       
-      <!-- CABECERA: Título y Controles de Filtros -->
+      <!-- CABECERA: Título y Selector de Mes -->
       <header class="smw_hist_header wi_fadeUp">
         <div class="smw_hist_title_row">
           <h1><i class="fas fa-clipboard-list smw_cielo_glow"></i> Historial de Ventas</h1>
@@ -28,7 +28,7 @@ export const render = () => {
         </div>
 
         <div class="smw_hist_controls">
-          <!-- Selector de Mes Estilizado -->
+          <!-- Selector de Mes con flechas -->
           <div class="smw_month_selector_wrap">
             <button class="smw_month_nav_btn" id="btnHistMesAnt" title="Mes Anterior">
               <i class="fas fa-chevron-left"></i>
@@ -36,26 +36,23 @@ export const render = () => {
             <div class="smw_month_display">
               <i class="fas fa-calendar-alt"></i>
               <span id="txtHistMesSeleccionado">...</span>
-              <select id="selHistorialMes" class="smw_month_hidden_select">
-                ${mesesOptions}
-              </select>
             </div>
+            <!-- Select oculto para cambio de mes -->
+            <select id="selHistorialMes" class="smw_month_hidden_select_header">
+              ${mesesOptions}
+            </select>
             <button class="smw_month_nav_btn" id="btnHistMesSig" title="Mes Siguiente">
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
-
-          <a href="/smile" class="smw_back_btn nv_item" data-page="smile">
-            <i class="fas fa-arrow-left"></i> Panel de Control
-          </a>
         </div>
       </header>
 
-      <!-- BARRA DE FILTRADO Y BUSCADORES -->
-      <section class="smw_hist_filters_card wi_fadeUp" style="animation-delay: 0.1s">
+      <!-- BARRA DE FILTROS -->
+      <section class="smw_hist_filters_card wi_fadeUp" style="animation-delay: 0.08s">
         <div class="smw_filter_grid">
           
-          <!-- Buscador de Cliente/Habitación -->
+          <!-- Buscador -->
           <div class="smw_filter_field">
             <label><i class="fas fa-search"></i> Buscar Venta</label>
             <input type="text" id="histSearchInput" class="smw_input" placeholder="Nombre cliente o habitación...">
@@ -63,26 +60,26 @@ export const render = () => {
 
           <!-- Filtrar por Vendedor -->
           <div class="smw_filter_field">
-            <label><i class="fas fa-user-tie"></i> Filtrar por Vendedor</label>
+            <label><i class="fas fa-user-tie"></i> Vendedor</label>
             <select id="histFilterEmployee" class="smw_select">
               <option value="">Todos los vendedores</option>
             </select>
           </div>
 
-          <!-- Mostrar N Registros -->
+          <!-- Ventas por página -->
           <div class="smw_filter_field">
-            <label><i class="fas fa-list-numeric"></i> Ventas por página</label>
+            <label><i class="fas fa-list-numeric"></i> Por página</label>
             <select id="histLimtSelector" class="smw_select">
-              <option value="5">Mostrar 5 ventas</option>
-              <option value="10" selected>Mostrar 10 ventas</option>
-              <option value="15">Mostrar 15 ventas</option>
-              <option value="25">Mostrar 25 ventas</option>
+              <option value="5">Mostrar 5</option>
+              <option value="9" selected>Mostrar 9</option>
+              <option value="15">Mostrar 15</option>
+              <option value="25">Mostrar 25</option>
             </select>
           </div>
 
-          <!-- Botón Hoy / Todos -->
+          <!-- Solo hoy -->
           <div class="smw_filter_field smw_toggle_field">
-            <label>&nbsp;</label>
+            <label><i class="fas fa-calendar"></i> Fecha</label>
             <button class="smw_btn_toggle" id="btnFilterHoy">
               <i class="fas fa-calendar-day"></i> Solo hoy
             </button>
@@ -91,27 +88,38 @@ export const render = () => {
         </div>
       </section>
 
-      <!-- TABLA DE RESULTADOS GLASSMORPHIC -->
-      <section class="smw_hist_table_card wi_fadeUp" style="animation-delay: 0.2s">
+      <!-- TABLA DE RESULTADOS -->
+      <section class="smw_hist_table_card wi_fadeUp" style="animation-delay: 0.18s">
+
+        <!-- Barra de título de tabla estilo referencia -->
+        <div class="smw_hist_table_title">
+          <div style="display:flex;align-items:center;gap:1.2vh">
+            <i class="fas fa-table"></i>
+            Registro de Ventas
+          </div>
+          <span id="smwHistTotal">— registros</span>
+        </div>
+
         <div class="smw_table_responsive">
           <table class="smw_hist_table">
             <thead>
               <tr>
-                <th><i class="fas fa-calendar"></i> Fecha</th>
-                <th><i class="fas fa-user"></i> Colaborador</th>
-                <th><i class="fas fa-route"></i> Tour</th>
-                <th><i class="fas fa-users"></i> PAX</th>
-                <th><i class="fas fa-user-tag"></i> Cliente</th>
-                <th><i class="fas fa-calculator"></i> Total</th>
-                <th><i class="fas fa-credit-card"></i> Estado</th>
-                <th><i class="fas fa-hand-holding-usd"></i> Ganancia</th>
-                <th><i class="fas fa-user-shield"></i> Registrado</th>
-                <th><i class="fas fa-star"></i> Pts</th>
-                <th style="text-align: center;"><i class="fas fa-cogs"></i> Acciones</th>
+                <th><i class="fas fa-calendar"></i>Fecha</th>
+                <th><i class="fas fa-user"></i>Usuario</th>
+                <th><i class="fas fa-route"></i>Tipo Tour</th>
+                <th><i class="fas fa-users"></i>PAX</th>
+                <th><i class="fas fa-user-tag"></i>Nombre</th>
+                <th><i class="fas fa-calculator"></i>M. Total</th>
+                <th><i class="fas fa-dollar-sign"></i>M. Individual</th>
+                <th><i class="fas fa-credit-card"></i>Pagado</th>
+                <th><i class="fas fa-hand-holding-usd"></i>Ganancia</th>
+                <th><i class="fas fa-user-shield"></i>Vendedor</th>
+                <th><i class="fas fa-star"></i>Puntos</th>
+                <th><i class="fas fa-cogs"></i>Acciones</th>
               </tr>
             </thead>
             <tbody id="histSalesTableBody">
-              ${_generarSkeletonsTabla(limitePorPagina || 5)}
+              ${_generarSkeletonsTabla(9)}
             </tbody>
           </table>
         </div>
@@ -128,20 +136,15 @@ export const init = async () => {
   const user = wiAuth.user;
   if (!user) return setTimeout(() => rutas.navigate('/login'), 100);
 
-  // Set default state values
   pagActual = 1;
   filtroVendedor = '';
   filtroHoy = false;
   busquedaFiltro = '';
-  
-  // Set month
+
   $('#selHistorialMes').val(mesSeleccionado);
   _actualizarDisplayMes();
 
-  // Load initial data
   await _cargarTodo();
-
-  // Bind controls events
   _bindEvents(user);
 
   $('.wi_fadeUp').addClass('visible wi_visible');
@@ -150,69 +153,69 @@ export const init = async () => {
 
 export const cleanup = () => {
   $(document).off('.historial_events');
-  window.verDetalleVenta = null;
-  window.editarVentaAccion = null;
+  window.verDetalleVenta     = null;
+  window.editarVentaAccion   = null;
   window.eliminarVentaAccion = null;
-  window.histCambiarPagina = null;
+  window.histCambiarPagina   = null;
 };
 
-// --- BINDING EVENTS ---
+// ── EVENTOS ──────────────────────────────────────────────────────────────────
 function _bindEvents(user) {
-  // Selector de mes
-  $(document).off('change.historial_events', '#selHistorialMes').on('change.historial_events', '#selHistorialMes', async function() {
-    mesSeleccionado = $(this).val();
-    _actualizarDisplayMes();
-    pagActual = 1;
-    await _cargarTodo();
-  });
+  $(document).off('change.historial_events', '#selHistorialMes')
+    .on('change.historial_events', '#selHistorialMes', async function() {
+      mesSeleccionado = $(this).val();
+      _actualizarDisplayMes();
+      pagActual = 1;
+      await _cargarTodo();
+    });
 
-  // Flechas mes anterior/siguiente
-  $(document).off('click.historial_events', '#btnHistMesAnt').on('click.historial_events', '#btnHistMesAnt', function() {
-    const $sel = $('#selHistorialMes');
-    const index = $sel.prop('selectedIndex');
-    if (index < $sel.find('option').length - 1) {
-      $sel.prop('selectedIndex', index + 1).trigger('change');
-    }
-  });
+  $(document).off('click.historial_events', '#btnHistMesAnt')
+    .on('click.historial_events', '#btnHistMesAnt', function() {
+      const $sel = $('#selHistorialMes');
+      const index = $sel.prop('selectedIndex');
+      if (index < $sel.find('option').length - 1) {
+        $sel.prop('selectedIndex', index + 1).trigger('change');
+      }
+    });
 
-  $(document).off('click.historial_events', '#btnHistMesSig').on('click.historial_events', '#btnHistMesSig', function() {
-    const $sel = $('#selHistorialMes');
-    const index = $sel.prop('selectedIndex');
-    if (index > 0) {
-      $sel.prop('selectedIndex', index - 1).trigger('change');
-    }
-  });
+  $(document).off('click.historial_events', '#btnHistMesSig')
+    .on('click.historial_events', '#btnHistMesSig', function() {
+      const $sel = $('#selHistorialMes');
+      const index = $sel.prop('selectedIndex');
+      if (index > 0) {
+        $sel.prop('selectedIndex', index - 1).trigger('change');
+      }
+    });
 
-  // Filtro Vendedor
-  $(document).off('change.historial_events', '#histFilterEmployee').on('change.historial_events', '#histFilterEmployee', function() {
-    filtroVendedor = $(this).val();
-    pagActual = 1;
-    _renderizarTabla();
-  });
+  $(document).off('change.historial_events', '#histFilterEmployee')
+    .on('change.historial_events', '#histFilterEmployee', function() {
+      filtroVendedor = $(this).val();
+      pagActual = 1;
+      _renderizarTabla();
+    });
 
-  // Limite de filas
-  $(document).off('change.historial_events', '#histLimtSelector').on('change.historial_events', '#histLimtSelector', function() {
-    limitePorPagina = parseInt($(this).val());
-    pagActual = 1;
-    _renderizarTabla();
-  });
+  $(document).off('change.historial_events', '#histLimtSelector')
+    .on('change.historial_events', '#histLimtSelector', function() {
+      limitePorPagina = parseInt($(this).val());
+      pagActual = 1;
+      _renderizarTabla();
+    });
 
-  // Búsqueda de cliente o habitación
-  $(document).off('input.historial_events', '#histSearchInput').on('input.historial_events', '#histSearchInput', function() {
-    busquedaFiltro = $(this).val().toLowerCase().trim();
-    pagActual = 1;
-    _renderizarTabla();
-  });
+  $(document).off('input.historial_events', '#histSearchInput')
+    .on('input.historial_events', '#histSearchInput', function() {
+      busquedaFiltro = $(this).val().toLowerCase().trim();
+      pagActual = 1;
+      _renderizarTabla();
+    });
 
-  // Toggle Solo Hoy
-  $(document).off('click.historial_events', '#btnFilterHoy').on('click.historial_events', '#btnFilterHoy', function() {
-    filtroHoy = !filtroHoy;
-    $(this).toggleClass('active', filtroHoy);
-    pagActual = 1;
-    _renderizarTabla();
-  });
+  $(document).off('click.historial_events', '#btnFilterHoy')
+    .on('click.historial_events', '#btnFilterHoy', function() {
+      filtroHoy = !filtroHoy;
+      $(this).toggleClass('active', filtroHoy);
+      pagActual = 1;
+      _renderizarTabla();
+    });
 
-  // Registrar funciones globales de fila
   window.histCambiarPagina = (pag) => {
     pagActual = pag;
     _renderizarTabla();
@@ -243,7 +246,6 @@ function _bindEvents(user) {
       Notificacion('Eliminando registro...', 'info');
       await deleteDoc(doc(db, 'registrosdb', id));
 
-      // Invalida cache local del mes correspondiente
       const f = venta.fechaTour;
       let mesVenta = mesSeleccionado;
       if (typeof f === 'string') {
@@ -256,8 +258,6 @@ function _bindEvents(user) {
 
       invalidateRankingCaches(venta.vendedor, mesVenta);
       Notificacion('Venta eliminada exitosamente', 'success');
-
-      // Reload
       await _cargarTodo();
     } catch (e) {
       console.error('Error al eliminar:', e);
@@ -266,56 +266,50 @@ function _bindEvents(user) {
   };
 }
 
-// --- ACTUALIZAR VISTA DEL MES SELECCIONADO ---
+// ── ACTUALIZAR DISPLAY MES ────────────────────────────────────────────────────
 function _actualizarDisplayMes() {
   const text = $('#selHistorialMes option:selected').text();
   $('#txtHistMesSeleccionado').text(text || mesSeleccionado);
 }
 
-// --- CARGAR TODOS LOS DATOS (EMPLEADOS + VENTAS) ---
+// ── CARGAR TODO (cache-first) ─────────────────────────────────────────────────
 async function _cargarTodo() {
+  const $header = $('.smw_hist_header');
+  $header.addClass('smw_loading');
   try {
-    // Intentar cargar de cache local primero para velocidad instantánea
-    let cachedEmpleados = getls('todosEmpleadosSmile');
-    let cachedVentas = getls('todasVentasSmile');
+    const cachedEmpleados = getls('todosEmpleadosSmile');
+    const cachedVentas    = getls('todasVentasSmile');
 
     if (cachedEmpleados && cachedVentas) {
       todosLosEmpleados = cachedEmpleados;
-      todasLasVentas = cachedVentas;
-      
+      todasLasVentas    = cachedVentas;
       const opts = todosLosEmpleados
         .map(e => `<option value="${e.usuario}">${e.nombre || e.usuario}</option>`)
         .join('');
       $('#histFilterEmployee').html(`<option value="">Todos los vendedores</option>${opts}`).val(filtroVendedor);
-      
       _renderizarTabla();
       return;
     }
 
-    // Si no hay cache, mostrar skeletons y consultar a Firestore
-    $('#histSalesTableBody').html(_generarSkeletonsTabla(limitePorPagina || 5));
+    $('#histSalesTableBody').html(_generarSkeletonsTabla(limitePorPagina));
 
-    // Ejecutar ambas consultas Firestore en paralelo para mayor velocidad
     const [empSnap, snap] = await Promise.all([
       getDocs(query(collection(db, 'smiles'), where('participa', '==', 'si'))),
       getDocs(collection(db, 'registrosdb'))
     ]);
 
     todosLosEmpleados = empSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-    todasLasVentas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    todasLasVentas    = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    // Ordenar por fecha (más recientes primero)
     todasLasVentas.sort((a, b) => {
-      const dateA = a.fechaTour?.toDate ? a.fechaTour.toDate() : new Date(a.fechaTour || 0);
-      const dateB = b.fechaTour?.toDate ? b.fechaTour.toDate() : new Date(b.fechaTour || 0);
-      return dateB - dateA;
+      const dA = a.fechaTour?.toDate ? a.fechaTour.toDate() : new Date(a.fechaTour || 0);
+      const dB = b.fechaTour?.toDate ? b.fechaTour.toDate() : new Date(b.fechaTour || 0);
+      return dB - dA;
     });
 
-    // Guardar en caché local (Ventas por 5 minutos, Empleados por 60 minutos)
     savels('todosEmpleadosSmile', todosLosEmpleados, 60);
-    savels('todasVentasSmile', todasLasVentas, 5);
+    savels('todasVentasSmile',    todasLasVentas,    5);
 
-    // Rellenar selector de empleados
     const opts = todosLosEmpleados
       .map(e => `<option value="${e.usuario}">${e.nombre || e.usuario}</option>`)
       .join('');
@@ -324,18 +318,25 @@ async function _cargarTodo() {
     _renderizarTabla();
   } catch (error) {
     console.error('Error en cargar todo:', error);
-    $('#histSalesTableBody').html('<tr><td colspan="11" class="smw_error_cell"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos</td></tr>');
+    $('#histSalesTableBody').html('<tr><td colspan="12" class="smw_error_cell"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos</td></tr>');
+  } finally {
+    $header.removeClass('smw_loading');
   }
 }
 
-// --- FILTRAR Y RENDERIZAR TABLA EN LA PÁGINA ---
+// ── RENDERIZAR TABLA ──────────────────────────────────────────────────────────
 function _renderizarTabla() {
   const [actualYear, actualMes] = mesSeleccionado.split('-').map(Number);
   const hoyObj = new Date();
   const hoyStr = `${hoyObj.getFullYear()}-${String(hoyObj.getMonth() + 1).padStart(2, '0')}-${String(hoyObj.getDate()).padStart(2, '0')}`;
 
-  // 1. Filtrar por el mes seleccionado
+  // 0. Set de participantes (ya filtrado por participa==='si' al cargar empleados)
+  const participantesSet = new Set(todosLosEmpleados.map(e => e.usuario));
+
+  // 1. Filtrar por mes + participa
   let ventas = todasLasVentas.filter(v => {
+    // Solo empleados con participa === 'si'
+    if (!participantesSet.has(v.vendedor)) return false;
     const f = v.fechaTour;
     if (!f) return false;
     if (f.toDate) {
@@ -350,21 +351,20 @@ function _renderizarTabla() {
   });
 
   // 2. Filtrar por vendedor
-  if (filtroVendedor) {
-    ventas = ventas.filter(v => v.vendedor === filtroVendedor);
-  }
+  if (filtroVendedor) ventas = ventas.filter(v => v.vendedor === filtroVendedor);
 
-  // 3. Filtrar por búsqueda text (cliente o habitación)
+
+  // 3. Búsqueda texto
   if (busquedaFiltro) {
     ventas = ventas.filter(v => {
-      const cliente = (v.nombreCliente || '').toLowerCase();
-      const habitacion = (v.numeroHabitacion || '').toLowerCase();
-      const tipoTour = (v.tipoTour || '').toLowerCase();
-      return cliente.includes(busquedaFiltro) || habitacion.includes(busquedaFiltro) || tipoTour.includes(busquedaFiltro);
+      const c = (v.nombreCliente || '').toLowerCase();
+      const h = (v.numeroHabitacion || '').toLowerCase();
+      const t = (v.tipoTour || '').toLowerCase();
+      return c.includes(busquedaFiltro) || h.includes(busquedaFiltro) || t.includes(busquedaFiltro);
     });
   }
 
-  // 4. Filtrar por solo hoy
+  // 4. Solo hoy
   if (filtroHoy) {
     ventas = ventas.filter(v => {
       const f = v.fechaTour;
@@ -372,8 +372,8 @@ function _renderizarTabla() {
       if (typeof f === 'string') return f.split('T')[0] === hoyStr;
       if (f.toDate) {
         const fd = f.toDate();
-        const fStr = `${fd.getFullYear()}-${String(fd.getMonth() + 1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`;
-        return fStr === hoyStr;
+        const fs = `${fd.getFullYear()}-${String(fd.getMonth() + 1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`;
+        return fs === hoyStr;
       }
       return false;
     });
@@ -383,61 +383,67 @@ function _renderizarTabla() {
   const totalRegs = ventas.length;
   const totalPags = Math.ceil(totalRegs / limitePorPagina);
   if (pagActual > totalPags && totalPags > 0) pagActual = totalPags;
+  const inicio     = (pagActual - 1) * limitePorPagina;
+  const ventasPag  = ventas.slice(inicio, inicio + limitePorPagina);
 
-  const inicio = (pagActual - 1) * limitePorPagina;
-  const ventasPag = ventas.slice(inicio, inicio + limitePorPagina);
+  // Actualizar counter
+  $('#smwHistTotal').text(`Registro${totalRegs !== 1 ? 's' : ''} = ${totalRegs}`);
 
   const currentUser = wiAuth.user;
 
-  // Renders rows
   const filasHtml = ventasPag.map(v => {
-    // Permisos de edición / borrado (Solo si es dueño de la venta)
     const esDuenio = v.vendedor === currentUser?.usuario;
 
-    const btns = esDuenio 
+    const btns = esDuenio
       ? `
-        <button class="smw_hist_btn smw_hbtn_view" onclick="verDetalleVenta('${v.id}')" title="Ver Venta"><i class="fas fa-eye"></i></button>
-        <button class="smw_hist_btn smw_hbtn_edit" onclick="editarVentaAccion('${v.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+        <button class="smw_hist_btn smw_hbtn_view"   onclick="verDetalleVenta('${v.id}')"   title="Ver Venta"><i class="fas fa-eye"></i></button>
+        <button class="smw_hist_btn smw_hbtn_edit"   onclick="editarVentaAccion('${v.id}')" title="Editar"><i class="fas fa-edit"></i></button>
         <button class="smw_hist_btn smw_hbtn_delete" onclick="eliminarVentaAccion('${v.id}')" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-      ` 
-      : `
-        <button class="smw_hist_btn smw_hbtn_view" onclick="verDetalleVenta('${v.id}')" title="Ver Detalle"><i class="fas fa-eye"></i></button>
-      `;
+      `
+      : `<button class="smw_hist_btn smw_hbtn_view" onclick="verDetalleVenta('${v.id}')" title="Ver Detalle"><i class="fas fa-eye"></i></button>`;
 
-    const fecha = _formatearFecha(v.fechaTour);
-    const cliente = `<strong>${v.nombreCliente || 'Sin nombre'}</strong>${v.numeroHabitacion ? ` <span class="smw_room_pill"><i class="fas fa-door-open"></i> ${v.numeroHabitacion}</span>` : ''}`;
-    
-    // Obtener imagen del vendedor
-    const emp = todosLosEmpleados.find(e => e.usuario === v.vendedor);
-    const avatarImg = emp?.imagen || '/smile.png';
+    const fecha  = _formatearFecha(v.fechaTour);
+    const emp    = todosLosEmpleados.find(e => e.usuario === v.vendedor);
+    const avatarImg = emp?.imagen || emp?.avatar
+      ? (emp.imagen || emp.avatar)
+      : `${import.meta.env.BASE_URL}smile.avif`;
 
-    // Badge de estado pago
     const est = _obtenerEstado(v.estadoPago);
-
-    // Registrado en
     const quienVende = v.esVentaJulio ? 'Julio' : v.esVentaSonia ? 'Sonia' : v.esVentaExterna ? 'Externo' : Capi(v.vendedor);
+
+    const clienteHtml = `
+      <div class="smw_cliente_info">
+        <span class="smw_cliente_name">${(v.nombreCliente || 'Sin nombre').toUpperCase()}</span>
+        ${v.numeroHabitacion ? `<span class="smw_room_pill"><i class="fas fa-door-open"></i> ${v.numeroHabitacion}</span>` : ''}
+      </div>
+    `;
 
     return `
       <tr class="smw_row_anim">
-        <td><span class="smw_date_span"><i class="far fa-calendar-alt"></i> ${fecha}</span></td>
+        <td><span class="smw_date_span">${fecha}</span></td>
         <td>
           <div class="smw_vendedor_cell">
-            <img src="${avatarImg}" class="smw_avatar_table" alt="avatar">
+            <img src="${avatarImg}" class="smw_avatar_table" alt="avatar" onerror="this.src='${import.meta.env.BASE_URL}smile.avif'">
             <span class="smw_vendedor_name">${Capi(v.vendedor)}</span>
           </div>
         </td>
         <td><span class="smw_tour_pill">${v.tipoTour}</span></td>
         <td><span class="smw_pax_pill"><i class="fas fa-users"></i> ${v.cantidadPax || 1}</span></td>
-        <td><div class="smw_cliente_cell">${cliente}</div></td>
+        <td><div class="smw_cliente_cell">${clienteHtml}</div></td>
         <td><strong class="smw_price_span">S/ ${parseFloat(v.importeTotal || 0).toFixed(2)}</strong></td>
+        <td><span class="smw_unit_price">S/ ${parseFloat(v.precioUnitario || v.precio || 0).toFixed(2)}</span></td>
         <td>
           <span class="smw_status_badge ${est.cls}">
-            <i class="fas fa-${est.icn}"></i> ${est.txt}
+            <span class="smw_status_dot"></span> ${est.txt}
           </span>
         </td>
         <td><span class="smw_profit_span">S/ ${parseFloat(v.ganancia || 0).toFixed(2)}</span></td>
-        <td><span class="smw_reg_label"><i class="fas fa-clipboard-user"></i> ${quienVende}</span></td>
-        <td><span class="smw_points_pill"><i class="fas fa-star"></i> ${v.puntos || 0}</span></td>
+        <td><span class="smw_reg_label"><i class="fas fa-user"></i> ${quienVende}</span></td>
+        <td>
+          <span class="smw_points_box">
+            <i class="fas fa-star"></i> ${v.puntos || 0}
+          </span>
+        </td>
         <td><div class="smw_actions_cell">${btns}</div></td>
       </tr>
     `;
@@ -449,7 +455,7 @@ function _renderizarTabla() {
   } else {
     tbody.html(`
       <tr>
-        <td colspan="11" class="smw_empty_cell">
+        <td colspan="12" class="smw_empty_cell">
           <i class="fas fa-inbox"></i>
           <strong>No se encontraron registros de ventas</strong>
           <p>Prueba ajustando los filtros o seleccionando otro mes.</p>
@@ -461,24 +467,29 @@ function _renderizarTabla() {
   _renderizarPaginacion(totalPags);
 }
 
-// --- PAGINACIÓN ---
+// ── PAGINACIÓN ────────────────────────────────────────────────────────────────
 function _renderizarPaginacion(total) {
   const container = $('#histPagination');
-  if (total <= 1) {
-    container.html('');
-    return;
-  }
+  if (total <= 1) { container.html(''); return; }
 
   let html = '<div class="smw_pagination">';
 
+  // Botón anterior
   if (pagActual > 1) {
     html += `<button class="smw_page_btn" onclick="histCambiarPagina(${pagActual - 1})"><i class="fas fa-chevron-left"></i></button>`;
   }
 
-  for (let i = 1; i <= total; i++) {
-    html += `<button class="smw_page_btn ${i === pagActual ? 'active' : ''}" onclick="histCambiarPagina(${i})">${i}</button>`;
-  }
+  // Números de página – mostrar máximo 7 botones con elipsis
+  const range = _paginationRange(pagActual, total);
+  range.forEach(item => {
+    if (item === '...') {
+      html += `<span style="padding:0 0.5vh;color:var(--tx3);font-weight:700">…</span>`;
+    } else {
+      html += `<button class="smw_page_btn ${item === pagActual ? 'active' : ''}" onclick="histCambiarPagina(${item})">${item}</button>`;
+    }
+  });
 
+  // Botón siguiente
   if (pagActual < total) {
     html += `<button class="smw_page_btn" onclick="histCambiarPagina(${pagActual + 1})"><i class="fas fa-chevron-right"></i></button>`;
   }
@@ -487,76 +498,77 @@ function _renderizarPaginacion(total) {
   container.html(html);
 }
 
-// --- AUXILIARES ---
+function _paginationRange(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+  if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+  return [1, '...', current - 1, current, current + 1, '...', total];
+}
+
+// ── AUXILIARES ────────────────────────────────────────────────────────────────
 function _formatearFecha(fecha) {
   if (!fecha) return 'Sin fecha';
-  let dateObj = null;
-
   if (fecha.toDate) {
-    dateObj = fecha.toDate();
-  } else if (typeof fecha === 'string') {
-    const parts = fecha.split('T')[0].split('-');
-    if (parts.length === 3) {
-      return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-    dateObj = new Date(fecha);
-  } else if (fecha.seconds) {
-    dateObj = new Date(fecha.seconds * 1000);
+    const d = fecha.toDate();
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
   }
-
-  if (dateObj && !isNaN(dateObj.getTime())) {
-    const d = String(dateObj.getDate()).padStart(2, '0');
-    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const y = dateObj.getFullYear();
-    return `${d}/${m}/${y}`;
+  if (typeof fecha === 'string') {
+    const parts = fecha.split('T')[0].split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return fecha;
+  }
+  if (fecha.seconds) {
+    const d = new Date(fecha.seconds * 1000);
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
   }
   return 'Sin fecha';
 }
 
 function _obtenerEstado(estado) {
-  const estados = {
-    'pagado': { cls: 'paid', icn: 'check-circle', txt: 'PAGADO' },
-    'cobrado': { cls: 'paid', icn: 'check-circle', txt: 'PAGADO' },
-    'cobrar': { cls: 'pending', icn: 'clock', txt: 'DEUDA' }
+  const map = {
+    'pagado':  { cls: 'paid',    txt: 'PAGADO' },
+    'cobrado': { cls: 'paid',    txt: 'PAGADO' },
+    'cobrar':  { cls: 'pending', txt: 'DEUDA'  },
   };
-  return estados[estado] || { cls: 'pending', icn: 'clock', txt: 'DEUDA' };
+  return map[estado] || { cls: 'pending', txt: 'DEUDA' };
 }
 
 function selectMes() {
   const hoy = new Date(), anio = hoy.getFullYear(), mes = hoy.getMonth();
-  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   return $.map(new Array(7), (_, i) => {
-    const cada = i - 3, des = mes + cada, cyear = anio + Math.floor(des / 12), mesv = ((des % 12) + 12) % 12;
-    const tval = `${cyear}-${String(mesv + 1).padStart(2, '0')}`;
+    const cada = i - 3, des = mes + cada;
+    const cyear = anio + Math.floor(des / 12);
+    const mesv  = ((des % 12) + 12) % 12;
+    const tval  = `${cyear}-${String(mesv + 1).padStart(2, '0')}`;
     return `<option value="${tval}"${cada === 0 ? ' selected' : ''}>${meses[mesv]} ${cyear}</option>`;
   }).join('');
 }
 
-function _generarSkeletonsTabla(cant = 5) {
+function _generarSkeletonsTabla(cant = 9) {
   return Array(cant).fill(0).map(() => `
     <tr class="smw_sk_row">
-      <td><span class="smw_sk_el" style="width: 70px; height: 16px; border-radius: 4px;"></span></td>
+      <td><span class="smw_sk_el" style="width:65px;height:14px"></span></td>
       <td>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="smw_sk_el smw_sk_circle" style="width: 26px; height: 26px; border-radius: 50%;"></span>
-          <span class="smw_sk_el" style="width: 75px; height: 16px; border-radius: 4px;"></span>
+        <div style="display:flex;align-items:center;gap:8px;justify-content:center">
+          <span class="smw_sk_el smw_sk_circle" style="width:28px;height:28px"></span>
+          <span class="smw_sk_el" style="width:65px;height:14px"></span>
         </div>
       </td>
-      <td><span class="smw_sk_el" style="width: 90px; height: 20px; border-radius: 10px;"></span></td>
-      <td><span class="smw_sk_el" style="width: 30px; height: 16px; border-radius: 4px;"></span></td>
-      <td><span class="smw_sk_el" style="width: 110px; height: 16px; border-radius: 4px;"></span></td>
-      <td><span class="smw_sk_el" style="width: 60px; height: 18px; border-radius: 4px;"></span></td>
-      <td><span class="smw_sk_el" style="width: 70px; height: 20px; border-radius: 6px;"></span></td>
-      <td><span class="smw_sk_el" style="width: 55px; height: 16px; border-radius: 4px;"></span></td>
-      <td><span class="smw_sk_el" style="width: 65px; height: 16px; border-radius: 4px;"></span></td>
-      <td><span class="smw_sk_el" style="width: 30px; height: 16px; border-radius: 4px;"></span></td>
+      <td><span class="smw_sk_el" style="width:100px;height:24px;border-radius:6px"></span></td>
+      <td><span class="smw_sk_el" style="width:40px;height:22px;border-radius:50px"></span></td>
+      <td><span class="smw_sk_el" style="width:85px;height:14px"></span></td>
+      <td><span class="smw_sk_el" style="width:60px;height:16px"></span></td>
+      <td><span class="smw_sk_el" style="width:55px;height:14px"></span></td>
+      <td><span class="smw_sk_el" style="width:72px;height:22px;border-radius:50px"></span></td>
+      <td><span class="smw_sk_el" style="width:55px;height:14px"></span></td>
+      <td><span class="smw_sk_el" style="width:60px;height:14px"></span></td>
+      <td><span class="smw_sk_el" style="width:52px;height:22px;border-radius:50px"></span></td>
       <td>
-        <div style="display: flex; gap: 6px; justify-content: center;">
-          <span class="smw_sk_el" style="width: 24px; height: 24px; border-radius: 6px;"></span>
-          <span class="smw_sk_el" style="width: 24px; height: 24px; border-radius: 6px;"></span>
+        <div style="display:flex;gap:6px;justify-content:center">
+          <span class="smw_sk_el smw_sk_circle" style="width:26px;height:26px"></span>
         </div>
       </td>
     </tr>
   `).join('');
 }
-

@@ -38,6 +38,19 @@
   height: 4px;
   background: linear-gradient(90deg, var(--Paz, #29C72E), var(--mco));
   z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.smw_tours_header.smw_loading::before {
+  background: linear-gradient(90deg, var(--Paz, #29C72E) 0%, var(--mco) 50%, var(--Paz, #29C72E) 100%);
+  background-size: 200% 100%;
+  animation: smw_loader_bar 1.5s infinite linear;
+  z-index: 100;
+}
+
+@keyframes smw_loader_bar {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .smw_paz_glow {
@@ -90,9 +103,10 @@
 }
 
 .smw_tab_btn.active {
-  background: var(--bg5);
-  color: var(--tx);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  background: color-mix(in srgb, var(--Dulce) 10%, var(--wb));
+  border: 1px solid color-mix(in srgb, var(--Dulce) 25%, transparent);
+  color: var(--Dulce);
+  box-shadow: 0 4px 15px rgba(255, 92, 105, 0.08);
 }
 
 .smw_tab_btn:hover:not(.active) {
@@ -160,19 +174,20 @@
 /* ── TOURS CATALOG GRID ── */
 .smw_tours_grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 3vh;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2vh;
+  text-align: center;
 }
 
 .smw_tour_cat_card {
   background: var(--bg5);
   border: 1px solid var(--brd);
-  border-radius: 2vh;
-  padding: 3vh;
+  border-radius: 1.8vh;
+  padding: 2.2vh 2.5vh;
   display: flex;
   flex-direction: column;
-  gap: 2.5vh;
-  transition: all 0.3s;
+  gap: 1.8vh;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -193,6 +208,7 @@
   align-items: center;
   justify-content: center;
   font-size: var(--fz_m1);
+  margin: auto;
 }
 
 .smw_tcard_title {
@@ -223,7 +239,7 @@
 }
 
 .smw_tcard_stat_val {
-  font-size: var(--fz_m3);
+  font-size: var(--fz_m1);
   font-weight: 900;
 }
 
@@ -238,11 +254,30 @@
   background: var(--bg5);
   border: 1px solid var(--brd);
   border-radius: 2vh;
-  padding: 3vh;
+  padding: 3vh 3vh 3vh 4vh;
   display: flex;
   gap: 2.5vh;
   align-items: flex-start;
   transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.smw_rule_card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  background: var(--brd);
+  transition: all 0.3s ease;
+}
+
+.smw_rule_card.alert::before {
+  background: var(--Dulce);
+}
+
+.smw_rule_card.bonus::before {
+  background: var(--Oro);
 }
 .smw_rule_card:hover {
   transform: translateX(5px);
