@@ -1,0 +1,94 @@
+import{$ as o}from"./vendor-PbmUQHyn.js";import{auth as d}from"./firebase-DJVx3tD8.js";import{o as u}from"./firebase-BM1KOhEp.js";import{e as c,l as f,u as p,k as v,S as h}from"./index-D2m2wUVg.js";const _=()=>new Promise(s=>{if(d.currentUser)return s(d.currentUser);const e=u(d,t=>{e(),s(t)})}),r=s=>{try{const e=JSON.parse(localStorage.getItem(s));return Array.isArray(e)?e:e?.value&&Array.isArray(e.value)?e.value:[]}catch{return[]}},F=()=>`
+  <div class="gs_dash">
+    
+    <!-- ══ HEADER PREMIUM (Management Style) ══ -->
+    <header class="gs_hero wi_fadeUp">
+      <div class="gs_hero_glow"></div>
+      <div class="gs_hero_content">
+        <div class="gs_hero_left">
+          <div class="gs_avatar_wrap">
+             <div class="gs_avatar" id="gsAvatar"></div>
+             <div class="gs_avatar_ring"></div>
+          </div>
+          <div class="gs_welcome">
+            <h1 id="gsSaludo">Cargando...</h1>
+            <p id="gsRole"><i class="fas fa-shield-halved"></i> Gestión de ${c}</p>
+          </div>
+        </div>
+        <div class="gs_hero_quote" id="gsQuote">
+          <i class="fas fa-quote-left"></i>
+          <div class="gs_quote_body">
+            <p id="gsQuoteTxt">...</p>
+            <span id="gsQuoteRef">...</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ══ DASHBOARD GRID ══ -->
+    <main class="gs_main">
+      
+      <!-- COLUMNA IZQUIERDA: GESTIÓN DE CONTENIDO -->
+      <div class="gs_col">
+        <div class="gs_sec_head">
+          <div class="gs_sec_info">
+            <h2><i class="fas fa-grip-horizontal"></i> Centro de Gestión</h2>
+            <p>Supervisa y administra el ecosistema de ${c}</p>
+          </div>
+        </div>
+        <div class="gs_tools_grid">
+          ${[{page:"nuevo",ico:"fa-pen-nib",col:"#FF5C69",tit:"Crear Blog",sub:"Publicar contenido"},{page:"usuarios",ico:"fa-users-gear",col:"#0EBEFF",tit:"Comunidad",sub:"Gestionar usuarios"},{page:"chatwil",ico:"fa-hands-praying",col:"#29C72E",tit:"Sala Oración",sub:"Moderación de fe"},{page:"mensajes",ico:"fa-paper-plane",col:"#7000FF",tit:"Mensajería",sub:"Bandeja de soporte"},{page:"perfil",ico:"fa-user-shield",col:"#FFB800",tit:"Seguridad",sub:"Ajustes de cuenta"},{page:"biblia",ico:"fa-book-bible",col:"#00D1FF",tit:"Recursos",sub:"Base de datos"}].map((s,e)=>`
+            <a href="/${s.page}" class="gs_tool_card nv_item" data-page="${s.page}" style="animation-delay: ${e*.05}s">
+              <div class="gs_tool_ico" style="color: ${s.col}; background: color-mix(in srgb, ${s.col} 12%, transparent);"><i class="fas ${s.ico}"></i></div>
+              <div class="gs_tool_txt">
+                <h4>${s.tit}</h4>
+                <span>${s.sub}</span>
+              </div>
+              <div class="gs_tool_arr"><i class="fas fa-arrow-right"></i></div>
+            </a>
+          `).join("")}
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: FLUJO Y ESTADÍSTICAS -->
+      <div class="gs_col">
+        
+        <!-- ACTIVIDAD RECIENTE -->
+        <section class="gs_card gs_recent">
+          <div class="gs_card_head">
+            <h3><i class="fas fa-bolt"></i> Actividad Global</h3>
+            <button class="gs_clean_btn" id="gs_refresh"><i class="fas fa-sync-alt"></i></button>
+          </div>
+          <div class="gs_timeline" id="gsFeed">
+             <div class="gs_empty"><i class="fas fa-circle-notch fa-spin"></i><p>Sincronizando...</p></div>
+          </div>
+        </section>
+
+        <!-- KPI SUMMARY (PRO) -->
+        <section class="gs_card gs_impact">
+          <h3><i class="fas fa-chart-line"></i> Impacto de Fe</h3>
+          <div class="gs_kpi_list" id="gsKpis">
+             <!-- KPIs aquí -->
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+`,A=async()=>{if(!await _())return;const e=f("wiSmile");if(!e)return setTimeout(()=>p.navigate("/login"),100);o(document).off(".gs"),o(".wi_fadeUp").addClass("visible");const t=v(e.nombre||e.usuario||"Gestor"),n=`${(e.nombre||"?")[0]}${(e.apellidos||"")[0]||""}`.toUpperCase();o("#gsAvatar").text(n),o("#gsSaludo").html(`${h()} <strong>${t}</strong>`);const a=r("wiFrases");if(a.length){const i=a[Math.floor(Math.random()*a.length)];o("#gsQuoteTxt").text(i.cita),o("#gsQuoteRef").text(i.libro)}else o("#gsQuoteTxt").text("Gestiona con propósito, lidera con el corazón."),o("#gsQuoteRef").text(`Liderazgo ${c}`);g(),o(document).on("click.gs","#gs_refresh",function(){const i=o(this).find("i").addClass("fa-spin");g(),setTimeout(()=>i.removeClass("fa-spin"),600)}),console.log(`🛡️ ${c} Gestor — ${c} (Ultra Pro)`)},C=()=>{o(document).off(".gs")};function g(){const s={notas:r("misNotas"),blogs:r("wi_blogs"),tareas:r("tareas"),word:r("word_docs"),links:r("links")},e=[{n:"Reflexiones",c:s.notas.length,col:"#0EBEFF"},{n:"Artículos",c:s.blogs.length,col:"#FF5C69"},{n:"Peticiones",c:s.tareas.length,col:"#29C72E"}];o("#gsKpis").html(e.map(a=>`
+    <div class="gs_kpi_item">
+      <span>${a.n}</span>
+      <strong style="color: ${a.col}">${a.c}</strong>
+    </div>
+  `).join(""));let t=[];s.blogs.forEach(a=>t.push({...a,mod:"Blog",i:"fa-pen-nib",col:"#FF5C69",url:"blog"})),s.notas.forEach(a=>t.push({...a,mod:"Notas",i:"fa-lightbulb",col:"#0EBEFF",url:"notas"})),s.tareas.forEach(a=>t.push({...a,mod:"Petic.",i:"fa-heart",col:"#29C72E",url:"tareas"})),s.word.forEach(a=>t.push({...a,mod:"Doc",i:"fa-file-word",col:"#7000FF",url:"word"})),t.sort((a,i)=>(i.actualizado||i.creado||0)-(a.actualizado||a.creado||0));const n=t.slice(0,6);if(n.length){const a=i=>{const l=Math.floor((Date.now()-i)/6e4);return l<1?"Ahora":l<60?`${l}m`:`${Math.floor(l/1440)}d`};o("#gsFeed").html(n.map((i,l)=>`
+      <div class="gs_tl_item" style="animation-delay: ${l*.05}s">
+        <div class="gs_tl_ico" style="color: ${i.col}"><i class="fas ${i.i}"></i></div>
+        <div class="gs_tl_body">
+          <h4>${i.titulo||"Sin título"}</h4>
+          <span>${i.mod} · ${a(i.actualizado||i.creado)}</span>
+        </div>
+        <a href="/${i.url}" class="gs_tl_btn nv_item" data-page="${i.url}"><i class="fas fa-chevron-right"></i></a>
+      </div>
+    `).join(""))}else o("#gsFeed").html('<div class="gs_empty"><i class="fas fa-inbox"></i><p>Sin actividad reciente</p></div>')}export{C as cleanup,A as init,F as render};
