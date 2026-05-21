@@ -19,7 +19,6 @@ export const NAV = {
   },
   smile: {
     nvleft: [
-      { href: '/smile',     page: 'smile',     ico: 'fa-house',           txt: 'Inicio'    },
       { href: '/registrar', page: 'registrar', ico: 'fa-plus-circle',      txt: 'Registrar Ventas' },
       { href: '/ranking',   page: 'ranking',   ico: 'fa-trophy',           txt: 'Ranking'   },
       { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Tablero' },
