@@ -275,19 +275,33 @@ function _actualizarDisplayMes() {
 // --- CARGAR TODOS LOS DATOS (EMPLEADOS + VENTAS) ---
 async function _cargarTodo() {
   try {
+    // Intentar cargar de cache local primero para velocidad instantánea
+    let cachedEmpleados = getls('todosEmpleadosSmile');
+    let cachedVentas = getls('todasVentasSmile');
+
+    if (cachedEmpleados && cachedVentas) {
+      todosLosEmpleados = cachedEmpleados;
+      todasLasVentas = cachedVentas;
+      
+      const opts = todosLosEmpleados
+        .map(e => `<option value="${e.usuario}">${e.nombre || e.usuario}</option>`)
+        .join('');
+      $('#histFilterEmployee').html(`<option value="">Todos los vendedores</option>${opts}`).val(filtroVendedor);
+      
+      _renderizarTabla();
+      return;
+    }
+
+    // Si no hay cache, mostrar skeletons y consultar a Firestore
     $('#histSalesTableBody').html(_generarSkeletonsTabla(limitePorPagina || 5));
-    // 1. Obtener empleados
-    const empSnap = await getDocs(query(collection(db, 'smiles'), where('participa', '==', 'si')));
+
+    // Ejecutar ambas consultas Firestore en paralelo para mayor velocidad
+    const [empSnap, snap] = await Promise.all([
+      getDocs(query(collection(db, 'smiles'), where('participa', '==', 'si'))),
+      getDocs(collection(db, 'registrosdb'))
+    ]);
+
     todosLosEmpleados = empSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    // Rellenar selector de empleados
-    const opts = todosLosEmpleados
-      .map(e => `<option value="${e.usuario}">${e.nombre || e.usuario}</option>`)
-      .join('');
-    $('#histFilterEmployee').html(`<option value="">Todos los vendedores</option>${opts}`).val(filtroVendedor);
-
-    // 2. Obtener ventas
-    const snap = await getDocs(collection(db, 'registrosdb'));
     todasLasVentas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
     // Ordenar por fecha (más recientes primero)
@@ -296,6 +310,16 @@ async function _cargarTodo() {
       const dateB = b.fechaTour?.toDate ? b.fechaTour.toDate() : new Date(b.fechaTour || 0);
       return dateB - dateA;
     });
+
+    // Guardar en caché local (Ventas por 5 minutos, Empleados por 60 minutos)
+    savels('todosEmpleadosSmile', todosLosEmpleados, 60);
+    savels('todasVentasSmile', todasLasVentas, 5);
+
+    // Rellenar selector de empleados
+    const opts = todosLosEmpleados
+      .map(e => `<option value="${e.usuario}">${e.nombre || e.usuario}</option>`)
+      .join('');
+    $('#histFilterEmployee').html(`<option value="">Todos los vendedores</option>${opts}`).val(filtroVendedor);
 
     _renderizarTabla();
   } catch (error) {

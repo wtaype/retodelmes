@@ -125,6 +125,9 @@ export const invalidateRankingCaches = (vendedor, mes) => {
   console.log(`🧹 Invalidando cachés de ranking y KPIs para ${vendedor} en el mes ${mes}`);
   removels(
     'topSmiles',
+    'todasVentasSmile',
+    'todosEmpleadosSmile',
+    'svVentas',
     `empleadosPuntos_${mes}`,
     `resumenMes_${mes}`,
     `kpiSmile_${vendedor}_${mes}`,

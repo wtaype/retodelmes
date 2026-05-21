@@ -27,7 +27,7 @@
   transition: border-color var(--tr_m), box-shadow var(--tr_m);
   
   /* Altura fija de 90vh */
-  height: 90vh;
+  height: 91vh;
   display: flex;
   flex-direction: row; /* Estructura horizontal para doble columna */
   gap: 3vh;
@@ -40,6 +40,38 @@
   height: 6px;
   background: linear-gradient(90deg, var(--mco), var(--hv));
   z-index: 10;
+}
+
+/* ── ANIMACIÓN PREMIUM DE BARRA DE CARGA SUPERIOR ── */
+.smw_reg_card.smw_loading::before {
+  background: linear-gradient(
+    90deg, 
+    var(--mco) 0%, 
+    var(--hv) 25%, 
+    var(--success) 50%, 
+    var(--hv) 75%, 
+    var(--mco) 100%
+  );
+  background-size: 200% auto;
+  animation: smw_loader_bar 1.5s infinite linear;
+}
+
+@keyframes smw_loader_bar {
+  0% { background-position: 0% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Estado de carga para el selector de tours */
+.smw_loading_select {
+  pointer-events: none !important;
+  opacity: 0.7;
+  border-color: var(--brd) !important;
+  animation: smw_select_pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes smw_select_pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.85; }
 }
 
 /* ── COLUMNA IZQUIERDA: FORMULARIO (70%) ── */
@@ -127,16 +159,49 @@
 }
 
 .smw_form_field label i {
-  color: var(--tx3);
+  color: var(--mco);
   font-size: var(--fz_s3);
 }
 
 /* Inputs & Selects */
-.smw_input,
-.smw_select {
+@keyframes smw_check_pop_after {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes smw_border_success_pulse {
+  0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+  100% { box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
+}
+
+/* Chrome/Edge/Safari Autofill Robust Overrides */
+.smw_input:-webkit-autofill,
+.smw_input:-webkit-autofill:hover, 
+.smw_input:-webkit-autofill:focus, 
+.smw_input:-webkit-autofill:active,
+.smw_select:-webkit-autofill,
+.smw_select:-webkit-autofill:hover, 
+.smw_select:-webkit-autofill:focus, 
+.smw_select:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--inp) inset !important;
+  box-shadow: 0 0 0 1000px var(--inp) inset !important;
+  -webkit-text-fill-color: var(--tx) !important;
+  color: var(--tx) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.smw_input.faltaValor:-webkit-autofill,
+.smw_select.faltaValor:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg) inset !important;
+  box-shadow: 0 0 0 1000px var(--bg) inset !important;
+}
+
+/* Inputs & Selects */
+.smw_input {
   width: 100%;
-  padding: 1.2vh 1.8vh;
-  background: var(--inp);
+  padding: 0 16px !important;
+  background-color: var(--bg) !important; /* Empty background is var(--bg) */
   border: 1px solid var(--brd);
   border-radius: 1.2vh;
   color: var(--tx);
@@ -144,13 +209,39 @@
   font-weight: 600;
   transition: all var(--tr_m);
   outline: none;
+  box-sizing: border-box !important;
+  height: 5.2vh !important;
+  line-height: 5.2vh !important;
+}
+
+.smw_select {
+  width: 100%;
+  padding: 0 48px 0 16px !important;
+  background-color: var(--bg) !important; /* Empty background is var(--bg) */
+  border: 1px solid var(--brd);
+  border-radius: 1.2vh;
+  color: var(--tx);
+  font-size: var(--fz_m1);
+  font-weight: 600;
+  transition: all var(--tr_m);
+  outline: none;
+  box-sizing: border-box !important;
+  height: 5.2vh !important;
+  line-height: 5.2vh !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a0000'%3E%3Cpath d='M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 22px center !important;
+  background-size: 14px 14px !important;
 }
 
 .smw_input:focus,
 .smw_select:focus {
   border-color: var(--mco);
   box-shadow: 0 0 0 4px var(--bg4);
-  background: var(--wb);
+  background-color: var(--inp) !important; /* Show white-ish input on focus */
 }
 
 .smw_input::placeholder {
@@ -158,21 +249,91 @@
   font-weight: 500;
 }
 
+/* Campos Deshabilitados Premium */
+.smw_input:disabled,
+.smw_select:disabled {
+  background: var(--bg) !important;
+  color: var(--tx2) !important;
+  cursor: not-allowed;
+  opacity: 0.9;
+  border-color: var(--brd) !important;
+}
+
 /* Validaciones Visuales */
-.smw_input.okValor,
+.smw_input.okValor {
+  border-color: var(--success) !important;
+  background-color: var(--inp) !important; /* Valid input is var(--inp) */
+  padding-right: 50px !important;
+  animation: smw_border_success_pulse 0.6s cubic-bezier(0.25, 0, 0, 1) both;
+}
+
 .smw_select.okValor {
-  border-color: var(--success);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233cd741' width='16px' height='16px'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1.8vh center;
-  padding-right: 4.5vh;
+  border-color: var(--success) !important;
+  background-color: var(--inp) !important; /* Valid select is var(--inp) */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a0000'%3E%3Cpath d='M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 22px center !important;
+  background-size: 14px 14px !important;
+  padding-right: 76px !important;
+  animation: smw_border_success_pulse 0.6s cubic-bezier(0.25, 0, 0, 1) both;
+}
+
+.smw_tour_display.okValor {
+  border-color: var(--success) !important;
+  background-color: var(--inp) !important; /* Valid tourDisplay is var(--inp) */
+  padding-right: 76px !important;
+  animation: smw_border_success_pulse 0.6s cubic-bezier(0.25, 0, 0, 1) both;
+}
+
+/* Pseudo-elementos de Validación con FontAwesome */
+.smw_form_field:has(.smw_input.okValor)::after,
+.smw_form_field:has(.smw_select.okValor)::after,
+.smw_form_field:has(.smw_tour_display.okValor)::after,
+.smw_form_field:has(.smw_input:-webkit-autofill)::after,
+.smw_form_field:has(.smw_select:-webkit-autofill)::after {
+  content: "\f058" !important;
+  font-family: "Font Awesome 6 Free", "Font Awesome 7 Free", "Font Awesome 5 Free", "FontAwesome", sans-serif !important;
+  font-weight: 900 !important;
+  color: var(--success) !important;
+  position: absolute !important;
+  right: 22px !important;
+  bottom: calc(2.6vh - 9px) !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+  animation: smw_check_pop_after 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Para selects y tour dropdown colocamos el check a la izquierda de la flecha */
+.smw_form_field:has(.smw_select.okValor)::after,
+.smw_form_field:has(.smw_tour_display.okValor)::after,
+.smw_form_field:has(.smw_select:-webkit-autofill)::after {
+  right: 3% !important;
+  top: 35%
+}
+.smw_form_field:has(.smw_input.okValor)::after{
+  right: 3% !important;
+  top: 35%
+}
+.smw_form_field:has(.smw_tour_display.okValor)::after{
+  right: 0.8% !important;
+  top: 35%
 }
 
 .smw_input.faltaValor,
 .smw_select.faltaValor {
-  border-color: var(--error);
-  box-shadow: 0 0 0 3px rgba(255, 56, 73, 0.12);
-  animation: smw_shake 0.4s ease;
+  border-color: var(--mco) !important;
+  box-shadow: 0 0 0 3px rgba(255, 56, 73, 0.12) !important;
+  animation: smw_shake 0.4s ease !important;
+}
+
+.smw_select.faltaValor {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a0000'%3E%3Cpath d='M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 22px center !important;
+  background-size: 14px 14px !important;
+  padding-right: 48px !important;
 }
 
 @keyframes smw_shake {
@@ -201,25 +362,39 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.2vh 1.8vh;
-  background: var(--inp);
+  padding: 0 48px 0 16px;
+  background: var(--bg) !important; /* Empty background is var(--bg) */
   border: 1px solid var(--brd);
   border-radius: 1.2vh;
   cursor: pointer;
   transition: all var(--tr_m);
   font-weight: 600;
-  color: var(--tx2);
+  color: var(--tx);
+  font-size: var(--fz_m1); /* Match other inputs size exactly */
+  box-sizing: border-box;
+  height: 5.2vh;
+  position: relative; /* Lock positioning for arrow absolute placement */
 }
 
 .smw_tour_display:hover {
   border-color: var(--mco);
-  background: var(--wb);
+  background-color: var(--wb) !important;
 }
 
 .smw_tour_display.active {
   border-color: var(--mco);
   box-shadow: 0 0 0 4px var(--bg4);
-  background: var(--wb);
+  background-color: var(--wb) !important;
+}
+
+.smw_tour_display .smw_arrow {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 14px;
+  color: var(--tx1);
 }
 
 .smw_tour_text {
@@ -254,7 +429,7 @@
 .smw_tour_search {
   padding: 1.2vh 1.8vh;
   background: var(--bg4);
-  border-bottom: 1px solid var(--brd);
+  border-bottom: 1.5px dashed var(--brd);
   position: relative;
   display: flex;
   align-items: center;
@@ -289,24 +464,55 @@
 
 .smw_tour_table tr {
   cursor: pointer;
-  transition: all var(--tr_f);
+  border-bottom: 1.5px dashed var(--brd);
+  transition: background-color 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease, border-color 0.22s ease;
 }
 
 .smw_tour_table tr:hover {
   background: var(--bg4);
+  border-bottom-color: var(--tx2);
 }
 
 .smw_tour_table tr.selected {
-  background: var(--bg5);
-  border-left: 4px solid var(--mco);
+  background: var(--bg5) !important;
+  border-bottom: 1.5px dashed var(--mco) !important;
+}
+
+.smw_tour_table tr.selected td {
+  color: var(--mco) !important;
+}
+
+.smw_tour_table tr:last-child {
+  border-bottom: none !important;
 }
 
 .smw_tour_table td {
   padding: 1.2vh 1.8vh;
-  border-bottom: 1px solid var(--brd);
   font-size: var(--fz_m1);
   color: var(--tx);
   font-weight: 600;
+  border: none !important;
+  transition: background-color 0.22s ease, color 0.22s ease;
+}
+
+.smw_tour_num {
+  color: var(--tx3);
+  font-family: var(--ff_O);
+  font-size: var(--fz_m1);
+  font-weight: 750;
+  width: 3.5vh;
+  text-align: center;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.22s ease;
+}
+
+.smw_tour_table tr:hover .smw_tour_num {
+  color: var(--mco) !important;
+  transform: scale(1.22);
+}
+
+.smw_tour_table tr.selected .smw_tour_num {
+  color: var(--mco) !important;
+  transform: scale(1.3);
 }
 
 .smw_tour_price {
@@ -315,10 +521,18 @@
   font-family: var(--ff_O);
 }
 
+.smw_tour_table tr.selected .smw_tour_price {
+  text-shadow: 0 0 8px rgba(255, 92, 105, 0.15);
+}
+
 .smw_tour_pts {
   text-align: right;
   color: var(--success) !important;
   font-weight: 700 !important;
+}
+
+.smw_tour_table tr.selected .smw_tour_pts {
+  text-shadow: 0 0 8px rgba(41, 199, 46, 0.15);
 }
 
 /* Opciones de Puntos / Excepciones */
@@ -347,7 +561,7 @@
 
 .smw_check_grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5vh;
 }
 
@@ -373,15 +587,24 @@
 }
 
 .smw_check_label input[type="checkbox"] {
-  width: 1.8vh;
-  height: 1.8vh;
-  accent-color: var(--mco);
+  display: none; /* Hide native checkbox */
+}
+
+.smw_check_icon {
+  font-size: var(--fz_m1);
+  transition: color var(--tr_m), transform var(--tr_f);
+  color: var(--tx3);
 }
 
 .smw_check_label.active {
-  border-color: var(--mco);
-  background: var(--bg4);
-  color: var(--mco);
+  border-color: var(--success) !important;
+  background: rgba(46, 204, 113, 0.1) !important;
+  color: var(--success) !important;
+}
+
+.smw_check_label.active .smw_check_icon {
+  color: var(--success) !important;
+  transform: scale(1);
 }
 
 /* Acciones del formulario */
@@ -389,22 +612,24 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end !important; /* Move actions container to the right! */
   padding-top: 2vh;
   border-top: 1px solid var(--brd);
-  gap: 2vh;
+  gap: 1.5vh;
 }
 
-.smw_actions_left {
+.smw_actions_right {
   display: flex;
   gap: 1.5vh;
+  align-items: center;
 }
 
 .smw_btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1vh;
-  padding: 1.5vh 3vh;
+  padding: 0 3vh !important;
   font-weight: 800;
   font-size: var(--fz_m1);
   border-radius: 1.5vh;
@@ -412,12 +637,17 @@
   cursor: pointer;
   border: none;
   outline: none;
+  height: 5.2vh;
+  box-sizing: border-box;
+  line-height: 5.2vh !important;
 }
 
 .smw_btn_save {
-  background: linear-gradient(135deg, var(--mco) 0%, var(--hv) 100%);
+  background: linear-gradient(135deg, var(--hv) 0%, var(--mco) 100%);
   color: var(--txa);
   box-shadow: 0 4px 15px var(--bg5);
+  height: 5.5vh;
+  padding: 0 5vh!important;
 }
 
 .smw_btn_save:hover {
@@ -438,31 +668,46 @@
 
 /* Vista previa de puntos */
 .smw_points_preview {
-  display: flex;
-  align-items: center;
-  gap: 1.5vh;
-  background: var(--wb);
-  border: 2px solid var(--success);
-  padding: 1vh 2vh;
-  border-radius: 1.5vh;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1.2vh !important;
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 0 3vh !important;
+  border-radius: 1.5vh !important;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3) !important;
+  height: 5.2vh !important;
+  box-sizing: border-box !important;
+  line-height: 5.2vh !important;
+  transition: all var(--tr_m);
+  cursor: default;
 }
 
 .smw_points_preview i {
-  color: var(--success);
-  font-size: var(--fz_m2);
+  color: #FFDA34 !important; /* estrella de oro */
+  font-size: var(--fz_m2) !important;
+  filter: drop-shadow(0 0 4px rgba(255, 218, 52, 0.8)) !important;
+  animation: smw_star_glow 1.5s infinite alternate;
+}
+
+@keyframes smw_star_glow {
+  from { transform: scale(1); filter: drop-shadow(0 0 2px rgba(255, 218, 52, 0.6)); }
+  to { transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(255, 218, 52, 1)); }
 }
 
 .smw_points_preview span {
-  font-size: var(--fz_s2);
-  font-weight: 700;
-  color: var(--tx2);
+  font-size: var(--fz_m1) !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
 }
 
 .smw_points_preview strong {
-  font-size: var(--fz_m4);
-  font-weight: 900;
-  color: var(--success);
-  font-family: var(--ff_O);
+  font-size: var(--fz_m1) !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  font-family: var(--ff_O) !important;
 }
 
 /* ── COLUMNA DERECHA: MINI RANKING (30%) ── */
@@ -472,7 +717,8 @@
   padding-left: 3vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
 }
 
 .smw_sidebar_header {
@@ -481,6 +727,7 @@
   align-items: center;
   border-bottom: 2px dashed var(--brd);
   padding-bottom: 1.5vh;
+  padding-right: 1.5vh; /* Air for badge */
   flex-shrink: 0;
 }
 
@@ -556,14 +803,17 @@
 .smw_mini_rank_item.pos_1 {
   border-color: #FFDA34;
   background: color-mix(in srgb, #FFDA34 6%, var(--bg4));
+  box-shadow: 0 4px 10px rgba(255, 218, 52, 0.12);
 }
 .smw_mini_rank_item.pos_2 {
   border-color: #A3A3A3;
   background: color-mix(in srgb, #A3A3A3 6%, var(--bg4));
+  box-shadow: 0 4px 10px rgba(163, 163, 163, 0.12);
 }
 .smw_mini_rank_item.pos_3 {
   border-color: #CD7F32;
   background: color-mix(in srgb, #CD7F32 6%, var(--bg4));
+  box-shadow: 0 4px 10px rgba(205, 127, 50, 0.12);
 }
 
 .smw_mini_rank_badge {
@@ -636,17 +886,23 @@
 .smw_mini_rank_pts {
   font-family: var(--ff_O);
   font-weight: 900;
-  font-size: var(--fz_m1);
-  color: var(--success);
+  font-size: var(--fz_m2); /* Larger points! */
+  color: var(--mco); /* Accent cherry red */
   text-align: right;
   flex-shrink: 0;
+  background: var(--bg4);
+  padding: 0.5vh 1vh;
+  border-radius: 1vh;
+  border: 1px solid var(--brd);
+  display: flex;
+  align-items: baseline;
+  gap: 0.2vh;
 }
 
 .smw_mini_rank_pts span {
   font-size: var(--fz_s3);
   font-weight: 600;
   color: var(--tx3);
-  margin-left: 0.2vh;
 }
 
 /* Estado Vacío Lateral */
@@ -740,7 +996,7 @@
 
 @media (max-width: 600px) {
   .smw_reg_container {
-    padding: 0 1.5vh;
+    padding: 0 1vh;
   }
   
   .smw_form_grid {
@@ -768,8 +1024,9 @@
     gap: 1.5vh;
   }
   
-  .smw_actions_left {
+  .smw_actions_right {
     flex-direction: column;
+    gap: 1.5vh;
   }
   
   .smw_btn {
@@ -804,4 +1061,142 @@
 .smw_sk_circle {
   flex-shrink: 0;
   border: 1px solid var(--brd);
+}
+
+/* ── ESTILOS ADICIONALES PARA MIS VENTAS DE HOY Y OBJETIVOS ── */
+.smw_sidebar_section {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.smw_user_points_badge {
+  background: var(--bg2); /* cherry red badge or green success */
+  color: var(--txa);
+  font-family: var(--ff_O);
+  font-weight: 800;
+  font-size: var(--fz_s2);
+  padding: 0.5vh 1.2vh;
+  border-radius: 0.8vh;
+  box-shadow: 0 2px 6px rgba(255, 56, 73, 0.25);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+}
+
+.smw_my_today_sales_list {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2vh;
+  padding-top: 1.5vh;
+  padding-right: 0.5vh;
+  margin-bottom: 1.5vh;
+}
+
+.smw_my_today_sales_list::-webkit-scrollbar {
+  width: 4px;
+}
+.smw_my_today_sales_list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.smw_my_today_sales_list::-webkit-scrollbar-thumb {
+  background: var(--brd);
+  border-radius: 10px;
+}
+
+.smw_today_sale_card {
+  display: flex;
+  align-items: center;
+  gap: 1.2vh;
+  padding: 1vh 1.2vh;
+  background: var(--wb);
+  border: 1px solid var(--brd);
+  border-radius: 1.2vh;
+  transition: all var(--tr_m);
+  animation: smw_rank_in 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.smw_today_sale_card:hover {
+  border-color: var(--mco);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+  transform: translateY(-1px);
+}
+
+.smw_today_sale_icon {
+  width: 3.8vh;
+  height: 3.8vh;
+  border-radius: 50%;
+  background: var(--bg4);
+  border: 1px solid var(--brd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mco);
+  font-size: var(--fz_s1);
+  flex-shrink: 0;
+}
+
+.smw_today_sale_info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.smw_today_sale_client {
+  font-weight: 800;
+  color: var(--tx1);
+  font-size: var(--fz_s2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.smw_today_sale_tour {
+  font-size: var(--fz_s3);
+  color: var(--tx3);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.smw_today_sale_meta {
+  font-size: var(--fz_s3);
+  color: var(--tx2);
+  font-weight: 700;
+  display: flex;
+  gap: 0.8vh;
+  margin-top: 0.2vh;
+}
+
+.smw_today_sale_pax {
+  color: var(--mco);
+}
+
+.smw_today_sale_pts {
+  color: var(--success);
+}
+
+.smw_today_sale_edit_btn {
+  width: 3.5vh;
+  height: 3.5vh;
+  border-radius: 50%;
+  background: var(--bg4);
+  border: 1px solid var(--brd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tx2);
+  cursor: pointer;
+  transition: all var(--tr_f);
+  flex-shrink: 0;
+}
+
+.smw_today_sale_edit_btn:hover {
+  background: var(--mco);
+  color: var(--txa);
+  border-color: var(--mco);
+  transform: scale(1.1);
 }

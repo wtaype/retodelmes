@@ -20,9 +20,9 @@ export const NAV = {
   smile: {
     nvleft: [
       { href: '/registrar', page: 'registrar', ico: 'fa-plus-circle',      txt: 'Registrar Ventas' },
+      { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Historial Ventas' },
       { href: '/ranking',   page: 'ranking',   ico: 'fa-trophy',           txt: 'Ranking'   },
-      { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Tablero' },
-      { href: '/tours',     page: 'tours',     ico: 'fa-route',            txt: 'Tours'     },
+      { href: '/tours',     page: 'tours',     ico: 'fa-route',            txt: 'Tours '     },
       { href: '/avisar',    page: 'avisar',    ico: 'fa-bell',             txt: 'Avisar'    },
       ...COMUN,
     ],

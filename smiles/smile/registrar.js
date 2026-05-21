@@ -5,8 +5,8 @@
 import $ from 'jquery';
 import './registrar.css';
 import { db } from '../firebase.js';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { wiAuth, Notificacion, wiSpin, getls } from '../widev.js';
+import { doc, setDoc, serverTimestamp, collection, getDocs, query, where } from 'firebase/firestore';
+import { wiAuth, Notificacion, wiSpin, getls, savels, removels } from '../widev.js';
 import { rutas } from '../rutas.js';
 import { 
   getMesActual, 
@@ -18,8 +18,10 @@ import {
 // --- VARIABLES GLOBALES DEL MÓDULO ---
 let htours = [];      // Lista de tours activos cargados
 let selTour = null;   // Tour seleccionado actualmente
+let activeVentaEspecial = null; // Guarda la venta en edición/vista para re-vincular al cargar tours
+let isFormResetting = false;    // Bloqueador de auto-guardado durante resets
 
-// --- RENDERIZADO DEL HTML (Diseño de Doble Columna: 70% Formulario, 30% Ranking en Vivo) ---
+// --- RENDERIZADO DEL HTML (Diseño de Doble Columna: 70% Formulario, 30% Sidebar Dividido) ---
 export const render = () => `
   <div class="smw_reg_container">
     <div class="smw_reg_card" id="smwRegCard">
@@ -170,18 +172,27 @@ export const render = () => `
               <h3 class="smw_options_title"><i class="fas fa-star-half-alt"></i> Opciones de Puntos / Excepciones</h3>
               <div class="smw_check_grid">
                 
+                <label class="smw_check_label active" id="lblMiVenta">
+                  <input type="checkbox" id="vtMiVenta" checked>
+                  <i class="fas fa-check-circle smw_check_icon"></i>
+                  <span>Mi venta</span>
+                </label>
+
                 <label class="smw_check_label" id="lblJulio">
                   <input type="checkbox" id="vtJulio">
+                  <i class="far fa-circle smw_check_icon"></i>
                   <span>Venta de Julio</span>
                 </label>
 
                 <label class="smw_check_label" id="lblSonia">
                   <input type="checkbox" id="vtSonia">
+                  <i class="far fa-circle smw_check_icon"></i>
                   <span>Venta de Sonia</span>
                 </label>
 
                 <label class="smw_check_label" id="lblExterna">
                   <input type="checkbox" id="vtExterna">
+                  <i class="far fa-circle smw_check_icon"></i>
                   <span>Venta Externa</span>
                 </label>
 
@@ -190,32 +201,53 @@ export const render = () => `
 
           </div>
 
-          <!-- Acciones del Formulario -->
+          <!-- Acciones del Formulario (Guardar Venta junto a Puntos) -->
           <div class="smw_form_actions">
-            <div class="smw_actions_left" id="smwActionsLeft">
+            <div class="smw_actions_right" id="smwActionsRight">
+              <div class="smw_points_preview">
+                <span>Puntos a ganar: <strong id="vistaPreviaLaPuntos">0</strong></span>
+                <i class="fas fa-star"></i>
+              </div>
+
               <button type="submit" class="smw_btn smw_btn_save" id="btnSaveVenta">
                 <i class="fas fa-save"></i> Guardar Venta
               </button>
-            </div>
-
-            <div class="smw_points_preview">
-              <i class="fas fa-trophy"></i>
-              <span>Puntos a ganar: <strong id="vistaPreviaLaPuntos">0</strong></span>
             </div>
           </div>
 
         </form>
       </div>
 
-      <!-- COLUMNA DERECHA: WIDGET DE RANKING EN VIVO (30%) -->
+      <!-- COLUMNA DERECHA: SIDEBAR (30%) (Ranking en Vivo + Mis Ventas de Hoy) -->
       <div class="smw_reg_col_right">
-        <div class="smw_sidebar_header">
-          <h2><i class="fas fa-trophy" style="color:#FFDA34"></i> Ranking en Vivo</h2>
-          <span class="smw_month_badge" id="lblMesActual">...</span>
-        </div>
         
-        <div class="smw_mini_ranking_list" id="miniRankingList">
-          ${_generarSkeletonsMiniRanking(5)}
+        <!-- Panel Superior: Ranking en Vivo (Top 3-4 Guías) -->
+        <div class="smw_sidebar_section" style="flex: 0 0 42%; display: flex; flex-direction: column; overflow: hidden;">
+          <div class="smw_sidebar_header">
+            <h2><i class="fas fa-trophy" style="color:#FFDA34"></i> Ranking en Vivo</h2>
+            <span class="smw_month_badge" id="lblMesActual">...</span>
+          </div>
+          
+          <div class="smw_mini_ranking_list" id="miniRankingList">
+            ${_generarSkeletonsMiniRanking(3)}
+          </div>
+        </div>
+
+        <div style="border-top: 1px dashed var(--brd); margin: 1.5vh 0; flex-shrink: 0;"></div>
+
+        <!-- Panel Inferior: Mis Ventas de Hoy & Objetivos en Tiempo Real -->
+        <div class="smw_sidebar_section" style="flex: 1 1 58%; display: flex; flex-direction: column; overflow: hidden;">
+          <div class="smw_sidebar_header">
+            <h2><i class="fas fa-bullseye" style="color:var(--mco)"></i> Mis Ventas de Hoy</h2>
+            <span class="smw_user_points_badge" id="lblMisPuntosMes">0 pts</span>
+          </div>
+
+          <div class="smw_my_today_sales_list" id="myTodaySalesList">
+            <div class="smw_mini_empty">
+              <i class="fas fa-circle-notch fa-spin"></i>
+              <span>Cargando mis ventas...</span>
+            </div>
+          </div>
         </div>
 
         <div class="smw_sidebar_links">
@@ -235,24 +267,68 @@ export const init = async () => {
   const user = wiAuth.user;
   if (!user) return setTimeout(() => rutas.navigate('/login'), 100);
 
+  // Activar estado de carga animado premium
+  const $card = $('#smwRegCard');
+  $card.addClass('smw_loading');
+  $('#tourDisplay').addClass('smw_loading_select');
+
   // 1. Mostrar nombre de mes en el badge del sidebar
   const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const mesActual = getMesActual();
   const [ano, mesNum] = mesActual.split('-');
   $('#lblMesActual').text(`${mesesNombres[parseInt(mesNum) - 1]} ${ano}`);
 
-  // 2. Cargar tours desde caché o Firestore
-  htours = await cargarTours();
-  renderTourTable(htours);
+  // 2. Cargar tours desde caché de manera ultra rápida y no bloqueante
+  const cachedTours = getls('toursSmile');
+  if (cachedTours?.length > 0) {
+    htours = cachedTours.map(t => ({
+      nt: t.num || Math.random(),
+      tour: t.tour,
+      price: parseFloat(t.precio) || 0,
+      pts: parseInt(t.puntos) || 0,
+      com: parseFloat(t.comision) || 5
+    }));
+    renderTourTable(htours);
+  }
 
-  // 3. Pintar ranking en vivo lateral
-  await pintarMiniRanking();
+  // De todos modos, cargar tours en segundo plano sin congelar la UI
+  cargarTours().then(tours => {
+    htours = tours;
+    renderTourTable(htours);
+    
+    // Re-vincular de forma segura si ya se cargó la edición o borrador en el intermedio
+    _verificarModoEspecial(user, true);
+    _cargarDraftFormulario(true);
+    actualizarValidacionCampos();
+  }).catch(e => console.error('Error al cargar tours:', e))
+    .finally(() => {
+      // Desactivar estado de carga suavemente
+      $card.removeClass('smw_loading');
+      $('#tourDisplay').removeClass('smw_loading_select');
+    });
 
-  // 4. Registrar todos los eventos
+  // 3. Pintar ranking en vivo lateral (no bloqueante)
+  pintarMiniRanking().catch(e => console.error(e));
+
+  // 4. Pintar mis ventas de hoy y mis puntos mensuales (no bloqueante)
+  pintarMisDatosSidebar(user.usuario).catch(e => console.error(e));
+
+  // 5. Registrar todos los eventos
   _registrarEventos();
 
-  // 5. Verificar modo edición o vista desde el historial
+  // 6. Verificar modo edición o vista desde el historial
   _verificarModoEspecial(user);
+
+  // 6b. Cargar borrador (draft) temporal si existe (solo en modo registro limpio)
+  _cargarDraftFormulario();
+
+  // 7. Validar visualmente campos con valores por defecto
+  actualizarValidacionCampos();
+
+  // Re-validar en cascada con varios retardos para detectar autofill asíncrono del navegador
+  for (let delay of [100, 300, 600, 1000, 1800, 3000]) {
+    setTimeout(actualizarValidacionCampos, delay);
+  }
 };
 
 // --- ELIMINACIÓN DE EVENTOS DE MEMORIA AL DESMONTAR ---
@@ -260,6 +336,8 @@ export const cleanup = () => {
   $(document).off('.registrar');
   selTour = null;
   htours = [];
+  activeVentaEspecial = null;
+  isFormResetting = false;
 };
 
 // --- RENDERIZAR TABLA INTERNA DEL SELECTOR ---
@@ -269,9 +347,9 @@ function renderTourTable(tours) {
     return;
   }
 
-  const html = tours.map((t) => `
+  const html = tours.map((t, idx) => `
     <tr class="tour-row" data-index="${htours.indexOf(t)}">
-      <td class="smw_tour_num"><i class="fas fa-route"></i></td>
+      <td class="smw_tour_num">${idx + 1}</td>
       <td>${t.tour}</td>
       <td class="smw_tour_price">S/ ${t.price.toFixed(2)}</td>
       <td class="smw_tour_pts">${t.pts} pts</td>
@@ -290,7 +368,7 @@ async function pintarMiniRanking() {
     const cacheKey = `empleadosPuntos_${mes}`;
     const cached = getls(cacheKey);
     if (!cached) {
-      $('#miniRankingList').html(_generarSkeletonsMiniRanking(5));
+      $('#miniRankingList').html(_generarSkeletonsMiniRanking(3));
     }
 
     const ranking = await obtenerRankingMes(mes);
@@ -305,8 +383,8 @@ async function pintarMiniRanking() {
       return;
     }
 
-    // Tomamos solo el top 5 para el sidebar
-    const html = ranking.slice(0, 5).map((emp, i) => {
+    // Tomamos los líderes del mes (Top 3 o 4) para el sidebar
+    const html = ranking.slice(0, 4).map((emp, i) => {
       const pos = i + 1;
       const itemCls = pos <= 3 ? `pos_${pos}` : '';
       const badgeContent = pos === 1 ? '<i class="fas fa-crown"></i>' : pos;
@@ -340,20 +418,173 @@ async function pintarMiniRanking() {
   }
 }
 
+// --- OBTENER MIS VENTAS DEL MES DESDE CACHÉ O FIRESTORE ---
+async function obtenerMisVentasMes(vendedor, mes) {
+  try {
+    // Smart cache: Verificamos si existe en svVentas para cuidar consistencia de vendedor y mes
+    const svCached = getls('svVentas');
+    if (svCached && svCached.vendedor === vendedor && svCached.mes === mes) {
+      console.log('⚡ [Smart Cache] Mis ventas recuperadas usando la clave svVentas.');
+      return svCached.ventas;
+    }
+
+    const cacheKey = `ventasSmile_${vendedor}_${mes}`;
+    const cached = getls(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const [yr, mm] = mes.split('-').map(Number);
+    const snap = await getDocs(collection(db, 'registrosdb'));
+    const misVentas = [];
+
+    snap.docs.forEach(doc => {
+      const v = doc.data();
+      if (v.vendedor !== vendedor) return;
+
+      const f = v.fechaTour;
+      let a, m;
+      if (typeof f === 'string') {
+        [a, m] = f.split('-').map(Number);
+      } else if (f?.toDate) {
+        const fd = f.toDate();
+        a = fd.getFullYear();
+        m = fd.getMonth() + 1;
+      } else {
+        return;
+      }
+
+      if (a === yr && m === mm) {
+        misVentas.push({
+          idVenta: v.idVenta || doc.id,
+          ...v
+        });
+      }
+    });
+
+    // Ordenar de más reciente a más vieja
+    misVentas.sort((a, b) => {
+      const timeA = a.fechaRegistro?.seconds ? a.fechaRegistro.seconds * 1000 : (a.fechaRegistro?.toDate ? a.fechaRegistro.toDate().getTime() : Date.now());
+      const timeB = b.fechaRegistro?.seconds ? b.fechaRegistro.seconds * 1000 : (b.fechaRegistro?.toDate ? b.fechaRegistro.toDate().getTime() : Date.now());
+      return timeB - timeA;
+    });
+
+    savels(cacheKey, misVentas, 10); // Cache tradicional por 10 segundos
+    
+    // Guardar de manera smart con la clave svVentas (cuidando consistencias)
+    savels('svVentas', { vendedor, mes, ventas: misVentas }, 10); // Cache smart por 10 segundos
+    
+    return misVentas;
+  } catch (error) {
+    console.error('Error al obtener mis ventas del mes:', error);
+    return [];
+  }
+}
+
+// --- PINTAR SECCIÓN DE VENTAS DE HOY Y PUNTOS ACUMULADOS ---
+async function pintarMisDatosSidebar(vendedor) {
+  try {
+    const mes = getMesActual();
+    const ventas = await obtenerMisVentasMes(vendedor, mes);
+
+    // 1. Calcular y pintar los puntos totales acumulados en el mes
+    const totalPuntos = ventas.reduce((acc, v) => acc + (parseInt(v.puntos) || 0), 0);
+    $('#lblMisPuntosMes').text(`${totalPuntos} pts`);
+
+    // 2. Filtrar ventas correspondientes al día de hoy (fechaTour es YYYY-MM-DD)
+    const hoy = new Date();
+    const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+
+    const ventasHoy = ventas.filter(v => {
+      let f = v.fechaTour;
+      if (f && f.toDate) {
+        f = f.toDate().toISOString().split('T')[0];
+      }
+      return f === hoyStr;
+    });
+
+    if (!ventasHoy.length) {
+      $('#myTodaySalesList').html(`
+        <div class="smw_mini_empty">
+          <i class="fas fa-calendar-day" style="color:var(--brd)"></i>
+          <span>No has registrado ventas hoy.<br>Tus ventas del día aparecerán aquí.</span>
+        </div>
+      `);
+      return;
+    }
+
+    // 3. Renderizar listado interactivo de ventas de hoy
+    const html = ventasHoy.map((v, i) => {
+      const pax = parseInt(v.cantidadPax) || 1;
+      const pts = parseInt(v.puntos) || 0;
+
+      return `
+        <div class="smw_today_sale_card" style="animation-delay: ${i * 0.06}s">
+          <div class="smw_today_sale_icon">
+            <i class="fas fa-route"></i>
+          </div>
+          <div class="smw_today_sale_info">
+            <span class="smw_today_sale_client">${v.nombreCliente}</span>
+            <span class="smw_today_sale_tour">${v.tipoTour}</span>
+            <div class="smw_today_sale_meta">
+              <span class="smw_today_sale_pax"><i class="fas fa-users"></i> ${pax} pax</span>
+              <span class="smw_today_sale_pts"><i class="fas fa-star"></i> ${pts} pts</span>
+            </div>
+          </div>
+          <div class="smw_today_sale_edit_btn btn-edit-today-sale" data-id="${v.idVenta}" title="Editar en tiempo real">
+            <i class="fas fa-edit"></i>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    $('#myTodaySalesList').html(html);
+  } catch (error) {
+    console.error('Error al pintar mis datos en el sidebar:', error);
+    $('#myTodaySalesList').html(`
+      <div class="smw_mini_empty">
+        <i class="fas fa-exclamation-triangle" style="color:var(--error)"></i>
+        <span>Error al cargar tus datos</span>
+      </div>
+    `);
+  }
+}
+
+// --- ACTUALIZAR CLASES Y ICONOS DE LOS CHECKBOXES PERSONALIZADOS ---
+function actualizarIconosCheck() {
+  const mapping = {
+    'vtMiVenta': '#lblMiVenta',
+    'vtJulio': '#lblJulio',
+    'vtSonia': '#lblSonia',
+    'vtExterna': '#lblExterna'
+  };
+
+  Object.entries(mapping).forEach(([cbId, lblId]) => {
+    const isChecked = $(`#${cbId}`).prop('checked');
+    const $label = $(lblId);
+    $label.toggleClass('active', isChecked);
+
+    const $icon = $label.find('.smw_check_icon');
+    if (isChecked) {
+      $icon.removeClass('fa-circle far').addClass('fa-check-circle fas');
+    } else {
+      $icon.removeClass('fa-check-circle fas').addClass('fa-circle far');
+    }
+  });
+}
+
 // --- EVENTOS JQUERY DE LA PÁGINA ---
 function _registrarEventos() {
   $(document)
-    // Validación visual de campos requeridos en tiempo real
-    .on('input.registrar change.registrar', '#formularioVenta input, #formularioVenta select', function() {
-      const $el = $(this);
-      const val = $el.val()?.toString().trim();
-      const req = $el.prop('required');
-      
-      if (req) {
-        $el.toggleClass('okValor', !!val).toggleClass('faltaValor', !val);
-      } else {
-        $el.toggleClass('okValor', !!val);
-      }
+    // Validación visual de todos los campos al interactuar o escribir (detecta autofill)
+    .on('input.registrar change.registrar focus.registrar blur.registrar keyup.registrar click.registrar', '#formularioVenta input, #formularioVenta select', function() {
+      actualizarValidacionCampos();
+      guardarDraftFormulario();
+    })
+    
+    // Captura global al interactuar con el formulario para detectar autofill dinámico del navegador
+    .on('mouseenter.registrar focusin.registrar click.registrar change.registrar', '#formularioVenta', function() {
+      actualizarValidacionCampos();
     })
 
     // Abrir/Cerrar el desplegable de Tours
@@ -401,7 +632,8 @@ function _registrarEventos() {
       if (!selTour) return;
 
       $('#tourSelectedLabel').text(selTour.tour);
-      $('#tipoTour').val(selTour.tour).removeClass('faltaValor').addClass('okValor');
+      $('#tipoTour').val(selTour.tour);
+      $('#tourDisplay').removeClass('faltaValor').addClass('okValor');
       $('#precioUnitario').val(selTour.price).removeClass('faltaValor').addClass('okValor');
       $('#tourDropdown, #tourDisplay').removeClass('active');
       
@@ -413,6 +645,8 @@ function _registrarEventos() {
       calcularTotal();
       calcularComision();
       actualizarPuntosPreview();
+      actualizarValidacionCampos();
+      guardarDraftFormulario();
     })
 
     // Cambios en PAX y Precio Unitario
@@ -426,12 +660,58 @@ function _registrarEventos() {
     .on('change.registrar', '#estadoPago', calcularComision)
     .on('input.registrar', '#importeTotal, #PagoOperador', calcularComision)
 
-    // Visual de checkboxes personalizados
-    .on('change.registrar', '#vtJulio, #vtSonia, #vtExterna', function() {
-      const id = $(this).attr('id');
-      const mapped = { 'vtJulio': '#lblJulio', 'vtSonia': '#lblSonia', 'vtExterna': '#lblExterna' };
-      $(mapped[id]).toggleClass('active', $(this).prop('checked'));
+    // Lógica de exclusión mutua para checkboxes interactivos
+    .on('change.registrar', '#vtMiVenta, #vtJulio, #vtSonia, #vtExterna', function() {
+      const currentId = $(this).attr('id');
+      const isChecked = $(this).prop('checked');
+      const ids = ['vtMiVenta', 'vtJulio', 'vtSonia', 'vtExterna'];
+
+      if (isChecked) {
+        // Desmarcar todos los demás al seleccionar uno
+        ids.forEach(id => {
+          if (id !== currentId) {
+            $(`#${id}`).prop('checked', false);
+          }
+        });
+      } else {
+        // Si intenta desmarcar el único activo, se fuerza "Mi venta"
+        const anyChecked = ids.some(id => $(`#${id}`).prop('checked'));
+        if (!anyChecked) {
+          $('#vtMiVenta').prop('checked', true);
+        }
+      }
+
+      actualizarIconosCheck();
       actualizarPuntosPreview();
+      guardarDraftFormulario();
+    })
+
+    // Atajo interactivo de edición rápida en tiempo real
+    .on('click.registrar', '.btn-edit-today-sale', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const id = $(this).data('id');
+      const user = wiAuth.user;
+      if (!user) return;
+
+      const mes = getMesActual();
+      const ventas = await obtenerMisVentasMes(user.usuario, mes);
+      const venta = ventas.find(v => v.idVenta === id);
+
+      if (venta) {
+        window.editarVenta = { venta, soloVista: false };
+        _verificarModoEspecial(user);
+
+        // Scroll suave al formulario en dispositivos pequeños
+        $('html, body').animate({
+          scrollTop: $('#formularioVenta').offset().top - 20
+        }, 500);
+
+        Notificacion('Venta cargada para modificación en tiempo real', 'info');
+      } else {
+        Notificacion('No se encontró la venta seleccionada', 'error');
+      }
     })
 
     // GUARDAR O ACTUALIZAR LA VENTA
@@ -505,9 +785,10 @@ function _registrarEventos() {
       try {
         await setDoc(doc(db, 'registrosdb', ventaId), venta);
 
-        // Limpiar cachés del mes de forma inteligente usando zsmile.js
+        // Limpiar cachés del mes de forma inteligente usando zsmile.js y removels
         const mes = getMesActual();
         invalidateRankingCaches(vendedor, mes);
+        removels('svVentas');
 
         Notificacion(
           $btn.attr('data-edit-id') ? '¡Venta actualizada con éxito! 🏆' : '¡Venta registrada con éxito! 🚀',
@@ -519,6 +800,9 @@ function _registrarEventos() {
 
         // Repintar mini ranking lateral de inmediato para feedback instantáneo
         await pintarMiniRanking();
+
+        // Repintar panel de hoy lateral
+        await pintarMisDatosSidebar(vendedor);
 
         // Redirección guiada al historial para corroborar
         setTimeout(() => {
@@ -577,17 +861,50 @@ function aplicarZoom(sel) {
   setTimeout(() => $(sel).removeClass('field-updated'), 600);
 }
 
+// --- VALIDACIÓN DINÁMICA DE CAMPOS CON VALOR ---
+function actualizarValidacionCampos() {
+  $('#formularioVenta input, #formularioVenta select').each(function() {
+    const $el = $(this);
+    if ($el.attr('type') === 'hidden' || $el.attr('type') === 'checkbox' || $el.attr('type') === 'submit') return;
+    
+    const val = $el.val()?.toString().trim();
+    const req = $el.prop('required');
+    
+    if (req) {
+      $el.toggleClass('okValor', !!val).toggleClass('faltaValor', !val);
+    } else {
+      $el.toggleClass('okValor', !!val);
+    }
+  });
+
+  // Especial para tourDisplay
+  const tourVal = $('#tipoTour').val();
+  if (tourVal) {
+    $('#tourDisplay').removeClass('faltaValor').addClass('okValor');
+  } else {
+    $('#tourDisplay').removeClass('okValor faltaValor');
+  }
+}
+
 // --- LIMPIAR ESTADO FORMULARIO ---
 function limpiarFormulario() {
+  isFormResetting = true;
   selTour = null;
+  activeVentaEspecial = null;
   const $form = $('#formularioVenta');
-  if (!$form.length) return;
+  if (!$form.length) {
+    isFormResetting = false;
+    return;
+  }
 
   $form[0].reset();
-  $('#formularioVenta input, #formularioVenta select').prop('disabled', false).removeClass('okValor faltaValor');
+  removels('registroVentaDraft');
+  $('#formularioVenta input, #formularioVenta select, #tourDisplay').prop('disabled', false).removeClass('okValor faltaValor');
   $('#smwRegCard').removeClass('view-only edit-mode');
   
-  $('.smw_check_label').removeClass('active');
+  $('#vtMiVenta').prop('checked', true);
+  $('#vtJulio, #vtSonia, #vtExterna').prop('checked', false);
+  actualizarIconosCheck();
   
   $('#btnSaveVenta').prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Venta').removeAttr('data-edit-id');
   $('.btn-custom-action').remove();
@@ -601,97 +918,126 @@ function limpiarFormulario() {
   $('#importeTotal, #ganancia').prop('disabled', true);
   
   $('#smwRegCardTitle').html('<i class="fas fa-cart-plus"></i> Registrar Nueva Venta');
+  
+  actualizarValidacionCampos();
+  isFormResetting = false;
 }
 
 // --- CONFIGURAR MODO EDICIÓN O VISTA ---
-function _verificarModoEspecial(user) {
-  const datosEdicion = window.editarVenta || getls('editarVentaTemp');
-  if (!datosEdicion) return;
+function _verificarModoEspecial(user, onlyBindTour = false) {
+  let datosEdicion = activeVentaEspecial;
+  
+  if (!datosEdicion) {
+    datosEdicion = window.editarVenta || getls('editarVentaTemp');
+    if (datosEdicion) {
+      activeVentaEspecial = datosEdicion;
+      window.editarVenta = null;
+      removels('editarVentaTemp');
+    }
+  }
 
-  window.editarVenta = null;
-  removels('editarVentaTemp');
+  if (!datosEdicion) return;
 
   const { venta, soloVista } = datosEdicion;
   if (!venta) return;
 
-  limpiarFormulario();
+  if (!onlyBindTour) {
+    limpiarFormulario();
+    activeVentaEspecial = datosEdicion; // Restaurar tras la limpieza
+  }
 
   // Vincular tour
   selTour = htours.find(t => t.tour === venta.tipoTour);
   if (selTour) {
     $('#tourSelectedLabel').text(selTour.tour);
     $('#tipoTour').val(selTour.tour);
+    $('#tourDisplay').removeClass('faltaValor').addClass('okValor');
+    $(`.tour-row`).removeClass('selected');
     $(`.tour-row[data-index="${htours.indexOf(selTour)}"]`).addClass('selected');
   } else {
     $('#tourSelectedLabel').text(venta.tipoTour || 'Tour personalizado');
     $('#tipoTour').val(venta.tipoTour || '');
+    $('#tourDisplay').removeClass('okValor faltaValor');
   }
 
-  // Rellenar campos
-  Object.entries(venta).forEach(([key, val]) => {
-    const $el = $(`#${key}`);
-    if ($el.length && key !== 'fechaTour') {
-      $el.val(val || '');
-    }
-  });
-
-  if (venta.fechaTour) {
-    let f = '';
-    if (venta.fechaTour?.toDate) f = venta.fechaTour.toDate().toISOString().split('T')[0];
-    else if (typeof venta.fechaTour === 'string') f = venta.fechaTour.split('T')[0];
-    $('#fechaTour').val(f);
-  }
-
-  $('#vtJulio').prop('checked', venta.esVentaJulio || false).trigger('change');
-  $('#vtSonia').prop('checked', venta.esVentaSonia || false).trigger('change');
-  $('#vtExterna').prop('checked', venta.esVentaExterna || false).trigger('change');
-
-  calcularTotal();
-  calcularComision();
-  actualizarPuntosPreview();
-
-  if (soloVista) {
-    $('#formularioVenta input, #formularioVenta select').prop('disabled', true);
-    $('#tourDisplay').css('pointer-events', 'none');
-    $('#smwRegCard').addClass('view-only');
-    $('#smwRegCardTitle').html('<i class="fas fa-eye"></i> Detalle de Venta (Solo Vista)');
-    
-    $('#btnSaveVenta').prop('disabled', true).html('<i class="fas fa-lock"></i> Venta Protegida');
-
-    if (!$('.btn-clear-view').length) {
-      $('#smwActionsLeft').append(`
-        <button type="button" class="smw_btn smw_btn_cancel btn-custom-action btn-clear-view">
-          <i class="fas fa-arrow-left"></i> Volver al Registro
-        </button>
-      `);
-    }
-
-    $(document).on('click.registrar', '.btn-clear-view', function() {
-      limpiarFormulario();
-      Notificacion('Formulario restaurado a modo registro.', 'info');
+  if (!onlyBindTour) {
+    // Rellenar campos
+    Object.entries(venta).forEach(([key, val]) => {
+      const $el = $(`#${key}`);
+      if ($el.length && key !== 'fechaTour' && key !== 'esVentaJulio' && key !== 'esVentaSonia' && key !== 'esVentaExterna') {
+        $el.val(val || '');
+      }
     });
 
+    if (venta.fechaTour) {
+      let f = '';
+      if (venta.fechaTour?.toDate) f = venta.fechaTour.toDate().toISOString().split('T')[0];
+      else if (typeof venta.fechaTour === 'string') f = venta.fechaTour.split('T')[0];
+      $('#fechaTour').val(f);
+    }
+
+    // Cargar estados de checkboxes interactivos con exclusión mutua
+    const esExcepcion = (venta.esVentaJulio || venta.esVentaSonia || venta.esVentaExterna);
+    $('#vtMiVenta').prop('checked', !esExcepcion);
+    $('#vtJulio').prop('checked', venta.esVentaJulio || false);
+    $('#vtSonia').prop('checked', venta.esVentaSonia || false);
+    $('#vtExterna').prop('checked', venta.esVentaExterna || false);
+    actualizarIconosCheck();
+
+    calcularTotal();
+    calcularComision();
+    actualizarPuntosPreview();
+
+    if (soloVista) {
+      $('#formularioVenta input, #formularioVenta select').prop('disabled', true);
+      $('#tourDisplay').css('pointer-events', 'none');
+      $('#smwRegCard').addClass('view-only');
+      $('#smwRegCardTitle').html('<i class="fas fa-eye"></i> Detalle de Venta (Solo Vista)');
+      
+      $('#btnSaveVenta').prop('disabled', true).html('<i class="fas fa-lock"></i> Venta Protegida');
+
+      if (!$('.btn-clear-view').length) {
+        $('#smwActionsRight').append(`
+          <button type="button" class="smw_btn smw_btn_cancel btn-custom-action btn-clear-view">
+            <i class="fas fa-arrow-left"></i> Volver al Registro
+          </button>
+        `);
+      }
+
+      $(document).on('click.registrar', '.btn-clear-view', function() {
+        limpiarFormulario();
+        Notificacion('Formulario restaurado a modo registro.', 'info');
+      });
+
+    } else {
+      $('#formularioVenta input, #formularioVenta select').prop('disabled', false);
+      $('#importeTotal, #ganancia').prop('disabled', true);
+      $('#tourDisplay').css('pointer-events', 'auto');
+      $('#smwRegCard').addClass('edit-mode');
+      $('#smwRegCardTitle').html('<i class="fas fa-edit"></i> Modificar Registro de Venta');
+
+      $('#btnSaveVenta').prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Cambios').attr('data-edit-id', venta.idVenta || venta.id);
+
+      if (!$('.btn-cancel-edit').length) {
+        $('#smwActionsRight').append(`
+          <button type="button" class="smw_btn smw_btn_cancel btn-custom-action btn-cancel-edit">
+            <i class="fas fa-times"></i> Cancelar Edición
+          </button>
+        `);
+      }
+
+      $(document).on('click.registrar', '.btn-cancel-edit', function() {
+        limpiarFormulario();
+        Notificacion('Edición cancelada.', 'info');
+      });
+    }
+
+    actualizarValidacionCampos();
   } else {
-    $('#formularioVenta input, #formularioVenta select').prop('disabled', false);
-    $('#importeTotal, #ganancia').prop('disabled', true);
-    $('#tourDisplay').css('pointer-events', 'auto');
-    $('#smwRegCard').addClass('edit-mode');
-    $('#smwRegCardTitle').html('<i class="fas fa-edit"></i> Modificar Registro de Venta');
-
-    $('#btnSaveVenta').prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Cambios').attr('data-edit-id', venta.idVenta || venta.id);
-
-    if (!$('.btn-cancel-edit').length) {
-      $('#smwActionsLeft').append(`
-        <button type="button" class="smw_btn smw_btn_cancel btn-custom-action btn-cancel-edit">
-          <i class="fas fa-times"></i> Cancelar Edición
-        </button>
-      `);
-    }
-
-    $(document).on('click.registrar', '.btn-cancel-edit', function() {
-      limpiarFormulario();
-      Notificacion('Edición cancelada.', 'info');
-    });
+    calcularTotal();
+    calcularComision();
+    actualizarPuntosPreview();
+    actualizarValidacionCampos();
   }
 }
 
@@ -707,7 +1053,7 @@ function _generarSkeletonsSelectorTours(cant = 4) {
   `).join('');
 }
 
-function _generarSkeletonsMiniRanking(cant = 5) {
+function _generarSkeletonsMiniRanking(cant = 3) {
   return Array(cant).fill(0).map((_, index) => `
     <div class="smw_mini_rank_item smw_sk_mini_row" style="pointer-events: none; animation-delay: ${index * 0.05}s">
       <div class="smw_sk_el" style="width: 2.2vh; height: 2.2vh; border-radius: 50%; margin-right: 1.5vh;"></div>
@@ -719,4 +1065,91 @@ function _generarSkeletonsMiniRanking(cant = 5) {
       <div class="smw_sk_el" style="width: 40px; height: 14px; border-radius: 4px;"></div>
     </div>
   `).join('');
+}
+
+// --- BORRADOR (DRAFT) TEMPORAL DE CAMPOS ---
+function guardarDraftFormulario() {
+  if (isFormResetting) return;
+  // Evitar guardar borrador si el formulario está en modo edición o visualización
+  if ($('#smwRegCard').hasClass('edit-mode') || $('#smwRegCard').hasClass('view-only')) return;
+
+  const cliente = $('#nombreCliente').val()?.trim() || '';
+  const tour = $('#tipoTour').val() || '';
+
+  // Si no hay cliente ni tour ingresado, no tiene sentido guardar basura en el borrador
+  if (!cliente && !tour) {
+    removels('registroVentaDraft');
+    return;
+  }
+
+  const draft = {
+    tipoTour: tour,
+    registroEn: $('#registroEn').val() || 'hawka',
+    nombreCliente: cliente,
+    numeroHabitacion: $('#numeroHabitacion').val()?.trim() || '',
+    horaSalida: $('#horaSalida').val()?.trim() || '',
+    tipoDocumento: $('#tipoDocumento').val() || 'dni',
+    numeroDocumento: $('#numeroDocumento').val()?.trim() || '',
+    metodoPago: $('#metodoPago').val() || '',
+    cantidadPax: $('#cantidadPax').val() || '1',
+    precioUnitario: $('#precioUnitario').val() || '',
+    Operador: $('#Operador').val()?.trim() || '',
+    PagoOperador: $('#PagoOperador').val() || '',
+    estadoPago: $('#estadoPago').val() || 'pagado',
+    Comentario: $('#Comentario').val()?.trim() || '',
+    fechaTour: $('#fechaTour').val() || '',
+    esVentaJulio: $('#vtJulio').prop('checked') || false,
+    esVentaSonia: $('#vtSonia').prop('checked') || false,
+    esVentaExterna: $('#vtExterna').prop('checked') || false
+  };
+
+  savels('registroVentaDraft', draft, 24); // Borrador válido por 24 horas con expiración limpia
+}
+
+function _cargarDraftFormulario(onlyBindTour = false) {
+  // Evitar cargar borrador si se ha disparado una edición/vista directa
+  if ($('#smwRegCard').hasClass('edit-mode') || $('#smwRegCard').hasClass('view-only')) return;
+
+  const draft = getls('registroVentaDraft');
+  if (!draft) return;
+
+  if (!onlyBindTour) {
+    // Restaurar campos del formulario
+    Object.entries(draft).forEach(([key, val]) => {
+      const $el = $(`#${key}`);
+      if ($el.length && key !== 'fechaTour' && key !== 'esVentaJulio' && key !== 'esVentaSonia' && key !== 'esVentaExterna') {
+        $el.val(val || '');
+      }
+    });
+
+    if (draft.fechaTour) {
+      $('#fechaTour').val(draft.fechaTour);
+    }
+
+    // Cargar checkboxes mutuamente excluyentes
+    const esExcepcion = (draft.esVentaJulio || draft.esVentaSonia || draft.esVentaExterna);
+    $('#vtMiVenta').prop('checked', !esExcepcion);
+    $('#vtJulio').prop('checked', draft.esVentaJulio || false);
+    $('#vtSonia').prop('checked', draft.esVentaSonia || false);
+    $('#vtExterna').prop('checked', draft.esVentaExterna || false);
+
+    actualizarIconosCheck();
+  }
+
+  // Vincular el tour si existía
+  if (draft.tipoTour) {
+    selTour = htours.find(t => t.tour === draft.tipoTour);
+    if (selTour) {
+      $('#tourSelectedLabel').text(selTour.tour);
+      $('#tipoTour').val(selTour.tour);
+      $('#tourDisplay').removeClass('faltaValor').addClass('okValor');
+      $(`.tour-row`).removeClass('selected');
+      $(`.tour-row[data-index="${htours.indexOf(selTour)}"]`).addClass('selected');
+    }
+  }
+
+  calcularTotal();
+  calcularComision();
+  actualizarPuntosPreview();
+  actualizarValidacionCampos();
 }
