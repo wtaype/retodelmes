@@ -48,12 +48,12 @@ const CK_KEY = 'cookies';
 const cerrarBanner = (val) => {
   savels(CK_KEY, val);
   $('#cookies').removeClass('cookies_show');
-  setTimeout(() => $('#cookies').remove(), 400);
+  setTimeout(() => $('#cookies').remove(), 150);
 };
 
-// Los listeners siempre se registran (independiente del prerender)
-$(document).on('click', '#ck_aceptar',  () => cerrarBanner(true));
-$(document).on('click', '#ck_rechazar', () => cerrarBanner(false));
+// Los listeners siempre se registran (independiente del prerender) con pointerdown para respuesta instantánea
+$(document).on('pointerdown', '#ck_aceptar',  () => cerrarBanner(true));
+$(document).on('pointerdown', '#ck_rechazar', () => cerrarBanner(false));
 
 if (!getls(CK_KEY)) {
   // Si el prerender ya lo inyectó en el HTML, solo mostrarlo

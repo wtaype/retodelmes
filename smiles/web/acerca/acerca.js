@@ -247,24 +247,6 @@ export const render = () => `
     </div>
   </section>
 
-  <!-- ══ CTA ══ -->
-  <section class="ac_cta_sec">
-    <div class="ac_cta_wrap wi_fadeUp">
-      <div class="ac_hero_orb ac_orb1"></div>
-      <div class="ac_hero_orb ac_orb2"></div>
-      <div class="ac_cta_glow"></div>
-      <div class="ac_cta_inner">
-        <span class="ac_cta_emoji">🔒</span>
-        <h2>¿Listo para subir tu<br>siguiente tour?</h2>
-        <p>Entra a tu cuenta interna y registra tus ventas del día.</p>
-        <div class="ac_cta_btns">
-          <a href="/smile" class="ac_btn_p ac_btn_lg"><i class="fas fa-coins"></i> Registrar Venta</a>
-          <a href="/smiletop" class="ac_btn_s ac_btn_lg"><i class="fas fa-trophy"></i> Ver Tabla de Posiciones</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
 </div></main>
 `;
 

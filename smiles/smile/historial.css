@@ -37,7 +37,8 @@
 .smw_hist_header::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0; left: 0; right: auto;
+  width: 100%;
   height: 4px;
   background: linear-gradient(90deg, var(--Cielo, #0EBEFF), var(--mco));
   z-index: 10;
@@ -45,15 +46,16 @@
 }
 
 .smw_hist_header.smw_loading::before {
-  background: linear-gradient(90deg, var(--Cielo, #0EBEFF) 0%, var(--mco) 50%, var(--Cielo, #0EBEFF) 100%);
-  background-size: 200% 100%;
-  animation: smw_loader_bar 1.5s infinite linear;
+  background: linear-gradient(90deg, var(--Cielo, #0EBEFF), var(--mco));
+  animation: smw_loader_width 1.5s ease-in-out infinite;
   z-index: 100;
 }
 
-@keyframes smw_loader_bar {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+@keyframes smw_loader_width {
+  0% { width: 0%; left: 0; right: auto; }
+  50% { width: 100%; left: 0; right: auto; }
+  50.1% { left: auto; right: 0; }
+  100% { width: 0%; left: auto; right: 0; }
 }
 
 .smw_cielo_glow {

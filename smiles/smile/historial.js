@@ -144,10 +144,13 @@ export const init = async () => {
   $('#selHistorialMes').val(mesSeleccionado);
   _actualizarDisplayMes();
 
-  await _cargarTodo();
+  // 1. Mostrar la UI de inmediato con sus esqueletos
+  $('.wi_fadeUp').addClass('visible wi_visible');
+
+  // 2. Cargar en segundo plano sin bloquear el hilo principal
+  _cargarTodo();
   _bindEvents(user);
 
-  $('.wi_fadeUp').addClass('visible wi_visible');
   window.__WIREADY__ = true;
 };
 

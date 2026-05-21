@@ -287,6 +287,7 @@
 
 .ct_faq_a { 
   padding: 0 2.5vh 2.2vh 6vh; 
+  display: none;
 }
 
 .ct_faq_a p { 

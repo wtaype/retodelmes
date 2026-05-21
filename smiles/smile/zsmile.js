@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ZSMILE.JS - Controlador Centralizado y Reutilizable de Datos (Tours y Rankings)
+   ZSMILE.JS - Controlador Centralizado y Reutilizable de Datos
    ========================================================================== */
 
 import { db } from '../firebase.js';
@@ -45,6 +45,71 @@ export const cargarTours = async () => {
   }
 };
 
+// --- CARGAR TODOS LOS EMPLEADOS (cache-first) ---
+// soloParticipantes=true → where('participa','==','si')
+export const cargarTodosEmpleados = async (soloParticipantes = false) => {
+  const key = soloParticipantes ? 'todosEmpleadosSmile' : 'rrhhUsuarios';
+  const ttl = soloParticipantes ? 60 : 30;
+
+  const cached = getls(key);
+  if (cached) return cached;
+
+  const q = soloParticipantes
+    ? query(collection(db, 'smiles'), where('participa', '==', 'si'))
+    : collection(db, 'smiles');
+
+  const snap = await getDocs(q);
+  const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  data.sort((a, b) => (a.nombre || a.usuario || '').localeCompare(b.nombre || b.usuario || '', 'es'));
+  savels(key, data, ttl);
+  return data;
+};
+
+// --- CARGAR TOURS RAW (todos, incluyendo inactivos — para gestor/precios) ---
+export const cargarToursRaw = async () => {
+  const key = 'toursRawSmile';
+  const cached = getls(key);
+  if (cached) return cached;
+
+  const snap = await getDocs(collection(db, 'listatours'));
+  const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  data.sort((a, b) => (a.num || 999) - (b.num || 999));
+  savels(key, data, 2); // Cache corto: 2 horas
+  return data;
+};
+
+// --- INVALIDAR CACHE DE TOURS ---
+export const invalidateTourCache = () => {
+  removels('toursSmile', 'toursRawSmile');
+  console.log('🧹 Cache de tours invalidado');
+};
+
+// --- INVALIDAR CACHE DE EMPLEADOS ---
+export const invalidateEmpleadosCache = () => {
+  removels('rrhhUsuarios', 'todosEmpleadosSmile');
+  console.log('🧹 Cache de empleados invalidado');
+};
+
+// --- NORMALIZAR ROL ---
+export const normalizarRol = (rol) => {
+  const validos = ['smile', 'gestor', 'empresa', 'admin'];
+  const r = (rol || 'smile').toLowerCase();
+  return validos.includes(r) ? r : 'smile';
+};
+
+// --- NORMALIZAR ESTADO ---
+export const normalizarEstado = (estado) => {
+  const validos = ['activo', 'pendiente', 'suspendido', 'inactivo'];
+  const e = (estado || 'activo').toLowerCase();
+  return validos.includes(e) ? e : 'activo';
+};
+
+// --- VALIDAR NÚMERO MONETARIO ---
+export const esMoneda = (val) => {
+  const n = parseFloat(val);
+  return !isNaN(n) && n >= 0;
+};
+
 // --- CALCULAR Y OBTENER RANKING COMPLETO DEL MES ---
 export const obtenerRankingMes = async (mes) => {
   try {
@@ -80,7 +145,7 @@ export const obtenerRankingMes = async (mes) => {
       const v = d.data();
       const f = v.fechaTour;
       let a, m;
-      
+
       if (typeof f === 'string') {
         [a, m] = f.split('-').map(Number);
       } else if (f?.toDate) {
@@ -102,12 +167,8 @@ export const obtenerRankingMes = async (mes) => {
 
     // 4. Ordenar: 1ro Puntos (Desc), 2do Ventas (Desc), 3ro Nombre (Asc)
     empleados.sort((a, b) => {
-      if (b.totalPuntos !== a.totalPuntos) {
-        return b.totalPuntos - a.totalPuntos;
-      }
-      if (b.totalVentas !== a.totalVentas) {
-        return b.totalVentas - a.totalVentas;
-      }
+      if (b.totalPuntos !== a.totalPuntos) return b.totalPuntos - a.totalPuntos;
+      if (b.totalVentas !== a.totalVentas) return b.totalVentas - a.totalVentas;
       return a.nombre.localeCompare(b.nombre);
     });
 

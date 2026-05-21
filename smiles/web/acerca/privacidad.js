@@ -132,28 +132,6 @@ export const render = () => `
     </div>
   </section>
 
-  <!-- ══ CTA ══ -->
-  <section class="ac_cta_sec">
-    <div class="ac_cta_wrap wi_fadeUp">
-      <div class="ac_hero_orb ac_orb1"></div>
-      <div class="ac_hero_orb ac_orb2"></div>
-      <div class="ac_cta_glow"></div>
-      <div class="ac_cta_inner">
-        <span class="ac_cta_emoji">🔒</span>
-        <h2>¿Preguntas sobre el uso de datos?</h2>
-        <p>Escribe al administrador para absolver dudas sobre la seguridad de tus registros.</p>
-        <div class="ac_cta_btns">
-          <a href="/acerca/contacto" class="ac_btn_p ac_btn_lg tm_nav">
-            <i class="fas fa-envelope"></i> Contactar Administrador
-          </a>
-          <a href="/terminos" class="ac_btn_s ac_btn_lg tm_nav">
-            <i class="fas fa-file-contract"></i> Ver Términos de Uso
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
 </div></main>
 `;
 

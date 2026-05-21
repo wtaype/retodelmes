@@ -23,11 +23,10 @@ export const NAV = {
       { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Historial Ventas' },
       { href: '/ranking',   page: 'ranking',   ico: 'fa-trophy',           txt: 'Ranking'   },
       { href: '/tours',     page: 'tours',     ico: 'fa-route',            txt: 'Tours '     },
-      { href: '/avisar',    page: 'avisar',    ico: 'fa-bell',             txt: 'Avisar'    },
+      { href: '/chat', page: 'chat', ico: 'fa-comments', txt: 'Chat Grupal' },
       ...COMUN,
     ],
     nvright: [
-      { href: '/mensajes', page: 'mensajes', ico: 'fa-comments', txt: 'Mensajes' },
       { isPerfil: true }, { isSalir: true },
     ],
   },
@@ -38,12 +37,12 @@ export const NAV = {
       { href: '/ranking',   page: 'ranking',   ico: 'fa-trophy',           txt: 'Ranking'   },
       { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Tablero' },
       { href: '/tours',     page: 'tours',     ico: 'fa-route',            txt: 'Tours'     },
-      { href: '/avisar',    page: 'avisar',    ico: 'fa-bell',             txt: 'Avisar'    },
+      { href: '/chat', page: 'chat', ico: 'fa-comments', txt: 'Chat Grupal' },
       ...COMUN,
     ],
     nvright: [
       { href: '/rrhh',      page: 'rrhh',      ico: 'fa-users-gear',     txt: 'RRHH'      },
-      { href: '/mensajes', page: 'mensajes', ico: 'fa-comments', txt: 'Mensajes' },
+      { href: '/precios',   page: 'precios',   ico: 'fa-tags',           txt: 'Precios'   },
       { isPerfil: true }, { isSalir: true },
     ],
   },
@@ -107,8 +106,10 @@ export const RUTAS = [
   { path: '/historial', area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
   { path: '/tours',     area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
   { path: '/avisar',    area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
+  { path: '/chat',    area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
   // ── Tours App — gestor ────────────────────────────────────────────────
   { path: '/rrhh',      area: 'gestor/', roles: ['gestor','empresa','admin'] },
+  { path: '/precios',   area: 'gestor/', roles: ['gestor','empresa','admin'] },
 
   // ── Autenticadas (roles superiores) ───────────────────────────────────────────────
   { path: '/gestor',   area: 'gestor/',  roles: ['gestor','empresa','admin'] },

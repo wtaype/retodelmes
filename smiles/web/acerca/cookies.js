@@ -83,21 +83,6 @@ export const render = () => `
     </div>
   </section>
 
-  <section class="ac_cta_sec">
-    <div class="ac_cta_wrap wi_fadeUp">
-      <div class="ac_hero_orb ac_orb1"></div><div class="ac_hero_orb ac_orb2"></div>
-      <div class="ac_cta_glow"></div>
-      <div class="ac_cta_inner">
-        <span class="ac_cta_emoji">🔒</span>
-        <h2>¿Dudas de Seguridad?</h2>
-        <p>Escríbenos directamente o consulta la política de privacidad corporativa.</p>
-        <div class="ac_cta_btns">
-          <a href="mailto:soporte.interno@retodelmes.com" class="ac_btn_p ac_btn_lg"><i class="fas fa-envelope"></i> Contactar Soporte</a>
-          <a href="/privacidad" class="ac_btn_s ac_btn_lg tm_nav"><i class="fas fa-lock"></i> Ver Privacidad</a>
-        </div>
-      </div>
-    </div>
-  </section>
 </div></main>`;
 
 let _obs = null;

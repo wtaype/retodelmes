@@ -82,25 +82,6 @@ export const render = () => `
     </div>
   </section>
 
-  <section class="ac_cta_sec">
-    <div class="ac_cta_wrap wi_fadeUp">
-      <div class="ac_hero_orb ac_orb1"></div><div class="ac_hero_orb ac_orb2"></div>
-      <div class="ac_cta_glow"></div>
-      <div class="ac_cta_inner">
-        <span class="ac_cta_emoji">🔒</span>
-        <h2>¿Necesitas revisión manual?</h2>
-        <p>Los supervisores de Huacachina revisan los tickets diariamente para conciliar tus puntos.</p>
-        <div class="ac_cta_btns">
-          <a href="/acerca/contacto" class="ac_btn_p ac_btn_lg fb_canal">
-            <i class="fas fa-comment-dots"></i> Reportar Incidencia
-          </a>
-          <a href="mailto:soporte.interno@retodelmes.com" class="ac_btn_s ac_btn_lg">
-            <i class="fas fa-envelope"></i> Enviar Email Directo
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
 </div></main>`;
 
 let _obs = null;

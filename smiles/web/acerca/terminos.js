@@ -126,28 +126,6 @@ export const render = () => `
     </div>
   </section>
 
-  <!-- ══ CTA ══ -->
-  <section class="ac_cta_sec">
-    <div class="ac_cta_wrap wi_fadeUp">
-      <div class="ac_hero_orb ac_orb1"></div>
-      <div class="ac_hero_orb ac_orb2"></div>
-      <div class="ac_cta_glow"></div>
-      <div class="ac_cta_inner">
-        <span class="ac_cta_emoji">🔒</span>
-        <h2>¿Tienes dudas reglamentarias?</h2>
-        <p>Consulta con el departamento de administración para más aclaraciones.</p>
-        <div class="ac_cta_btns">
-          <a href="/acerca/contacto" class="ac_btn_p ac_btn_lg tm_nav">
-            <i class="fas fa-envelope"></i> Escribir a Soporte
-          </a>
-          <a href="/privacidad" class="ac_btn_s ac_btn_lg tm_nav">
-            <i class="fas fa-lock"></i> Ver Privacidad
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
 </div></main>
 `;
 
