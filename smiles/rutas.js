@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import { app, titulo, descri, keywii, linkweb } from './wii.js';
-import { Notificacion, wiPath, wiFade, setMeta } from './widev.js';
+import { Notificacion, wiPath, wiFade } from './widev.js';
 import * as inicioMod from './web/inicio.js';
 
 // ── NAV COMUN — rutas compartidas entre todos los roles ────────────────────────
@@ -57,28 +57,29 @@ export const NAV = {
 // ── RUTAS — Fuente única de verdad - roles: null = público · ['rol',...] = protegido · area = carpeta del módulo ───────────────────────────────────────────────
 export const RUTAS = [
   // ── Core público ───────────────────────────────────────────────
-  { path: '/inicio',   area: 'web/', meta: { title: `${app} — ${titulo}`, desc: `${descri}` }},
-  { path: '/login',    area: 'web/', meta: { title: `Iniciar Sesión — ${app}`, desc: `Accede a tu cuenta de ${app} para guardar tus notas, citas favoritas y progreso de lectura bíblica.` }},
-  { path: '/citas',    area: 'web/', meta: { title: `Citas Bíblicas — ${app}`, desc: 'Descubre miles de frases y versículos bíblicos agrupados por categorías para inspirar tu día.' }},
-  { path: '/biblia',   area: 'web/', meta: { title: `Audio Biblia en Quechua — ${app}`, desc: 'Escucha el Nuevo Testamento en quechua y otros idiomas. Reproductor ultrarrápido, 100% gratis.' }},
-  { path: '/emojis',   area: 'web/', meta: { title: `Emojis Espirituales — ${app}`, desc: 'Explora y comparte emojis con significado espiritual para expresar tu fe.' }},
-  { path: '/1lab',     area: 'web/', meta: { title: `1 Lab — ${app}`, desc: 'Laboratorio de ideas creativas y espirituales para expresar tu fe.' }},
+  { path: '/inicio',   area: 'web/' },
+  { path: '/login',    area: 'web/' },
+  { path: '/citas',    area: 'web/' },
+  { path: '/biblia',   area: 'web/' },
+  { path: '/emojis',   area: 'web/' },
+  { path: '/1lab',     area: 'web/' },
 
   // ── Submódulos públicos ───────────────────────────────────────────────
-  { path: '/blog',     area: 'web/blog/',    meta: { title: `Blog — ${app}`, desc: 'Artículos, testimonios y reflexiones espirituales para nutrir tu alma y fortalecer tu fe cada día.' }},
-  { path: '/post',     area: 'web/blog/'    }, // setMeta lo hace post.js desde Firestore
-  { path: '/chatwil',  area: 'web/chatwil/', meta: { title: `Ora por Mí — ${app}`, desc: 'Escribe tu petición de oración y recibe acompañamiento, esperanza y empatía al instante.' }},
+  { path: '/blog',     area: 'web/blog/' },
+  { path: '/post',     area: 'web/blog/'    }, 
+  { path: '/chatwil',  area: 'web/chatwil/' },
 
   // ── Acerca / Legales / Info ───────────────────────────────────────────────
-  { path: '/acerca',     area: 'web/acerca/', meta: { title: `Acerca de ${app}`, desc: `Conoce la historia, misión y valores de ${app} — una plataforma de fe creada con amor.` }},
-  { path: '/descubre',   area: 'web/acerca/', meta: { title: `Descubre ${app} — Explora todo lo que tenemos`, desc: `Explora todas las funciones de ${app}: Biblia, citas, oración, blog y mucho más.` }},
-  { path: '/terminos',   area: 'web/acerca/', meta: { title: `Términos y Condiciones — ${app}`, desc: `Lee los términos y condiciones de uso de la plataforma ${app}.` }},
-  { path: '/cookies',    area: 'web/acerca/', meta: { title: `Política de Cookies — ${app}`, desc: `Conoce cómo ${app} usa cookies y cómo puedes gestionarlas desde tu navegador.` }},
-  { path: '/privacidad', area: 'web/acerca/', meta: { title: `Privacidad — ${app}`, desc: `Tu privacidad es sagrada. Lee cómo ${app} protege y gestiona tu información personal.` }},
-  { path: '/feedback',   area: 'web/acerca/', meta: { title: `Feedback — ${app}`, desc: `Compártenos tu opinión, sugerencias o reportes. ${app} crece gracias a ti.` }},
-  { path: '/contacto',   area: 'web/acerca/', meta: { title: `Contáctanos — ${app}`, desc: `Escríbenos con tus dudas, ideas o peticiones. El equipo de ${app} te responde en 24h.` }},
+  { path: '/acerca',     area: 'web/acerca/' },
+  { path: '/descubre',   area: 'web/acerca/' },
+  { path: '/terminos',   area: 'web/acerca/' },
+  { path: '/cookies',    area: 'web/acerca/' },
+  { path: '/privacidad', area: 'web/acerca/' },
+  { path: '/feedback',   area: 'web/acerca/' },
+  { path: '/contacto',   area: 'web/acerca/' },
 
   // ── Autenticadas (smile) ───────────────────────────────────────────────
+  { path: '/agregar',  area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
   { path: '/smile',    area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
   { path: '/notas',    area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
   { path: '/perfil',   area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
@@ -106,9 +107,6 @@ const MODS = import.meta.glob([
   '!./web/blog/wiad.js'
 ]);
 const rutasMod = (area, page) => MODS[`./${area}${page}.js`];
-
-// ── META MAP — Index rápido ruta → meta ───────────────────────────────────────────────
-const META_MAP = Object.fromEntries(RUTAS.filter(r => r.meta).map(r => [r.path, r.meta]));
 
 // ── MOTOR ──────────────────────────────────────────────────────────────────────
 class WiRutas {
@@ -199,9 +197,6 @@ class WiRutas {
 
       window.scrollTo(0, 0);
 
-      // ── SEO dinámico ─────────────────────────────────────────────────────────────────
-      const rutaMeta = META_MAP[norm];
-      if (rutaMeta) setMeta({ ...rutaMeta, path: norm === `/${this.HOME}` ? '/' : norm });
 
       mod.init?.(slug);
 
