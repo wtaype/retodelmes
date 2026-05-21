@@ -14,23 +14,19 @@ service cloud.firestore {
     
     // ── COLECCIÓN SMILES (USUARIOS) ──────────────────────────────────────────
     match /smiles/{usuario} {
-      // GET público: permite verificar si un username ya existe al registrarse
-      allow get: if true;
+      // Lectura pública: permite validar usuarios, perfiles, emails, etc.
+      allow read: if true;
       
-      // LIST: Solo autenticados (RRHH, ranking, etc.)
-      allow list: if isAuth();
+      // Creación: Permitir creación, pero protegiendo que NUNCA puedan registrarse con rol 'admin'
+      allow create: if request.resource.data.rol != 'admin';
       
-      // CREATE: Solo el dueño, sin poder asignarse rol=admin ni estado=activo
-      allow create: if isAuth()
-                    && request.resource.data.uid == request.auth.uid
-                    && request.resource.data.rol != 'admin'
-                    && request.resource.data.estado == 'pendiente';
-                    
-      // UPDATE: El propio usuario o usuarios autenticados (RRHH)
-      allow update: if isAuth();
+      // Actualización: Permitir si están autenticados, protegiendo que no puedan cambiarse su rol a 'admin'
+      allow update: if request.auth != null && (
+        request.resource.data.rol != 'admin' || resource.data.rol == 'admin'
+      );
       
-      // DELETE: Bloqueado siempre
-      allow delete: if false;
+      // Eliminación: Solo si está autenticado y su UID coincide con el del documento
+      allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
     }
 
     // ── REGISTROS DE VENTAS ───────────────────────────────────────────────────

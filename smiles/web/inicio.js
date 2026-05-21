@@ -13,9 +13,7 @@ const roles = [
 
 const stats = [
   { valor:100,  label:'Compromiso',        sufijo:'%' },
-  { valor:18,   label:'Tours en Catálogo', sufijo:'' },
-  { valor:30,   label:'Comisión extra',    sufijo:'%' },
-  { valor:2,    label:'Líderes del Mes',   sufijo:'' },
+  { valor:10,   label:'Experiencia', sufijo:'/10' },
 ];
 
 const features = [
