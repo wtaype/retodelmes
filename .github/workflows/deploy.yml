@@ -20,13 +20,9 @@ jobs:
       DEST_DIR: ${{ github.ref_type == 'tag' && github.ref_name || '.' }}
       
     steps:
-      - name: 📥 Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11
+      - uses: actions/checkout@v4
 
-      - name: 📦 Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'pnpm'
@@ -34,7 +30,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: 🏗️ Build for GitHub Pages
-        run: pnpm run build -- --base=${{ env.BASE_URL }}
+        run: pnpm build --base=$BASE_URL
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
@@ -55,8 +51,8 @@ jobs:
       - name: 🔥 Build & Deploy to Firebase
         if: env.IS_TAG == 'false'
         run: |
-          npm run build -- --base=/
-          npm install -g firebase-tools@latest
+          pnpm build --base=/
+          pnpm add -g firebase-tools@latest
           firebase deploy --only hosting --project ${{ secrets.FIREBASE_PROJECT_ID }} --token "${{ secrets.FIREBASE_TOKEN }}"
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
