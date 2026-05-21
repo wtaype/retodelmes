@@ -26,6 +26,9 @@ jobs:
         with:
           version: 11 # o la versión de pnpm que uses
 
+      - name: Fix PNPM Path
+        run: echo "/home/runner/setup-pnpm/node_modules/.bin/bin" >> $GITHUB_PATH
+          
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
