@@ -42,41 +42,7 @@ const reglas = {
 const campo = (ico, tipo, id, place, ojo = false) =>
   `<div class="wilg_grupo"><i class="fas fa-${ico}"></i><input type="${tipo}" id="${id}" placeholder="${place}" autocomplete="off">${ojo ? '<i class="fas fa-eye wilg_ojo"></i>' : ''}</div>`;
 
-// ── ROL SELECTOR ─────────────────────────────────────────────────────────────
-// Retorna el bloque dinámico dependiendo del rol seleccionado
-const rolExtra = (rol = 'smile') => {
-  if (rol === 'smile') return `
-    <div class="wilg_rol_extra" id="rolExtra">
-      <div class="wilg_info_badge wilg_badge_smile">
-        <i class="fas fa-rocket"></i> Ideal para influencers, freelancers y marca personal.
-      </div>
-    </div>`;
 
-  if (rol === 'gestor') return `
-    <div class="wilg_rol_extra" id="rolExtra">
-      <div class="wilg_extra_label"><i class="fas fa-store"></i> Información del Negocio</div>
-      <div class="wilg_extra_field" id="extraField">
-        ${campo('store','text','regEmpresaNombre','Nombre de tu negocio o tienda')}
-      </div>
-      <div class="wilg_info_badge wilg_badge_gestor">
-        <i class="fas fa-bolt"></i> Activación inmediata. Herramientas de catálogo y WhatsApp.
-      </div>
-    </div>`;
-
-  if (rol === 'empresa') return `
-    <div class="wilg_rol_extra" id="rolExtra">
-      <div class="wilg_extra_label"><i class="fas fa-building"></i> Datos Corporativos</div>
-      <div class="wilg_extra_field wilg_extra_2col" id="extraField">
-        ${campo('id-card','text','regRuc','RUC (Opcional)')}
-        ${campo('building','text','regEmpresaNombre','Nombre de la empresa')}
-      </div>
-      <div class="wilg_info_badge wilg_badge_empresa">
-        <i class="fas fa-users-cog"></i> Cuenta para gestionar múltiples perfiles y equipos.
-      </div>
-    </div>`;
-
-  return '';
-};
 
 // ── TEMPLATES ────────────────────────────────────────────────────────────────
 const tpl = {
@@ -110,26 +76,7 @@ const tpl = {
       ${campo('lock','password','regPassword1','Confirmar contraseña',true)}
     </div>
 
-    <!-- ── SELECTOR DE ROL ─────────────────── -->
-    <div class="wilg_rol_selector">
-      <div class="wilg_rol_label"><i class="fas fa-id-badge"></i> Tipo de cuenta</div>
-      <div class="wilg_rol_tabs">
-        <button type="button" class="wilg_rol_tab active" data-rol="smile">
-          <i class="fas fa-user-circle"></i>
-          <span>Creador</span>
-        </button>
-        <button type="button" class="wilg_rol_tab" data-rol="gestor">
-          <i class="fas fa-store"></i>
-          <span>Negocio</span>
-        </button>
-        <button type="button" class="wilg_rol_tab" data-rol="empresa">
-          <i class="fas fa-building"></i>
-          <span>Empresa</span>
-        </button>
-      </div>
-    </div>
-    ${rolExtra('smile')}
-    <!-- ─────────────────────────────────────── -->
+
 
     <div class="wilg_check">
       <label><input type="checkbox" id="regTerminos">
@@ -155,17 +102,7 @@ const tpl = {
     ${campo('user','text','regUsuarioGoogle','Ingresa un usuario (ej: marcos)')}
     ${campo('lock','password','regPasswordGoogle','Crea una contraseña segura', true)}
     
-    <div class="wilg_rol_selector" style="margin-top: 1.5vh;">
-      <div class="wilg_rol_label"><i class="fas fa-id-badge"></i> ¿Para qué lo usarás?</div>
-      <div class="wilg_rol_tabs">
-        <button type="button" class="wilg_rol_tab active" data-rol="smile">
-          <i class="fas fa-user-circle"></i><span>Creador</span>
-        </button>
-        <button type="button" class="wilg_rol_tab" data-rol="gestor">
-          <i class="fas fa-store"></i><span>Negocio</span>
-        </button>
-      </div>
-    </div>
+
     <div class="wilg_check" style="margin-top: 1.5vh;">
       <label><input type="checkbox" id="regTerminosGoogle">
       <span>Acepto los <a href="/terminos" target="_blank">términos y condiciones</a></span></label>
@@ -355,7 +292,7 @@ $(document)
     const user = window.wiTempGoogleUser;
     if (!user) return Mensaje('Error de sesión con Google. Intenta de nuevo.', 'error');
 
-    const rolSeleccionado = $('.wilg_rol_tab.active').data('rol') || 'smile';
+    const rolSeleccionado = 'smile';
 
     $(this).data('busy', true);
     await accion(this, 'Finalizando', async () => {
@@ -395,31 +332,7 @@ $(document)
     $(this).data('busy', false);
   })
 
-  // ── SELECTOR DE ROL — switch dinámico ────────────────────────────
-  .on('click.wi', '.wilg_rol_tab', function () {
-    const rol = $(this).data('rol');
-    $('.wilg_rol_tab').removeClass('active');
-    $(this).addClass('active');
-    $('#rolExtra').replaceWith(rolExtra(rol));
-    // re-bind radio events dentro del nuevo HTML
-    _bindRolExtra();
-  })
 
-  // ── RADIO EXTRA — mostrar/ocultar campo condicional ──────────────
-  .on('change.wi', 'input[name="regExtra"]', function () {
-    const opt = $(this).val();
-    // Marcar la opción activa visualmente
-    $('.wilg_extra_opt').removeClass('active');
-    $(this).closest('.wilg_extra_opt').addClass('active');
-    const $f = $('#extraField');
-    // Mostrar campo solo si no es la opción por defecto (personal / crear)
-    if (opt === 'personal' || opt === 'crear') {
-      $f.addClass('hidden');
-    } else {
-      $f.removeClass('hidden');
-      $f.find('input:first').focus();
-    }
-  })
 
   // ── LOGIN ────────────────────────────────────────────────────────
   .on('click.wi', '#Login', async function () {
@@ -444,7 +357,7 @@ $(document)
   .on('click.wi', '#Registrar', async function () {
     if ($(this).data('busy')) return;
 
-    const rolSeleccionado = $('.wilg_rol_tab.active').data('rol') || 'smile';
+    const rolSeleccionado = 'smile';
 
     const chk = [
       [!$('#regTerminos').is(':checked'), '#regTerminos', 'Acepta los términos'],
@@ -538,13 +451,7 @@ $(document)
     }, 0);
   });
 
-// ── RE-BIND radio extra (llamado al cambiar rol) ──────────────────────────────
-function _bindRolExtra() {
-  // Los eventos de radio ya están delegados arriba, solo necesitamos
-  // setear el estado inicial del campo oculto
-  const opt = $('input[name="regExtra"]:checked').val();
-  if (opt === 'personal' || opt === 'crear') $('#extraField').addClass('hidden');
-}
+
 
 // ── AUTH MODAL ───────────────────────────────────────────────────────────────
 export const abrirLogin = (tipo = 'login') => {
