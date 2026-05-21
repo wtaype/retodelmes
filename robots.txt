@@ -1,4 +1,2 @@
 User-agent: *
-Allow: /
-
-Sitemap: https://wtaype.github.io/notaswii/sitemap.xml
+Disallow: /
