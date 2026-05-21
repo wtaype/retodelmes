@@ -28,16 +28,16 @@ function footer(){
           <a href="/privacidad" class="foo_link nv_item" data-page="privacidad"><i class="fas fa-lock"></i> Privacidad</a>
           <a href="/feedback"   class="foo_link nv_item" data-page="feedback"  ><i class="fas fa-comment-dots"></i> Feedback</a>
           <a href="/contacto"   class="foo_link nv_item" data-page="contacto"  ><i class="fas fa-envelope"></i> Contacto</a>
-          ${REDES.map(r => `<a href="${r.url}" class="redsscc" target="_blank" rel="noopener noreferrer" title="${r.tit}" style="--rb:${r.bg}"><i class="${r.ico}"></i></a>`).join('')}
-        </div>
-      </div>
-      <div class="foo_right">
-        <span>Creado con <i class="fas fa-heart" style="color:var(--mco);"></i> by <a href="${linkme}" target="_blank"><strong>${by}</strong></a> ${lanzamiento} - ${ahora.getFullYear()}</span>
-      </div>
-    </div>
-  </footer>
-  `;
+          </div>
+          </div>
+          <div class="foo_right">
+          <span>Creado con <i class="fas fa-heart" style="color:var(--mco);"></i> by <a href="${linkme}" target="_blank"><strong>${by}</strong></a> ${lanzamiento} - ${ahora.getFullYear()}</span>
+          </div>
+          </div>
+          </footer>
+          `;
 }; 
+// ${REDES.map(r => `<a href="${r.url}" class="redsscc" target="_blank" rel="noopener noreferrer" title="${r.tit}" style="--rb:${r.bg}"><i class="${r.ico}"></i></a>`).join('')}
 if (!$('.foo').length) $('body').append(footer());
 
 if (!$('#wi_bg_style').length) $("head").append(`<style id="wi_bg_style">:root{--bgim:url("${import.meta.env.BASE_URL}wpuntos.svg")}body{background: var(--bgim), var(--bg)}</style>`);

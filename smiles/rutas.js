@@ -13,8 +13,8 @@ export const NAV = {
   todos: {
     nvleft:  [{ href: '/', page: 'inicio', ico: 'fa-house', txt: 'Bienvenido' }, ...COMUN],
     nvright: [
-      { isBtn: true, cls: 'bt_auth registrar', ico: 'fa-user-plus', txt: 'Registrarme' },
       { isBtn: true, cls: 'bt_auth login',     ico: 'fa-sign-in-alt', txt: 'Iniciar sessión'  },
+      { isBtn: true, cls: 'bt_auth registrar', ico: 'fa-user-plus', txt: 'Registrarme' },
     ],
   },
   smile: {
