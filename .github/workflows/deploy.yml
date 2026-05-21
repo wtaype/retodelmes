@@ -20,9 +20,13 @@ jobs:
       DEST_DIR: ${{ github.ref_type == 'tag' && github.ref_name || '.' }}
       
     steps:
-      - uses: actions/checkout@v4
+      - name: 📥 Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
 
-      - uses: actions/setup-node@v4
+      - name: 📦 Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'pnpm'
@@ -30,7 +34,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: 🏗️ Build for GitHub Pages
-        run: npm run build -- --base=$BASE_URL
+        run: pnpm run build -- --base=${{ env.BASE_URL }}
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
