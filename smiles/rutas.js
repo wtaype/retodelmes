@@ -32,7 +32,7 @@ export const NAV = {
   },
   gestor: {
     nvleft: [
-      { href: '/smile',     page: 'smile',     ico: 'fa-house',           txt: 'Inicio'    },
+      { href: '/gestor',     page: 'gestor',     ico: 'fa-house',           txt: 'Dashboard'    },
       { href: '/registrar', page: 'registrar', ico: 'fa-plus-circle',      txt: 'Registrar Ventas' },
       { href: '/ranking',   page: 'ranking',   ico: 'fa-trophy',           txt: 'Ranking'   },
       { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Tablero' },
@@ -46,21 +46,19 @@ export const NAV = {
       { isPerfil: true }, { isSalir: true },
     ],
   },
-  empresa: {
-    nvleft:  [{ href: '/empresa', page: 'empresa', ico: 'fa-building', txt: 'Panel' }],
-    nvright: [
-      { href: '/mensajes', page: 'mensajes', ico: 'fa-comments', txt: 'Mensajes' },
-      { isPerfil: true }, { isSalir: true },
-    ],
-  },
   admin: {
     nvleft: [
       { href: '/admin',    page: 'admin',    ico: 'fa-globe', txt: 'Plataforma' },
       { href: '/usuarios', page: 'usuarios', ico: 'fa-users', txt: 'Usuarios'   },
+      { href: '/permisos', page: 'permisos', ico: 'fa-lock',  txt: 'Permisos'   },
+      { href: '/sistema',  page: 'sistema',  ico: 'fa-cogs',  txt: 'Sistema'    },
+      { href: '/chat', page: 'chat', ico: 'fa-comments', txt: 'Chat Grupal' },
     ],
     nvright: [
-      { href: '/mifcm', page: 'mifcm', ico: 'fa-bell', txt: 'Mi FCM' },
-      { href: '/mensajes', page: 'mensajes', ico: 'fa-comments', txt: 'Mensajes' },
+      { href: '/mifcm',    page: 'mifcm',    ico: 'fa-bell',  txt: 'Mi FCM'     },
+      { href: '/word',      page: 'word',      ico: 'fa-rocket', txt: 'Planificar'     },
+      { href: '/nuevo',    page: 'nuevo',    ico: 'fa-plus',        txt: 'Post' },
+      { href: '/notas', page: 'notas', ico: 'fa-comments',    txt: 'Book'   },
       { isPerfil: true }, { isSalir: true },
     ],
   },
@@ -91,37 +89,38 @@ export const RUTAS = [
   { path: '/contacto',   area: 'web/acerca/' },
 
   // ── Autenticadas (smile) ───────────────────────────────────────────────
-  { path: '/agregar',  area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/smile',    area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/notas',    area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/perfil',   area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/mensajes', area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/word',     area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/musica',   area: 'web/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/nuevo',    area: 'web/blog/', roles: ['smile','gestor','empresa','admin'] },
+  { path: '/agregar',  area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/smile',    area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/notas',    area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/perfil',   area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/mensajes', area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/word',     area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/musica',   area: 'web/', roles: ['smile','gestor','admin'] },
+  { path: '/nuevo',    area: 'web/blog/', roles: ['smile','gestor','admin'] },
 
   // ── Tours App — smile ────────────────────────────────────────────────
-  { path: '/registrar', area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/ranking',   area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/historial', area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/tours',     area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/avisar',    area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
-  { path: '/chat',    area: 'smile/', roles: ['smile','gestor','empresa','admin'] },
+  { path: '/registrar', area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/ranking',   area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/historial', area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/tours',     area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/avisar',    area: 'smile/', roles: ['smile','gestor','admin'] },
+  { path: '/chat',      area: 'smile/', roles: ['smile','gestor','admin'] },
   // ── Tours App — gestor ────────────────────────────────────────────────
-  { path: '/rrhh',      area: 'gestor/', roles: ['gestor','empresa','admin'] },
-  { path: '/precios',   area: 'gestor/', roles: ['gestor','empresa','admin'] },
+  { path: '/rrhh',      area: 'gestor/', roles: ['gestor','admin'] },
+  { path: '/precios',   area: 'gestor/', roles: ['gestor','admin'] },
 
   // ── Autenticadas (roles superiores) ───────────────────────────────────────────────
-  { path: '/gestor',   area: 'gestor/',  roles: ['gestor','empresa','admin'] },
-  { path: '/empresa',  area: 'empresa/', roles: ['empresa','admin']          },
-  { path: '/admin',    area: 'admin/',   roles: ['admin']                    },
-  { path: '/usuarios', area: 'admin/',   roles: ['admin']                    },
-  { path: '/mifcm',    area: 'admin/',   roles: ['admin']                    },
+  { path: '/gestor',   area: 'gestor/',  roles: ['gestor','admin'] },
+  { path: '/admin',    area: 'admin/',   roles: ['admin']          },
+  { path: '/usuarios', area: 'admin/',   roles: ['admin']          },
+  { path: '/permisos', area: 'admin/',   roles: ['admin']          },
+  { path: '/sistema',  area: 'admin/',   roles: ['admin']          },
+  { path: '/mifcm',    area: 'admin/',   roles: ['admin']          },
 ];
 
 // ── GLOB — Vite mapea todos los módulos en build time ───────────────────────────────────────────────
 const MODS = import.meta.glob([
-  './{web,smile,gestor,empresa,admin}/**/*.js',
+  './{web,smile,gestor,admin}/**/*.js',
   '!./web/inicio.js',
   '!./web/chatwil/head/**/*.js',
   '!./web/chatwil/memoria.js',

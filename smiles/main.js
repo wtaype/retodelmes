@@ -11,7 +11,6 @@ rutas.register('/', (isPre = false) => {
   const map = {
     smile:   { r: '/smile',   m: () => import('./smile/smile.js')     },
     gestor:  { r: '/gestor',  m: () => import('./gestor/gestor.js')   },
-    empresa: { r: '/empresa', m: () => import('./empresa/empresa.js') },
     admin:   { r: '/admin',   m: () => import('./admin/admin.js')     }
   };
   const t = map[u.rol] || map.smile;
