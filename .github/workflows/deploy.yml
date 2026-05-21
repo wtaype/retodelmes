@@ -27,7 +27,7 @@ jobs:
           node-version: '22'
           cache: 'pnpm'
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: 🏗️ Build for GitHub Pages
         run: npm run build -- --base=$BASE_URL
