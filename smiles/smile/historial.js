@@ -2,7 +2,7 @@ import './historial.css';
 import $ from 'jquery';
 import { db } from '../firebase.js';
 import { collection, getDocs, doc, deleteDoc, query, where } from 'firebase/firestore';
-import { wiAuth, Notificacion, Capi, getls, savels } from '../widev.js';
+import { wiAuth, Notificacion, Capi, getls, savels, removels, abrirModal, cerrarModal, wiSpin } from '../widev.js';
 import { rutas } from '../rutas.js';
 import { getMesActual, invalidateRankingCaches } from './zsmile.js';
 
@@ -14,6 +14,7 @@ let filtroHoy = false;
 let pagActual = 1;
 let limitePorPagina = 9;
 let busquedaFiltro = '';
+let idVentaAEliminar = null;
 
 export const render = () => {
   const mesesOptions = selectMes();
@@ -28,6 +29,10 @@ export const render = () => {
         </div>
 
         <div class="smw_hist_controls">
+          <!-- Botón de actualización manual -->
+          <button class="smw_refresh_btn" id="btnRefreshHistorial" title="Actualizar Historial" style="margin-right: 1.5vh;">
+            <i class="fas fa-sync-alt"></i>
+          </button>
           <!-- Selector de Mes con flechas -->
           <div class="smw_month_selector_wrap">
             <button class="smw_month_nav_btn" id="btnHistMesAnt" title="Mes Anterior">
@@ -97,7 +102,6 @@ export const render = () => {
             <i class="fas fa-table"></i>
             Registro de Ventas
           </div>
-          <span id="smwHistTotal">— registros</span>
         </div>
 
         <div class="smw_table_responsive">
@@ -127,6 +131,42 @@ export const render = () => {
         <!-- Paginación -->
         <div class="smw_pagination_container" id="histPagination"></div>
       </section>
+
+      <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
+      <div id="modalConfirmarEliminacion" class="wiModal">
+        <div class="modalBody smw_del_modal_body">
+          <button class="modalX" id="btnCancelDelX">&times;</button>
+          <div class="smw_del_modal_icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h3>¿Eliminar venta?</h3>
+          <p class="smw_del_modal_desc">Esta acción no se puede deshacer. Por favor confirma los detalles del registro:</p>
+          
+          <div class="smw_del_modal_details">
+            <div class="smw_del_detail_row">
+              <span class="smw_del_detail_label">Cliente:</span>
+              <span class="smw_del_detail_val" id="txtDelCliente">...</span>
+            </div>
+            <div class="smw_del_detail_row">
+              <span class="smw_del_detail_label">Tour:</span>
+              <span class="smw_del_detail_val" id="txtDelTour">...</span>
+            </div>
+            <div class="smw_del_detail_row">
+              <span class="smw_del_detail_label">Importe:</span>
+              <span class="smw_del_detail_val" id="txtDelImporte">...</span>
+            </div>
+          </div>
+
+          <div class="smw_del_modal_acts">
+            <button class="smw_del_btn smw_del_btn_cancel" id="btnCancelDelVenta">
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button class="smw_del_btn smw_del_btn_confirm" id="btnConfirmDelVenta">
+              <i class="fas fa-trash-alt"></i> Confirmar
+            </button>
+          </div>
+        </div>
+      </div>
 
     </div>
   `;
@@ -164,6 +204,11 @@ export const cleanup = () => {
 
 // ── EVENTOS ──────────────────────────────────────────────────────────────────
 function _bindEvents(user) {
+  $(document).off('click.historial_events', '#btnRefreshHistorial')
+    .on('click.historial_events', '#btnRefreshHistorial', async function() {
+      await _cargarTodo(true);
+    });
+
   $(document).off('change.historial_events', '#selHistorialMes')
     .on('change.historial_events', '#selHistorialMes', async function() {
       mesSeleccionado = $(this).val();
@@ -227,45 +272,78 @@ function _bindEvents(user) {
   window.verDetalleVenta = (id) => {
     const venta = todasLasVentas.find(v => v.id === id);
     if (!venta) return Notificacion('Venta no encontrada', 'error');
-    window.editarVenta = { venta, soloVista: true };
+    const datos = { venta, soloVista: true };
+    window.editarVenta = datos;
+    savels('editarVentaTemp', datos, 10);
     rutas.navigate('/registrar');
   };
 
   window.editarVentaAccion = (id) => {
     const venta = todasLasVentas.find(v => v.id === id);
     if (!venta) return Notificacion('Venta no encontrada', 'error');
-    window.editarVenta = { venta, soloVista: false };
+    const datos = { venta, soloVista: false };
+    window.editarVenta = datos;
+    savels('editarVentaTemp', datos, 10);
     rutas.navigate('/registrar');
   };
 
-  window.eliminarVentaAccion = async (id) => {
+  $(document).off('click.historial_events', '#btnCancelDelVenta, #btnCancelDelX')
+    .on('click.historial_events', '#btnCancelDelVenta, #btnCancelDelX', function() {
+      cerrarModal('modalConfirmarEliminacion');
+      idVentaAEliminar = null;
+    });
+
+  $(document).off('click.historial_events', '#btnConfirmDelVenta')
+    .on('click.historial_events', '#btnConfirmDelVenta', async function() {
+      if (!idVentaAEliminar) return;
+      const venta = todasLasVentas.find(v => v.id === idVentaAEliminar);
+      if (!venta) {
+        Notificacion('Venta no encontrada', 'error');
+        cerrarModal('modalConfirmarEliminacion');
+        return;
+      }
+
+      const $confirmBtn = $(this);
+      wiSpin($confirmBtn, true, 'Eliminando...');
+
+      try {
+        await deleteDoc(doc(db, 'registrosdb', idVentaAEliminar));
+
+        const f = venta.fechaTour;
+        let mesVenta = mesSeleccionado;
+        if (typeof f === 'string') {
+          const [a, m] = f.split('-');
+          mesVenta = `${a}-${m}`;
+        } else if (f?.toDate) {
+          const fd = f.toDate();
+          mesVenta = `${fd.getFullYear()}-${String(fd.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        invalidateRankingCaches(venta.vendedor, mesVenta);
+        Notificacion('Venta eliminada exitosamente', 'success');
+        cerrarModal('modalConfirmarEliminacion');
+        idVentaAEliminar = null;
+        await _cargarTodo();
+      } catch (e) {
+        console.error('Error al eliminar:', e);
+        Notificacion('Error al eliminar el registro.', 'error');
+      } finally {
+        wiSpin($confirmBtn, false, 'Confirmar');
+      }
+    });
+
+  window.eliminarVentaAccion = (id) => {
     const venta = todasLasVentas.find(v => v.id === id);
     if (!venta) return Notificacion('Venta no encontrada', 'error');
 
-    if (!confirm(`¿Eliminar venta de "${venta.nombreCliente}"?\n\nEsta acción NO se puede deshacer.`)) return;
-    if (!confirm(`⚠️ CONFIRMACIÓN FINAL\n\nSe eliminará:\n• ${venta.nombreCliente}\n• ${venta.tipoTour}\n• S/ ${venta.importeTotal || 0}\n\n¿CONFIRMAS?`)) return;
+    idVentaAEliminar = id;
 
-    try {
-      Notificacion('Eliminando registro...', 'info');
-      await deleteDoc(doc(db, 'registrosdb', id));
+    // Rellenar detalles en el modal
+    $('#txtDelCliente').text((venta.nombreCliente || '').toUpperCase());
+    $('#txtDelTour').text(venta.tipoTour || 'Sin tipo');
+    $('#txtDelImporte').text(`S/ ${parseFloat(venta.importeTotal || 0).toFixed(2)}`);
 
-      const f = venta.fechaTour;
-      let mesVenta = mesSeleccionado;
-      if (typeof f === 'string') {
-        const [a, m] = f.split('-');
-        mesVenta = `${a}-${m}`;
-      } else if (f?.toDate) {
-        const fd = f.toDate();
-        mesVenta = `${fd.getFullYear()}-${String(fd.getMonth() + 1).padStart(2, '0')}`;
-      }
-
-      invalidateRankingCaches(venta.vendedor, mesVenta);
-      Notificacion('Venta eliminada exitosamente', 'success');
-      await _cargarTodo();
-    } catch (e) {
-      console.error('Error al eliminar:', e);
-      Notificacion('Error al eliminar el registro.', 'error');
-    }
+    abrirModal('modalConfirmarEliminacion');
   };
 }
 
@@ -276,10 +354,17 @@ function _actualizarDisplayMes() {
 }
 
 // ── CARGAR TODO (cache-first) ─────────────────────────────────────────────────
-async function _cargarTodo() {
+async function _cargarTodo(forceRefresh = false) {
   const $header = $('.smw_hist_header');
+  const $btnRefresh = $('#btnRefreshHistorial');
   $header.addClass('smw_loading');
+  $btnRefresh.addClass('spinning');
   try {
+    if (forceRefresh) {
+      removels('todosEmpleadosSmile');
+      removels('todasVentasSmile');
+    }
+
     const cachedEmpleados = getls('todosEmpleadosSmile');
     const cachedVentas    = getls('todasVentasSmile');
 
@@ -324,6 +409,7 @@ async function _cargarTodo() {
     $('#histSalesTableBody').html('<tr><td colspan="12" class="smw_error_cell"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos</td></tr>');
   } finally {
     $header.removeClass('smw_loading');
+    $btnRefresh.removeClass('spinning');
   }
 }
 
@@ -390,7 +476,6 @@ function _renderizarTabla() {
   const ventasPag  = ventas.slice(inicio, inicio + limitePorPagina);
 
   // Actualizar counter
-  $('#smwHistTotal').text(`Registro${totalRegs !== 1 ? 's' : ''} = ${totalRegs}`);
 
   const currentUser = wiAuth.user;
 
@@ -530,7 +615,7 @@ function _formatearFecha(fecha) {
 function _obtenerEstado(estado, pagoOperadorSiNo) {
   const esPropio = estado === 'pagado' || estado === 'pagado2';
   if (!esPropio && pagoOperadorSiNo === 'no') {
-    return { cls: 'pending', txt: 'D. OPER' };
+    return { cls: 'pending', txt: 'DEUDA' };
   }
   const map = {
     'pagado':  { cls: 'paid',    txt: 'PAGADO' },

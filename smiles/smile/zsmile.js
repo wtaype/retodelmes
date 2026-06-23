@@ -192,6 +192,7 @@ export const invalidateRankingCaches = (vendedor, mes) => {
     `empleadosPuntos_${mes}`,
     `resumenMes_${mes}`,
     `kpiSmile_${vendedor}_${mes}`,
-    `ventasSmile_${vendedor}_${mes}`
+    `ventasSmile_${vendedor}_${mes}`,
+    `gestor_data_${mes}`
   );
 };

@@ -2,7 +2,7 @@ import './gestor.css';
 import $ from 'jquery';
 import { db } from '../firebase.js';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { wiAuth, getls, savels, Saludar, getNombre } from '../widev.js';
+import { wiAuth, getls, savels, removels, Saludar, getNombre } from '../widev.js';
 import { rutas } from '../rutas.js';
 import Chart from 'chart.js/auto';
 
@@ -27,8 +27,13 @@ export const render = () => `
             <p><i class="fas fa-crown"></i> Dirección General — Huacachina</p>
           </div>
         </div>
-        <div class="smw_g_date">
-          <i class="fas fa-calendar-alt"></i> <span id="smwGestorMesLabel">Mes Actual</span>
+        <div class="smw_g_date_wrap">
+          <button class="smw_refresh_btn" id="btnRefreshGestor" title="Actualizar Dashboard">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+          <div class="smw_g_date">
+            <i class="fas fa-calendar-alt"></i> <span id="smwGestorMesLabel">Mes Actual</span>
+          </div>
         </div>
       </div>
     </header>
@@ -148,58 +153,73 @@ export const init = async () => {
   $('.wi_fadeUp').addClass('visible wi_visible');
   
   _cargarDatosGerencia(mesActual);
+  _bindEvents(mesActual);
 
   window.__WIREADY__ = true;
 };
 
 export const cleanup = () => {
+  $(document).off('.gestor_events');
   if (chartInstancia) {
     chartInstancia.destroy();
     chartInstancia = null;
   }
 };
 
-async function _cargarDatosGerencia(mes) {
+function _bindEvents(mesActual) {
+  $(document).off('click.gestor_events', '#btnRefreshGestor')
+    .on('click.gestor_events', '#btnRefreshGestor', async function() {
+      await _cargarDatosGerencia(mesActual, true);
+    });
+}
+
+async function _cargarDatosGerencia(mes, forceRefresh = false) {
+  const cacheKey = `gestor_data_${mes}`;
+  const $btnRefresh = $('#btnRefreshGestor');
+
+  if (forceRefresh) {
+    $btnRefresh.addClass('spinning');
+    removels(cacheKey);
+  }
+
   try {
-    const cacheKey = `gestor_data_${mes}`;
-    const cached = getls(cacheKey);
+    let cached = getls(cacheKey);
 
-    let ventas = [];
-    let empleados = [];
-
-    if (cached) {
-      ventas = cached.ventas;
-      empleados = cached.empleados;
-    } else {
-      const [snapVentas, snapEmp] = await Promise.all([
-        getDocs(collection(db, 'registrosdb')),
-        getDocs(query(collection(db, 'smiles'), where('participa', '==', 'si')))
-      ]);
-
-      const [yr, mm] = mes.split('-').map(Number);
-      
-      snapVentas.forEach(d => {
-        const v = d.data();
-        const f = v.fechaTour;
-        let a, m;
-        if (typeof f === 'string') { [a, m] = f.split('-').map(Number); }
-        else if (f?.toDate) { const fd = f.toDate(); a = fd.getFullYear(); m = fd.getMonth()+1; }
-        else return;
-
-        if (a === yr && m === mm) {
-          ventas.push(v);
-        }
-      });
-
-      empleados = snapEmp.docs.map(d => d.data());
-      
-      savels(cacheKey, { ventas, empleados }, 5); // Cache 5 mins
+    if (cached && !forceRefresh) {
+      _procesarEImprimir(cached.ventas, cached.empleados);
     }
+
+    const [snapVentas, snapEmp] = await Promise.all([
+      getDocs(collection(db, 'registrosdb')),
+      getDocs(query(collection(db, 'smiles'), where('participa', '==', 'si')))
+    ]);
+
+    const [yr, mm] = mes.split('-').map(Number);
+    let ventas = [];
+
+    snapVentas.forEach(d => {
+      const v = { id: d.id, ...d.data() };
+      const f = v.fechaTour;
+      let a, m;
+      if (typeof f === 'string') { [a, m] = f.split('-').map(Number); }
+      else if (f?.toDate) { const fd = f.toDate(); a = fd.getFullYear(); m = fd.getMonth()+1; }
+      else return;
+
+      if (a === yr && m === mm) {
+        ventas.push(v);
+      }
+    });
+
+    const empleados = snapEmp.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    savels(cacheKey, { ventas, empleados }, 5); // Cache 5 mins
 
     _procesarEImprimir(ventas, empleados);
 
   } catch (error) {
     console.error("Error cargando dashboard:", error);
+  } finally {
+    $btnRefresh.removeClass('spinning');
   }
 }
 

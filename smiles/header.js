@@ -7,17 +7,22 @@ import { Mensaje, wiAuth } from './widev.js';
 const LOGO = `<a href="/"><i class="fa-solid ${icon}"></i> ${app}</a>`;
 
 // ── MOTOR DE RENDERIZADO ──────────────────────────────────────────────────────
-const buildNav = (items, wi) => items.map(i => {
+const buildNav = (items, wi, pageAct) => items.map(i => {
   if (i.isBtn) return `<button class="${i.cls}"><i class="fas ${i.ico}"></i><span>${i.txt}</span></button>`;
-  if (i.isPerfil) return `<a href="/perfil" class="nv_item" data-page="perfil"><img src="${wi?.avatar || `${import.meta.env.BASE_URL}smile.avif`}" alt="${wi?.nombre}"><span>${wi?.nombre}</span></a>`;
+  if (i.isPerfil) {
+    const isAct = pageAct === 'perfil';
+    return `<a href="/perfil" class="nv_item ${isAct ? 'active' : ''}" data-page="perfil"><img src="${wi?.avatar || `${import.meta.env.BASE_URL}smile.avif`}" alt="${wi?.nombre}"><span>${wi?.nombre}</span></a>`;
+  }
   if (i.isSalir) return `<button class="nv_item bt_salir" data-page="inicio"><i class="fa-solid fa-sign-out-alt"></i> <span>Salir</span></button>`;
-  return `<a href="${i.href}" class="nv_item" data-page="${i.page}"><i class="fas ${i.ico}"></i> <span>${i.txt}</span></a>`;
+  const isAct = pageAct === i.page;
+  return `<a href="${i.href}" class="nv_item ${isAct ? 'active' : ''}" data-page="${i.page}"><i class="fas ${i.ico}"></i> <span>${i.txt}</span></a>`;
 }).join('');
 
 const renderHeader = (wi, ruta = window.location.pathname) => {
   let cfg = NAV[wi?.rol] ?? NAV.todos;
   if (ruta === '/verificar') cfg = NAV.verificar;
-  const left = buildNav(cfg.nvleft, wi), right = buildNav(cfg.nvright, wi);
+  const pageAct = (ruta === '/' || ruta === '/inicio') ? 'inicio' : ruta.slice(1);
+  const left = buildNav(cfg.nvleft, wi, pageAct), right = buildNav(cfg.nvright, wi, pageAct);
   
   const wilogo = document.querySelector('.wilogo');
   if (wilogo) wilogo.innerHTML = LOGO;

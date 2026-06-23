@@ -10,7 +10,6 @@ body.rrhh_no_scroll {
 
 /* ── Container ──────────────────────────────────────────── */
 .rrhh_wrap {
-  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1.25rem 5rem;
   animation: rrhh_fadeIn 0.35s ease;

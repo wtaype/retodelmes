@@ -16,7 +16,7 @@ export const render = () => `
         <p class="smw_tours_subtitle">Información oficial de tours, precios y políticas del reto</p>
       </div>
 
-      <a href="/smile" class="smw_back_btn nv_item" data-page="smile">
+      <a href="/smile" class="smw_tours_back_btn nv_item" data-page="smile">
         <i class="fas fa-arrow-left"></i> Panel de Control
       </a>
     </header>
@@ -44,8 +44,20 @@ export const render = () => `
           <span class="smw_badge_info"><i class="fas fa-info-circle"></i> Comisión base incluida</span>
         </div>
         
-        <div class="smw_tours_grid" id="preciosCatalogGrid">
-          ${_generarSkeletonsTours(4)}
+        <div class="smw_table_responsive">
+          <table class="smw_tours_table">
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">N°</th>
+                <th><i class="fas fa-route"></i> Tour / Servicio</th>
+                <th><i class="fas fa-dollar-sign"></i> Precio Sugerido</th>
+                <th><i class="fas fa-hand-holding-usd"></i> Comisión Base</th>
+              </tr>
+            </thead>
+            <tbody id="preciosTableBody">
+              ${_generarSkeletonsTablaTours(4)}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -56,8 +68,20 @@ export const render = () => `
           <span class="smw_badge_info"><i class="fas fa-fire"></i> ¡Suma más para ganar!</span>
         </div>
 
-        <div class="smw_tours_grid" id="puntosCatalogGrid">
-          <!-- Dinámico -->
+        <div class="smw_table_responsive">
+          <table class="smw_tours_table">
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">N°</th>
+                <th><i class="fas fa-route"></i> Tour / Servicio</th>
+                <th><i class="fas fa-star"></i> Puntos por PAX</th>
+                <th><i class="fas fa-bolt"></i> Multiplicador</th>
+              </tr>
+            </thead>
+            <tbody id="puntosTableBody">
+              ${_generarSkeletonsTablaTours(4)}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -70,21 +94,32 @@ export const render = () => `
 
         <div class="smw_rules_list">
           ${[
-            { title: 'Tasa Turística', desc: 'Los precios que se muestran en el catálogo NO incluyen la tasa turística regulada.', type: 'normal' },
-            { title: 'Vehículos Propios', desc: 'Buggie/Bodegas y City Tour: Se acumula mayor puntaje con buggies propiedad de Sonia o vehículos autorizados de la empresa.', type: 'normal' },
-            { title: 'Reclamos y Quejas', desc: '⚠️ Reclamos fundados de clientes ANULAN los puntos del tour. Comentario positivo certificado = +10 pts. Comentario negativo = -10 pts.', type: 'alert' },
-            { title: 'Anulación de Servicios', desc: 'Cualquier devolución o anulación de tour cancela por completo los puntos y comisiones del mismo.', type: 'normal' },
-            { title: 'Registro Oportuno', desc: 'Los tours deben ser registrados en el sistema el MISMO DÍA en que se realiza la venta para validar los puntos.', type: 'alert' },
-            { title: 'Fidelización en Redes', desc: 'Etiqueta en Instagram/Tiktok de la marca = +5 pts. Comentario en TripAdvisor o Google Maps = +5 pts (Máximo 10 puntos extra por cliente).', type: 'bonus' }
-          ].map((r, i) => `
-            <div class="smw_rule_card ${r.type}">
-              <div class="smw_rule_index">${i + 1}</div>
-              <div class="smw_rule_body">
-                <h4>${r.title}</h4>
-                <p>${r.desc}</p>
+            { title: 'Tasa Turística', desc: 'Los precios que se muestran en el catálogo NO incluyen la tasa turística regulada.', type: 'warning' },
+            { title: 'Vehículos Propios', desc: 'Buggie/Bodegas y City Tour: Se acumula mayor puntaje con buggies propiedad de Sonia o vehículos autorizados de la empresa.', type: 'success' },
+            { title: 'Reclamos y Quejas', desc: 'Reclamos fundados de clientes ANULAN los puntos del tour. Comentario positivo certificado = +10 pts. Comentario negativo = -10 pts.', type: 'danger' },
+            { title: 'Anulación de Servicios', desc: 'Cualquier devolución o anulación de tour cancela por completo los puntos y comisiones del mismo.', type: 'danger' },
+            { title: 'Registro Oportuno', desc: 'Los tours deben ser registrados en el sistema el MISMO DÍA en que se realiza la venta para validar los puntos.', type: 'warning' },
+            { title: 'Fidelización en Redes', desc: 'Etiqueta en Instagram/Tiktok de la marca = +5 pts. Comentario en TripAdvisor o Google Maps = +5 pts (Máximo 10 puntos extra por cliente).', type: 'success' }
+          ].map((r, i) => {
+            const icons = {
+              success: 'fa-circle-check',
+              warning: 'fa-triangle-exclamation',
+              danger: 'fa-shield-halved'
+            };
+            const ico = icons[r.type] || 'fa-circle-info';
+            return `
+              <div class="smw_rule_card ${r.type}">
+                <div class="smw_rule_index">
+                  <i class="fas ${ico}"></i>
+                </div>
+                <div class="smw_rule_body">
+                  <h4>${r.title}</h4>
+                  <p>${r.desc}</p>
+                </div>
+                <div class="smw_rule_num_badge">#${i + 1}</div>
               </div>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       </div>
 
@@ -123,80 +158,73 @@ async function _cargarCatalogo() {
   const $header = $('.smw_tours_header');
   $header.addClass('smw_loading');
   try {
-    $('#preciosCatalogGrid').html(_generarSkeletonsTours(4));
-    $('#puntosCatalogGrid').html(_generarSkeletonsTours(4));
+    $('#preciosTableBody').html(_generarSkeletonsTablaTours(4));
+    $('#puntosTableBody').html(_generarSkeletonsTablaTours(4));
     catalogTours = await cargarTours();
 
     if (!catalogTours.length) {
-      $('#preciosCatalogGrid').html('<div class="smw_empty_pane">No hay tours cargados en la base de datos.</div>');
-      $('#puntosCatalogGrid').html('<div class="smw_empty_pane">No hay tours cargados en la base de datos.</div>');
+      $('#preciosTableBody').html('<tr><td colspan="4" class="smw_empty_pane">No hay tours cargados en la base de datos.</td></tr>');
+      $('#puntosTableBody').html('<tr><td colspan="4" class="smw_empty_pane">No hay tours cargados en la base de datos.</td></tr>');
       return;
     }
 
-    // Render Prices Pane
-    const preciosHtml = catalogTours.map(t => `
-      <div class="smw_tour_cat_card">
-        <div class="smw_tcard_badge"><i class="fas fa-route"></i></div>
-        <h4 class="smw_tcard_title">${t.tour}</h4>
-        <div class="smw_tcard_details">
-          <div class="smw_tcard_stat">
-            <span class="smw_tcard_stat_lbl">Precio Sugerido</span>
-            <strong class="smw_tcard_stat_val" style="color: var(--tx)">S/ ${t.price.toFixed(2)}</strong>
+    // Render Prices Table Rows
+    const preciosHtml = catalogTours.map((t, i) => `
+      <tr>
+        <td style="text-align: center;"><span class="smw_tcol_num">${i + 1}</span></td>
+        <td>
+          <div class="smw_tname_cell">
+            <span class="smw_tbadge_table price"><i class="fas fa-tag"></i></span>
+            <span class="smw_tname_table">${t.tour}</span>
           </div>
-          <div class="smw_tcard_stat">
-            <span class="smw_tcard_stat_lbl">Comisión Base</span>
-            <strong class="smw_tcard_stat_val" style="color: var(--Paz)">S/ ${t.com.toFixed(2)}</strong>
-          </div>
-        </div>
-      </div>
+        </td>
+        <td><strong class="smw_tprice_table">S/ ${t.price.toFixed(2)}</strong></td>
+        <td><span class="smw_tcom_table">S/ ${t.com.toFixed(2)}</span></td>
+      </tr>
     `).join('');
-    $('#preciosCatalogGrid').html(preciosHtml);
+    $('#preciosTableBody').html(preciosHtml);
 
-    // Render Points Pane
-    const puntosHtml = catalogTours.map(t => `
-      <div class="smw_tour_cat_card puntos">
-        <div class="smw_tcard_badge" >
-          <i class="fas fa-star"></i>
-        </div>
-        <h4 class="smw_tcard_title">${t.tour}</h4>
-        <div class="smw_tcard_details">
-          <div class="smw_tcard_stat">
-            <span class="smw_tcard_stat_lbl">Puntos por pax</span>
-            <strong class="smw_tcard_stat_val" >${t.pts} <i class="fas fa-star" style="font-size: 14px"></i></strong>
+    // Render Points Table Rows
+    const puntosHtml = catalogTours.map((t, i) => `
+      <tr>
+        <td style="text-align: center;"><span class="smw_tcol_num">${i + 1}</span></td>
+        <td>
+          <div class="smw_tname_cell">
+            <span class="smw_tbadge_table points"><i class="fas fa-star"></i></span>
+            <span class="smw_tname_table">${t.tour}</span>
           </div>
-          <div class="smw_tcard_stat">
-            <span class="smw_tcard_stat_lbl">Multiplicador pax</span>
-            <strong class="smw_tcard_stat_val" style="color: var(--tx)">Activo</strong>
-          </div>
-        </div>
-      </div>
+        </td>
+        <td>
+          <span class="smw_tpoints_badge_table">
+            <i class="fas fa-star"></i> ${t.pts} pts
+          </span>
+        </td>
+        <td><span class="smw_tmult_table active">Activo</span></td>
+      </tr>
     `).join('');
-    $('#puntosCatalogGrid').html(puntosHtml);
+    $('#puntosTableBody').html(puntosHtml);
 
   } catch (error) {
     console.error('Error al cargar catalogo:', error);
-    $('#preciosCatalogGrid').html('<div class="smw_empty_pane">Error al cargar información de tours.</div>');
+    $('#preciosTableBody').html('<tr><td colspan="4" class="smw_empty_pane">Error al cargar información de tours.</td></tr>');
   } finally {
     $header.removeClass('smw_loading');
   }
 }
 
-function _generarSkeletonsTours(cant = 4) {
+function _generarSkeletonsTablaTours(cant = 4) {
   return Array(cant).fill(0).map(() => `
-    <div class="smw_tour_cat_card smw_sk_tcard">
-      <div class="smw_tcard_badge smw_sk_el" style="width: 4.5vh; height: 4.5vh; border-radius: 1vh; margin: 0 auto 0 0;"></div>
-      <div class="smw_sk_el" style="width: 80%; height: 20px; margin: 1.5vh 0; border-radius: 6px;"></div>
-      <div class="smw_tcard_details" style="border-top: 1px dashed var(--brd); padding-top: 1.5vh; margin-top: 1vh; width: 100%;">
-        <div class="smw_tcard_stat" style="align-items: flex-start; gap: 0.5vh;">
-          <span class="smw_sk_el" style="width: 50px; height: 12px; border-radius: 4px;"></span>
-          <span class="smw_sk_el" style="width: 65px; height: 18px; border-radius: 4px;"></span>
+    <tr class="smw_sk_row">
+      <td style="text-align: center;"><span class="smw_sk_el" style="width:20px;height:14px;border-radius:4px"></span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:1.5vh;">
+          <span class="smw_sk_el smw_sk_circle" style="width:32px;height:32px;border-radius:8px"></span>
+          <span class="smw_sk_el" style="width:140px;height:16px"></span>
         </div>
-        <div class="smw_tcard_stat" style="align-items: flex-end; gap: 0.5vh;">
-          <span class="smw_sk_el" style="width: 50px; height: 12px; border-radius: 4px;"></span>
-          <span class="smw_sk_el" style="width: 65px; height: 18px; border-radius: 4px;"></span>
-        </div>
-      </div>
-    </div>
+      </td>
+      <td><span class="smw_sk_el" style="width:80px;height:16px"></span></td>
+      <td><span class="smw_sk_el" style="width:80px;height:16px"></span></td>
+    </tr>
   `).join('');
 }
 

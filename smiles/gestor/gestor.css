@@ -378,3 +378,47 @@
   .smw_g_hero_content { justify-content: center; text-align: center; }
   .smw_g_profile { flex-direction: column; }
 }
+
+/* Botón de Refrescar Circular en Dashboard */
+.smw_g_date_wrap {
+  display: flex;
+  align-items: center;
+  gap: 1.2vh;
+}
+
+.smw_refresh_btn {
+  background: var(--bg5) !important;
+  border: 1px solid var(--brd) !important;
+  color: var(--tx2) !important;
+  cursor: pointer;
+  padding: 0.5vh;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--tr_m);
+  border-radius: 50%;
+  width: 4.2vh;
+  height: 4.2vh;
+  outline: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.smw_refresh_btn:hover {
+  background: var(--bg4) !important;
+  color: var(--Dulce, #FF5C69) !important;
+  transform: rotate(180deg);
+}
+
+.smw_refresh_btn i {
+  font-size: var(--fz_s2);
+}
+
+.smw_refresh_btn.spinning i {
+  animation: smw_spin_rotate 1s linear infinite;
+}
+
+@keyframes smw_spin_rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
