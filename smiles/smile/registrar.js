@@ -71,24 +71,19 @@ export const render = () => `
               </select>
             </div>
 
-            <!-- Fila 2: Cliente (1 col) + Hora (1 col) + PAX (1 col) + Pago (1 col) -->
+            <!-- Fila 2: Información General del Tour -->
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-user"></i> Nombre del Cliente *</label>
+              <label><i class="fas fa-user"></i> Cliente o Grupo *</label>
               <input type="text" id="nombreCliente" class="smw_input" required placeholder="Cliente / calle / grupo">
             </div>
 
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-clock"></i> Hora de salida *</label>
+              <label><i class="fas fa-clock"></i> Hora de Salida *</label>
               <input type="text" id="horaSalida" class="smw_input" placeholder="Ej: 5PM" required>
             </div>
 
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-users"></i> PAX *</label>
-              <input type="number" id="cantidadPax" class="smw_input" required min="1" value="1">
-            </div>
-
-            <div class="smw_form_field w_1">
-              <label><i class="fas fa-credit-card"></i> Pago *</label>
+              <label><i class="fas fa-credit-card"></i> Pago Cliente *</label>
               <select id="metodoPago" class="smw_select" required>
                 <option value="">Seleccionar...</option>
                 <option value="Tarjeta">Tarjeta</option>
@@ -99,30 +94,69 @@ export const render = () => `
               </select>
             </div>
 
-            <!-- Fila 3: Imp. Indiv. (1 col) + Total (1 col) + Operador (1 col) + Total Opera. (1 col) -->
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-dollar-sign"></i> Individual (S/)</label>
+              <label><i class="fas fa-calendar-day"></i> Fecha del Tour *</label>
+              <input type="date" id="fechaTour" class="smw_input" required value="${new Date().toISOString().split('T')[0]}">
+            </div>
+
+            <!-- Fila 3: Transacción Financiera del Cliente -->
+            <div class="smw_form_field w_1">
+              <label>
+                <i class="fas fa-dollar-sign"></i> Precio Persona
+                <i class="fas fa-circle-question" data-witip="Precio pactado individualmente por pasajero." data-wtipo="info"></i>
+              </label>
               <input type="number" id="precioUnitario" class="smw_input" step="0.01" placeholder="0.00">
             </div>
 
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-calculator"></i> Total (S/)</label>
+              <label>
+                <i class="fas fa-users"></i> Personas (PAX) *
+                <i class="fas fa-circle-question" data-witip="Cantidad total de pasajeros para este servicio." data-wtipo="info"></i>
+              </label>
+              <input type="number" id="cantidadPax" class="smw_input" required min="1" value="1">
+            </div>
+
+            <div class="smw_form_field w_1">
+              <label>
+                <i class="fas fa-calculator"></i> Ingreso Total
+                <i class="fas fa-circle-question" data-witip="Ingreso bruto del cliente. Fórmula: Precio por Persona x Personas (PAX)." data-wtipo="info"></i>
+              </label>
               <input type="number" id="importeTotal" class="smw_input" step="0.01" placeholder="0.00" disabled>
             </div>
 
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-user-shield"></i> Operador *</label>
+              <label>
+                <i class="fas fa-money-check-alt"></i> Pago Cliente *
+                <i class="fas fa-circle-question" data-witip="'Nos pagó' si cobraste el dinero del cliente. 'Debe' si el cobro queda pendiente." data-wtipo="info"></i>
+              </label>
+              <select id="estadoPago" class="smw_select" required>
+                <option value="pagado">Nos pagó</option>
+                <option value="cobrar">Debe</option>
+              </select>
+            </div>
+
+            <!-- Fila 4: Liquidación del Operador y Ganancia -->
+            <div class="smw_form_field w_1">
+              <label>
+                <i class="fas fa-user-shield"></i> Operador del Tour *
+                <i class="fas fa-circle-question" data-witip="Empresa o persona externa que realiza la operación del tour." data-wtipo="info"></i>
+              </label>
               <input type="text" id="Operador" class="smw_input" placeholder="Ejm: Pili..." required>
             </div>
 
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-hand-holding-usd"></i> Total Opera. *</label>
+              <label>
+                <i class="fas fa-hand-holding-usd"></i> Costo Operador *
+                <i class="fas fa-circle-question" data-witip="Monto pactado que se le debe pagar al operador externo por el servicio." data-wtipo="info"></i>
+              </label>
               <input type="number" id="PagoOperador" class="smw_input" step="0.01" placeholder="0.00" required>
             </div>
 
-            <!-- Fila 4: Pago a Operador (1 col) + Estado Pago (1 col) + Ganancia (1 col) + Fecha (1 col) -->
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-circle-check"></i> Pago Oper. *</label>
+              <label>
+                <i class="fas fa-circle-check"></i> ¿Costo Pagado? *
+                <i class="fas fa-circle-question" data-witip="'Sí' si ya le pagaste al operador. 'No' si todavía queda pendiente como deuda." data-wtipo="info"></i>
+              </label>
               <select id="pagoOperadorSiNo" class="smw_select" required>
                 <option value="no">No</option>
                 <option value="si">Sí</option>
@@ -130,28 +164,16 @@ export const render = () => `
             </div>
 
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-money-check-alt"></i> Estado Pago *</label>
-              <select id="estadoPago" class="smw_select" required>
-                <option value="pagado">Pagado (Nosotros)</option>
-                <option value="cobrar">Yo pasé (->)</option>
-                <option value="pagado2">Nos pasaron (<-)</option>
-                <option value="cobrado">Arreglado (<->)</option>
-              </select>
-            </div>
-
-            <div class="smw_form_field w_1">
-              <label><i class="fas fa-handshake"></i> Ganancia (S/)</label>
+              <label>
+                <i class="fas fa-handshake"></i> Ganancia Neta
+                <i class="fas fa-circle-question" data-witip="Ganancia limpia de caja. Fórmula: Ingreso Total - Costo del Operador." data-wtipo="info"></i>
+              </label>
               <input type="number" id="ganancia" class="smw_input" step="0.01" placeholder="0.00" disabled>
-            </div>
-
-            <div class="smw_form_field w_1">
-              <label><i class="fas fa-calendar-day"></i> Fecha *</label>
-              <input type="date" id="fechaTour" class="smw_input" required value="${new Date().toISOString().split('T')[0]}">
             </div>
 
             <!-- Fila 5: Notas (4 cols - Ancho Completo) -->
             <div class="smw_form_field w_4">
-              <label><i class="fa-solid fa-comment-dots"></i> Notas (Opcional)</label>
+              <label><i class="fa-solid fa-comment-dots"></i> Observaciones / Detalles Extra (Opcional)</label>
               <input type="text" id="Comentario" class="smw_input" placeholder="Anotaciones extra...">
             </div>
 
@@ -909,6 +931,7 @@ function limpiarFormulario() {
   
   $('#smwRegCardTitle').html('<i class="fas fa-cart-plus"></i> Registrar Nueva Venta');
   
+  calcularComision();
   actualizarValidacionCampos();
   isFormResetting = false;
 }

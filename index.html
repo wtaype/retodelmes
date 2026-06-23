@@ -22,8 +22,8 @@
     content="Reto del Mes - Registra tus ventas de forma fácil, compite con tus compañeros y gana el reto del mes." />
   <meta property="og:title" content="Reto del Mes - Registro de Ventas y Competencia" />
   <title>Reto del Mes - Registro de Ventas y Competencia</title>
-  <style>
-    /* ==================== VARIABLES GLOBALES ==================== */
+    <style>
+ /* ==================== VARIABLES GLOBALES ==================== */
     :root {
       --fz_s1: clamp(0.625rem, 0.8vh, 0.7rem);
       --fz_s2: clamp(0.675rem, 0.85vh, 0.75rem);
@@ -42,44 +42,32 @@
       --fz_x3: clamp(2.9rem, 5vh, 3.9rem);
       --fz_x4: clamp(3.3rem, 5.9vh, 4.3rem);
       --fz_y1: clamp(3rem, 14vh, 8rem);
-      --bs_m: 0 0 0.3vh 0.1vh var(--F);
+      --bs_m: 0 0 0.3vh 0.1vh var(--white);
       --bs_l: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.15);
       --tr_s: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       --tr_m: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       --tr_f: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
       --ff_P: 'Poppins', 'Segoe UI', system-ui;
       --ff_O: 'Outfit', 'Segoe UI', system-ui;
-      --ff_R: 'Rubik', 'Segoe UI', system-ui;
       --gradient-dia: linear-gradient(135deg, #0EBEFF 0%, #29C72E 100%);
       --gradient-noche: linear-gradient(135deg, #21273B 0%, #7000FF 100%);
-      --F: #fff;
-      --0: #000;
-      --D: #ddd;
-      --G: #374151;
 
       --success: #3cd741;
       --error: #ff3849;
       --warning: #ffa726;
       --info: #00a8e6;
 
+      --white: #fff;
       --offline: #ddd;
-      --Cielo: #0EBEFF;
-      --Dulce: #FF5C69;
-      --Paz: #29C72E;
-      --Oro: #FFDA34;
-      --Mora: #7000FF;
-      --Futuro: #21273B;
-      /* SmileBeneficios */
-      --sm_azul: #37a1dd;
-      --sm_amarillo: #FFD101;
-      --sm_rojo: #fe413b;
-      --sm_azul_d: #1d7fb8;
-      --sm_azul_l: #d0ecf9;
-      --sm_grad: linear-gradient(135deg, #37a1dd 0%, #1d7fb8 100%);
-      --sm_grad_y: linear-gradient(135deg, #FFD101 0%, #f5a623 100%);
+      --cielo: #0EBEFF;
+      --dulce: #FF5C69;
+      --paz: #29C72E;
+      --oro: #FFDA34;
+      --mora: #7000FF;
+      --futuro: #21273B;
     }
 
-    :root[data-theme="Cielo"] {
+    :root[data-theme="cielo"] {
       --bg: #ccefff;
       --wb: #e5f7ff;
       --tx: #000;
@@ -102,9 +90,10 @@
       --bg6: rgba(204, 239, 255, 0.5);
       --bg7: #FFF;
       --bg8: #FFF;
+      --bt: #1978d7;
     }
 
-    :root[data-theme="Dulce"] {
+    :root[data-theme="dulce"] {
       --bg: #ffccd1;
       --wb: #ffebed;
       --tx: #000;
@@ -127,9 +116,10 @@
       --bg6: rgba(255, 204, 209, 0.5);
       --bg7: #FFF;
       --bg8: #FFF;
+      --bt: #ff3849;
     }
 
-    :root[data-theme="Paz"] {
+    :root[data-theme="paz"] {
       --bg: #ccffce;
       --wb: #ebffeb;
       --tx: #000;
@@ -152,9 +142,10 @@
       --bg6: rgba(204, 255, 206, 0.5);
       --bg7: #FFF;
       --bg8: #FFF;
+      --bt: #25b62a;
     }
 
-    :root[data-theme="Oro"] {
+    :root[data-theme="oro"] {
       --bg: #fff8d1;
       --wb: #fffde8;
       --tx: #000;
@@ -165,7 +156,7 @@
       --txe: #000;
       --hv: #f0cc00;
       --hva: #c9a800;
-      --mco: #FFDA34;
+      --mco: #F5AF00;
       --mbg: #facc00;
       --brd: #ffe066;
       --inp: #fffef5;
@@ -177,9 +168,10 @@
       --bg6: rgba(255, 243, 176, 0.5);
       --bg7: #FFF;
       --bg8: #FFF;
+      --bt: #FFDA34;
     }
 
-    :root[data-theme="Mora"] {
+    :root[data-theme="mora"] {
       --bg: #e4ccff;
       --wb: #f4ebff;
       --tx: #000;
@@ -202,9 +194,10 @@
       --bg6: rgba(228, 204, 255, 0.5);
       --bg7: #FFF;
       --bg8: #FFF;
+      --bt: #6a00f5;
     }
 
-    :root[data-theme="Futuro"] {
+    :root[data-theme="futuro"] {
       --bg: #0a0e1a;
       --wb: #151b2e;
       --tx: #e0e7ff;
@@ -227,6 +220,7 @@
       --bg6: rgba(26, 34, 53, 0.7);
       --bg7: #00f3ff;
       --bg8: #1a2235;
+      --bt: #00f3ff;
     }
 
     *,
@@ -234,9 +228,10 @@
     *::after {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-      scroll-behavior: smooth
+      box-sizing: border-box
     }
+
+    html { scroll-behavior: smooth }
 
     * {
       font-family: var(--ff_P);
@@ -249,7 +244,7 @@
     }
 
     body {
-      background: var(--bg);
+      background: url('/wpuntos.svg'), var(--bg);
     }
 
     .ad_empty {
@@ -283,8 +278,6 @@
     /* ==================== ESTILOS ESENCIALES HTML ==================== */
     p {
       color: var(--tx);
-      font-size: var(--fz_m2);
-      line-height: 1.6;
       margin-bottom: 1vh
     }
 
@@ -382,7 +375,6 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 1vh 0;
       background: var(--wb)
     }
 
@@ -482,7 +474,7 @@
     }
 
     .tema.mtha {
-      border-color: var(--F);
+      border-color: var(--white);
       box-shadow: 0 0 1.5vh rgba(255, 255, 255, 0.6), inset 0 0 0.5vh rgba(255, 255, 255, 0.3);
       transform: scale(1.01)
     }
@@ -493,28 +485,28 @@
       top: 0
     }
 
-    .tema[data-ths^="Cielo"] {
-      background: var(--Cielo)
+    .tema[data-ths^="cielo"] {
+      background: var(--cielo)
     }
 
-    .tema[data-ths^="Dulce"] {
-      background: var(--Dulce)
+    .tema[data-ths^="dulce"] {
+      background: var(--dulce)
     }
 
-    .tema[data-ths^="Paz"] {
-      background: var(--Paz)
+    .tema[data-ths^="paz"] {
+      background: var(--paz)
     }
 
-    .tema[data-ths^="Mora"] {
-      background: var(--Mora)
+    .tema[data-ths^="mora"] {
+      background: var(--mora)
     }
 
-    .tema[data-ths^="Futuro"] {
-      background: var(--Futuro)
+    .tema[data-ths^="futuro"] {
+      background: var(--futuro)
     }
 
-    .tema[data-ths^="Oro"] {
-      background: var(--Oro)
+    .tema[data-ths^="oro"] {
+      background: var(--oro)
     }
 
     #wiTema:hover {
@@ -558,7 +550,7 @@
     }
 
     .wilogo a {
-      color: var(--bg2)
+      color: var(--mco)
     }
 
     .wilogo i {
@@ -880,12 +872,12 @@
     .movil_overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, .12);
-      backdrop-filter: blur(.3vw);
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(8px);
       z-index: 200;
       opacity: 0;
       pointer-events: none;
-      transition: opacity var(--tr_m)
+      transition: opacity var(--tr_m);
     }
 
     .movil_drawer {
@@ -895,154 +887,147 @@
       width: 80vw;
       height: 100dvh;
       background: var(--bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       z-index: 201;
       transform: translateX(100%);
-      transition: transform var(--tr_m);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
-      padding: 2vh 0;
+      padding: 3vh 0;
       overflow-y: auto;
-      box-shadow: -1vh 0 3vh rgba(0, 0, 0, .08)
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
     }
 
-    body.movil_open {
-      overflow: hidden
-    }
-
-    body.movil_open .movil_overlay {
-      opacity: 1;
-      pointer-events: auto
-    }
-
-    body.movil_open .movil_drawer {
-      transform: translateX(0)
-    }
-
+    body.movil_open { overflow: hidden; }
+    body.movil_open .movil_overlay { opacity: 1; pointer-events: auto; }
+    body.movil_open .movil_drawer { transform: translateX(0); }
     .movil_close {
-      color: var(--mco);
       position: absolute;
-      top: 1px;
-      right: 2px;
-      font-size: var(--fz_m4);
-      padding: .8vh 1.2vh;
-      background: none;
-      border: none;
-      cursor: pointer
+      top: 1.8vh !important;
+      right: 3.5vh !important;
+      width: 4.4vh;
+      height: 4.4vh;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--mco) 10%, transparent) !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: none !important;
+      box-shadow: none !important;
+      color: var(--mco) !important;
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
-
     .movil_close:hover {
-      color: var(--mco)
+      background: var(--mco) !important;
+      color: var(--wb) !important;
+      transform: scale(1.1) rotate(90deg) !important;
+    }
+    .movil_close i {
+      font-size: var(--fz_m3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .movil_logo {
-      text-align: center;
-      padding: 3vh 2vh 1vh;
+      text-align: left;
+      padding: 2.5vh 3.5vh 1.5vh;
       font-size: var(--fz_m5);
-      font-weight: 700;
-      color: var(--bg2)
+      font-weight: 800;
+      color: var(--mco) !important; /* Nombre de página a color del tema */
+      letter-spacing: -0.5px;
+      line-height: 1;
     }
-
-    .movil_logo i {
-      margin-right: .5vh
+    .movil_logo a,
+    .movil_logo a:hover,
+    .movil_logo a:active,
+    .movil_logo a:focus,
+    .movil_logo a:visited {
+      color: var(--mco) !important;
+      text-decoration: none !important;
     }
 
     .movil_nav {
       display: flex;
       flex-direction: column;
-      margin-top: 1vh;
-      padding: 0 1vh;
-      text-align: left
+      margin-top: 2vh;
+      padding: 0 2vh;
+      gap: 0.8vh;
     }
 
-    .movil_nav .nv_item {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 2vh;
-      padding: 2.5vh 2.5vh;
-      color: var(--tx);
-      font-size: var(--fz_m2);
-      font-weight: 500;
-      border-bottom: 1px solid var(--brd);
-      background: none;
-      border-radius: 0;
-      box-shadow: none
+    /* Estilo unificado para los enlaces/botones del nav móvil */
+    .movil_nav .nv_item,
+    .movil_nav .bt_auth,
+    .movil_nav .bt_salir {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 2vh !important;
+      padding: 1.5vh 2.5vh !important;
+      color: color-mix(in srgb, var(--tx1) 75%, var(--mco)) !important; /* Mezcla el texto oscuro con el color del tema */
+      font-size: var(--fz_m2) !important;
+      font-weight: 600 !important;
+      background: transparent !important;
+      border-radius: 1.2vh !important;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      border: none !important;
+      box-shadow: none !important;
+      width: 100% !important;
+      text-align: left !important;
+      cursor: pointer !important;
     }
 
-    .movil_nav .nv_item:last-child {
-      border-bottom: none
+    /* Color de hover con excelente contraste */
+    .movil_nav .nv_item:hover,
+    .movil_nav .bt_auth:hover {
+      background: var(--bg4) !important;
+      color: var(--tx) !important;
+      transform: translateX(5px) !important;
     }
 
-    .movil_nav .nv_item i {
-      font-size: var(--fz_l);
-      color: var(--mco);
-      min-width: 3vh
-    }
-
-    .movil_nav .nv_item span {
-      font-size: var(--fz_m1)
+    .movil_nav .nv_item i,
+    .movil_nav .bt_auth i,
+    .movil_nav .bt_salir i {
+      font-size: var(--fz_m2) !important; /* Iconos más pequeños y elegantes */
+      color: var(--mco) !important;
+      width: 3vh !important;
+      display: flex !important;
+      justify-content: center !important;
+      transition: all 0.3s ease !important;
     }
 
     .movil_nav .nv_item.active {
-      color: var(--mco);
-      font-weight: 700;
-      background: var(--bg4);
-      border-radius: .6vh
+      color: #fff !important;
+      background: linear-gradient(135deg, var(--mco), var(--hva)) !important;
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--mco) 20%, transparent) !important;
     }
 
     .movil_nav .nv_item.active i {
-      color: var(--mco)
-    }
-
-    .movil_divider {
-      height: 1px;
-      background: var(--brd);
-      margin: 1vh 2.5vh
-    }
-
-    .movil_nav .bt_auth {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 2.5vh;
-      padding: 2.5vh 2.5vh;
-      color: var(--tx);
-      font-size: var(--fz_m2);
-      font-weight: 500;
-      border-bottom: 1px solid var(--brd);
-      background: none;
-      border-radius: 0;
-      box-shadow: none;
-      width: 100%;
-      text-align: left;
-      cursor: pointer
-    }
-
-    .movil_nav .bt_auth:last-child {
-      border-bottom: none
-    }
-
-    .movil_nav .bt_auth i {
-      font-size: var(--fz_l1);
-      color: var(--mco);
-      min-width: 3vh
-    }
-
-    .movil_nav .bt_auth span {
-      font-size: var(--fz_m2)
-    }
-
-    .movil_nav .bt_auth:hover {
-      background: var(--bg4);
-      border-radius: .6vh
+      color: #fff !important;
     }
 
     .movil_nav .bt_salir {
-      color: var(--error)
+      color: var(--tx2) !important;
     }
 
     .movil_nav .bt_salir i {
-      color: var(--error)
+      color: var(--tx3) !important;
+    }
+
+    .movil_nav .bt_salir:hover {
+      background: color-mix(in srgb, var(--error) 10%, transparent) !important;
+      color: var(--error) !important;
+      transform: translateX(5px) !important;
+    }
+
+    .movil_nav .bt_salir:hover i {
+      color: var(--error) !important;
     }
 
     /* ==================== RESPONSIVE ==================== */
@@ -1098,10 +1083,10 @@
     /* ── REDES SOCIALES FOOTER ── */
     .redsscc {
       width: 3.6vh;
-      height: 31.22px;
-      border-radius: .5vh;
+      height: 3.6vh;
+      border-radius: 0.8vh;
       background: var(--rb, var(--mco));
-      color: #fff;
+      color: var(--white);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1157,11 +1142,12 @@
     }
 
     .cookiess_link {
-      display: inline;
+      display: inline-flex;
       color: var(--mco);
       font-weight: 500;
       text-decoration: underline;
-      display: inline-flex; padding: 0.3vh 0; margin-left: 1vh;
+      padding: 0.3vh 0; 
+      margin-left: 1vh;
     }
 
     .cookiess_btns {
@@ -1212,7 +1198,49 @@
         font-size: var(--fz_s4);
       }
     }
-  </style>
+
+    /* ==================== ESTILOS PARA MODALES GENERALES ==================== */
+    .wiModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: saturate(120%) blur(2px);
+      animation: mf .25s ease;
+    }
+    .wiModal.active { display: flex; }
+    body.modal-open { overflow: hidden; }
+    .modalBody {
+      position: relative;
+      border-radius: 1vh;
+      box-shadow: var(--bsh);
+      width: 92%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow: auto;
+      animation: mp .22s ease;
+      z-index: 10001;
+    }
+    .modalX {
+      z-index: 10002;
+      background: 0 0;
+      border: 0;
+      color: var(--mco);
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: transform .15s, opacity .15s;
+      text-shadow: 0 1px 2px rgba(0,0,0,.15);
+      position: absolute;
+      top: 12px;
+      right: 12px;
+    }
+    .modalX:hover { transform: scale(1.08); opacity: .95; }
+    @keyframes mf { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes mp { from { transform: translateY(10px) scale(.98); opacity: .6; } to { transform: translateY(0) scale(1); opacity: 1; } }
+    </style>
   <style>@import url('./smiles/web/inicio.css');</style>
 </head>
 
@@ -1228,12 +1256,12 @@
   </header>
   <main id="wimain"></main><!--CONTENIDO PRINCIPAL-->
   <div id="wiTema">
-    <div class="tema" data-ths="Cielo|#0EBEFF"></div>
-    <div class="tema mtha" data-ths="Dulce|#FF5C69"></div>
-    <div class="tema" data-ths="Paz|#29C72E"></div>
-    <div class="tema" data-ths="Oro|#FFC107"></div>
-    <div class="tema" data-ths="Mora|#7000FF"></div>
-    <div class="tema" data-ths="Futuro|#21273B"></div>
+    <div class="tema" data-ths="cielo|#0EBEFF"></div>
+    <div class="tema" data-ths="dulce|#FF5C69"></div>
+    <div class="tema" data-ths="paz|#29C72E"></div>
+    <div class="tema mtha" data-ths="oro|#FFC107"></div>
+    <div class="tema" data-ths="mora|#7000FF"></div>
+    <div class="tema" data-ths="futuro|#21273B"></div>
   </div>
 </body>
 <script>(() => { const d = document, h = d.documentElement, w = d.querySelector('#wiTema'); if (!w) return; const ts = [...w.querySelectorAll('.tema')], m = d.querySelector('meta[name="theme-color"]') || d.head.appendChild(Object.assign(d.createElement('meta'), { name: 'theme-color' })), st = t => { const [n, c] = t.dataset.ths.split('|'); h.dataset.theme = n; m.content = c; localStorage.wiTema = t.dataset.ths; ts.forEach(x => x.classList.toggle('mtha', x === t)) }; w.addEventListener('click', e => e.target.matches('.tema') && st(e.target), { passive: !0 }); const i = w.querySelector(`[data-ths="${localStorage.wiTema}"]`) || ts[1]; i && st(i) })();</script>
