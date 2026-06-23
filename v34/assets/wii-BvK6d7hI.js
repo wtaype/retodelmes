@@ -1,0 +1,1 @@
+var e=`retodelmes`,t=`Reto del Mes`,n=`fa-chart-line`,r=`ventas, competencia, hospedaje, retos, trabajo`,i=`Registra tus ventas de forma fácil, compite con tus compañeros y gana el reto del mes.`,a=`https://retodelmes.web.app`,o=2026,s=`@wilder.taype`,c=`https://wtaype.github.io/`;export{e as a,c,n as i,a as l,s as n,r as o,i as r,o as s,t};
