@@ -46,3 +46,8 @@ ehthumbs.db
 *.bak
 *.swp
 *.lock
+
+
+# Más archivos
+.agents
+skills-lock.json

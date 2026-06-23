@@ -21,11 +21,5 @@ git add . ; git commit -m "Actualizacion Principal 34.10.10" ; git push origin m
 // REEMPLAZAR TAG DE SEGURIDAD EXISTENTE [TAG REMPLAZO] (3)
 git tag -d 34 ; git tag 34 -m "Version 34 actualizada" ; git push origin 34 --force
 
-// PARA ACTUALIZAR SITEMAP EFFICIENTE (4)
-npm run sitemap
-
-// Actualizar versiones de seguridad [ELIMINAR CARPETA - ARCHIVO ONLINE] (5)
-git rm --cached skills-lock.json ; git commit -m "Archivo Eliminado" ; git push origin main
-git rm -r --cached .claude/ ; git commit -m "Carpeta Eliminada" ; git push origin main
 
  ACTUALIZACION TAG[END] */
