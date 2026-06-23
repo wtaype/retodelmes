@@ -219,6 +219,10 @@ function _procesarEImprimir(ventas, empleados) {
     if (v.estadoPago === 'cobrar') {
       deuda += imp;
     }
+    const esPropio = v.estadoPago === 'pagado' || v.estadoPago === 'pagado2';
+    if (!esPropio && v.pagoOperadorSiNo === 'no') {
+      deuda += (parseFloat(v.PagoOperador) || 0);
+    }
 
     // Ventas por día para el chart
     let dia = '01';

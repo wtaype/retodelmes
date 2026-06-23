@@ -71,15 +71,10 @@ export const render = () => `
               </select>
             </div>
 
-            <!-- Fila 2: Cliente (2 cols) + N° Habitación (1 col) + Hora (1 col) -->
-            <div class="smw_form_field w_2">
-              <label><i class="fas fa-user"></i> Nombre del Cliente *</label>
-              <input type="text" id="nombreCliente" class="smw_input" required placeholder="Nombre de cliente / calle / grupo">
-            </div>
-
+            <!-- Fila 2: Cliente (1 col) + Hora (1 col) + PAX (1 col) + Pago (1 col) -->
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-bed"></i> Habitación</label>
-              <input type="text" id="numeroHabitacion" class="smw_input" placeholder="Ej: 205">
+              <label><i class="fas fa-user"></i> Nombre del Cliente *</label>
+              <input type="text" id="nombreCliente" class="smw_input" required placeholder="Cliente / calle / grupo">
             </div>
 
             <div class="smw_form_field w_1">
@@ -87,20 +82,9 @@ export const render = () => `
               <input type="text" id="horaSalida" class="smw_input" placeholder="Ej: 5PM" required>
             </div>
 
-            <!-- Fila 3: Tipo Doc (1 col) + N° Doc (1 col) + Método Pago (1 col) + PAX (1 col) -->
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-id-card"></i> Documento</label>
-              <select id="tipoDocumento" class="smw_select">
-                <option value="dni">DNI</option>
-                <option value="pasaporte">Pasaporte</option>
-                <option value="cedula">Cédula</option>
-                <option value="ce">CE</option>
-              </select>
-            </div>
-
-            <div class="smw_form_field w_1">
-              <label><i class="fas fa-hashtag"></i> N° Documento</label>
-              <input type="text" id="numeroDocumento" class="smw_input" placeholder="Ej: 78964523">
+              <label><i class="fas fa-users"></i> PAX *</label>
+              <input type="number" id="cantidadPax" class="smw_input" required min="1" value="1">
             </div>
 
             <div class="smw_form_field w_1">
@@ -115,12 +99,7 @@ export const render = () => `
               </select>
             </div>
 
-            <div class="smw_form_field w_1">
-              <label><i class="fas fa-users"></i> PAX *</label>
-              <input type="number" id="cantidadPax" class="smw_input" required min="1" value="1">
-            </div>
-
-            <!-- Fila 4: Imp. Indiv. (1 col) + Total (1 col) + Operador (1 col) + Pago Oper. (1 col) -->
+            <!-- Fila 3: Imp. Indiv. (1 col) + Total (1 col) + Operador (1 col) + Total Opera. (1 col) -->
             <div class="smw_form_field w_1">
               <label><i class="fas fa-dollar-sign"></i> Individual (S/)</label>
               <input type="number" id="precioUnitario" class="smw_input" step="0.01" placeholder="0.00">
@@ -137,11 +116,19 @@ export const render = () => `
             </div>
 
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-hand-holding-usd"></i> Pago Oper. *</label>
+              <label><i class="fas fa-hand-holding-usd"></i> Total Opera. *</label>
               <input type="number" id="PagoOperador" class="smw_input" step="0.01" placeholder="0.00" required>
             </div>
 
-            <!-- Fila 5: Estado Pago (1 col) + Ganancia (1 col) + Fecha (1 col) + Comentarios (1 col) -->
+            <!-- Fila 4: Pago a Operador (1 col) + Estado Pago (1 col) + Ganancia (1 col) + Fecha (1 col) -->
+            <div class="smw_form_field w_1">
+              <label><i class="fas fa-circle-check"></i> Pago Oper. *</label>
+              <select id="pagoOperadorSiNo" class="smw_select" required>
+                <option value="no">No</option>
+                <option value="si">Sí</option>
+              </select>
+            </div>
+
             <div class="smw_form_field w_1">
               <label><i class="fas fa-money-check-alt"></i> Estado Pago *</label>
               <select id="estadoPago" class="smw_select" required>
@@ -162,7 +149,8 @@ export const render = () => `
               <input type="date" id="fechaTour" class="smw_input" required value="${new Date().toISOString().split('T')[0]}">
             </div>
 
-            <div class="smw_form_field w_1">
+            <!-- Fila 5: Notas (4 cols - Ancho Completo) -->
+            <div class="smw_form_field w_4">
               <label><i class="fa-solid fa-comment-dots"></i> Notas (Opcional)</label>
               <input type="text" id="Comentario" class="smw_input" placeholder="Anotaciones extra...">
             </div>
@@ -756,9 +744,6 @@ function _registrarEventos() {
         tipoTour: selTour.tour,
         registroEn: $('#registroEn').val(),
         nombreCliente: $('#nombreCliente').val().trim(),
-        numeroHabitacion: $('#numeroHabitacion').val().trim(),
-        tipoDocumento: $('#tipoDocumento').val(),
-        numeroDocumento: $('#numeroDocumento').val().trim(),
         cantidadPax: pax,
         precioUnitario: parseFloat($('#precioUnitario').val()) || 0,
         metodoPago: $('#metodoPago').val(),
@@ -767,6 +752,7 @@ function _registrarEventos() {
         horaSalida: $('#horaSalida').val().trim(),
         Operador: $('#Operador').val().trim(),
         PagoOperador: parseFloat($('#PagoOperador').val()) || 0,
+        pagoOperadorSiNo: $('#pagoOperadorSiNo').val(),
         Comentario: $('#Comentario').val().trim(),
         fechaTour: $('#fechaTour').val(),
         estadoPago: $('#estadoPago').val(),
@@ -834,11 +820,14 @@ function calcularComision() {
   const esPagado = estado === 'pagado' || estado === 'pagado2';
 
   const $pagoOp = $('#PagoOperador');
+  const $pagoSiNo = $('#pagoOperadorSiNo');
   if (esPagado) {
     $pagoOp.prop('disabled', true).val('0').attr('placeholder', 'Servicio propio');
+    $pagoSiNo.prop('disabled', true).val('si');
     $('#ganancia').val(total.toFixed(2));
   } else {
     $pagoOp.prop('disabled', false).attr('placeholder', 'S/ 0.00');
+    $pagoSiNo.prop('disabled', false);
     const ganancia = total - pago;
     $('#ganancia').val(ganancia.toFixed(2));
   }
@@ -916,6 +905,7 @@ function limpiarFormulario() {
   $('#tourSelectedLabel').text('Seleccionar tour...');
   $('.tour-row').removeClass('selected');
   $('#importeTotal, #ganancia').prop('disabled', true);
+  $('#pagoOperadorSiNo').val('no').prop('disabled', false);
   
   $('#smwRegCardTitle').html('<i class="fas fa-cart-plus"></i> Registrar Nueva Venta');
   
@@ -976,13 +966,15 @@ function _verificarModoEspecial(user, onlyBindTour = false) {
       $('#fechaTour').val(f);
     }
 
-    // Cargar estados de checkboxes interactivos con exclusión mutua
+    // Cargar checkboxes de forma segura
     const esExcepcion = (venta.esVentaJulio || venta.esVentaSonia || venta.esVentaExterna);
     $('#vtMiVenta').prop('checked', !esExcepcion);
     $('#vtJulio').prop('checked', venta.esVentaJulio || false);
     $('#vtSonia').prop('checked', venta.esVentaSonia || false);
     $('#vtExterna').prop('checked', venta.esVentaExterna || false);
     actualizarIconosCheck();
+
+    $('#pagoOperadorSiNo').val(venta.pagoOperadorSiNo || 'no');
 
     calcularTotal();
     calcularComision();
@@ -1086,15 +1078,13 @@ function guardarDraftFormulario() {
     tipoTour: tour,
     registroEn: $('#registroEn').val() || 'hawka',
     nombreCliente: cliente,
-    numeroHabitacion: $('#numeroHabitacion').val()?.trim() || '',
     horaSalida: $('#horaSalida').val()?.trim() || '',
-    tipoDocumento: $('#tipoDocumento').val() || 'dni',
-    numeroDocumento: $('#numeroDocumento').val()?.trim() || '',
     metodoPago: $('#metodoPago').val() || '',
     cantidadPax: $('#cantidadPax').val() || '1',
     precioUnitario: $('#precioUnitario').val() || '',
     Operador: $('#Operador').val()?.trim() || '',
     PagoOperador: $('#PagoOperador').val() || '',
+    pagoOperadorSiNo: $('#pagoOperadorSiNo').val() || 'no',
     estadoPago: $('#estadoPago').val() || 'pagado',
     Comentario: $('#Comentario').val()?.trim() || '',
     fechaTour: $('#fechaTour').val() || '',

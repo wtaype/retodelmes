@@ -411,7 +411,7 @@ function _renderizarTabla() {
       ? (emp.imagen || emp.avatar)
       : `${import.meta.env.BASE_URL}smile.avif`;
 
-    const est = _obtenerEstado(v.estadoPago);
+    const est = _obtenerEstado(v.estadoPago, v.pagoOperadorSiNo);
     const quienVende = v.esVentaJulio ? 'Julio' : v.esVentaSonia ? 'Sonia' : v.esVentaExterna ? 'Externo' : Capi(v.vendedor);
 
     const clienteHtml = `
@@ -527,7 +527,11 @@ function _formatearFecha(fecha) {
   return 'Sin fecha';
 }
 
-function _obtenerEstado(estado) {
+function _obtenerEstado(estado, pagoOperadorSiNo) {
+  const esPropio = estado === 'pagado' || estado === 'pagado2';
+  if (!esPropio && pagoOperadorSiNo === 'no') {
+    return { cls: 'pending', txt: 'D. OPER' };
+  }
   const map = {
     'pagado':  { cls: 'paid',    txt: 'PAGADO' },
     'cobrado': { cls: 'paid',    txt: 'PAGADO' },
