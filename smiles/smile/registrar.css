@@ -90,11 +90,17 @@
   color: var(--tx1);
   margin-bottom: 2vh;
   display: flex;
+  justify-content: space-between; /* Alinea título a la izquierda y puntos a la derecha */
   align-items: center;
-  gap: 1.5vh;
   border-bottom: 2px dashed var(--brd);
   padding-bottom: 1.5vh;
   flex-shrink: 0;
+}
+
+#smwRegCardTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5vh;
 }
 
 .smw_reg_title i {
@@ -205,7 +211,7 @@
   border: 1px solid var(--brd);
   border-radius: 1.2vh;
   color: var(--tx);
-  font-size: var(--fz_m1);
+  font-size: var(--fz_m2);
   font-weight: 600;
   transition: all var(--tr_m);
   outline: none;
@@ -221,7 +227,7 @@
   border: 1px solid var(--brd);
   border-radius: 1.2vh;
   color: var(--tx);
-  font-size: var(--fz_m1);
+  font-size: var(--fz_m2);
   font-weight: 600;
   transition: all var(--tr_m);
   outline: none;
@@ -249,25 +255,27 @@
   font-weight: 500;
 }
 
-/* Campos Deshabilitados Premium */
+/* Campos Deshabilitados Premium y Readonly */
 .smw_input:disabled,
-.smw_select:disabled {
-  background: var(--bg) !important;
+.smw_select:disabled,
+.smw_input[readonly],
+.smw_select[readonly] {
+  background: var(--offline, #ddd) !important;
   color: var(--tx2) !important;
   cursor: not-allowed;
-  opacity: 0.9;
+  opacity: 0.85;
   border-color: var(--brd) !important;
 }
 
 /* Validaciones Visuales */
-.smw_input.okValor {
+.smw_input.okValor:not(:disabled):not([readonly]) {
   border-color: var(--success) !important;
   background-color: var(--inp) !important; /* Valid input is var(--inp) */
   padding-right: 50px !important;
   animation: smw_border_success_pulse 0.6s cubic-bezier(0.25, 0, 0, 1) both;
 }
 
-.smw_select.okValor {
+.smw_select.okValor:not(:disabled):not([readonly]) {
   border-color: var(--success) !important;
   background-color: var(--inp) !important; /* Valid select is var(--inp) */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a0000'%3E%3Cpath d='M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z'/%3E%3C/svg%3E") !important;
@@ -278,7 +286,7 @@
   animation: smw_border_success_pulse 0.6s cubic-bezier(0.25, 0, 0, 1) both;
 }
 
-.smw_tour_display.okValor {
+.smw_tour_display.okValor:not(:disabled):not([readonly]) {
   border-color: var(--success) !important;
   background-color: var(--inp) !important; /* Valid tourDisplay is var(--inp) */
   padding-right: 76px !important;
@@ -286,11 +294,11 @@
 }
 
 /* Pseudo-elementos de Validación con FontAwesome */
-.smw_form_field:has(.smw_input.okValor)::after,
-.smw_form_field:has(.smw_select.okValor)::after,
-.smw_form_field:has(.smw_tour_display.okValor)::after,
-.smw_form_field:has(.smw_input:-webkit-autofill)::after,
-.smw_form_field:has(.smw_select:-webkit-autofill)::after {
+.smw_show_checks .smw_form_field:has(.smw_input.okValor:not(:disabled))::after,
+.smw_show_checks .smw_form_field:has(.smw_select.okValor:not(:disabled))::after,
+.smw_show_checks .smw_form_field:has(.smw_tour_display.okValor:not(:disabled))::after,
+.smw_show_checks .smw_form_field:has(.smw_input:-webkit-autofill:not(:disabled))::after,
+.smw_show_checks .smw_form_field:has(.smw_select:-webkit-autofill:not(:disabled))::after {
   content: "\f058" !important;
   font-family: "Font Awesome 6 Free", "Font Awesome 7 Free", "Font Awesome 5 Free", "FontAwesome", sans-serif !important;
   font-weight: 900 !important;
@@ -298,7 +306,7 @@
   position: absolute !important;
   right: 22px !important;
   bottom: calc(2.6vh - 9px) !important;
-  font-size: 18px !important;
+  font-size: var(--fz_m4) !important;
   line-height: 1 !important;
   pointer-events: none !important;
   z-index: 5 !important;
@@ -306,17 +314,17 @@
 }
 
 /* Para selects y tour dropdown colocamos el check a la izquierda de la flecha */
-.smw_form_field:has(.smw_select.okValor)::after,
-.smw_form_field:has(.smw_tour_display.okValor)::after,
-.smw_form_field:has(.smw_select:-webkit-autofill)::after {
+.smw_show_checks .smw_form_field:has(.smw_select.okValor:not(:disabled))::after,
+.smw_show_checks .smw_form_field:has(.smw_tour_display.okValor:not(:disabled))::after,
+.smw_show_checks .smw_form_field:has(.smw_select:-webkit-autofill:not(:disabled))::after {
   right: 3% !important;
   top: 35%
 }
-.smw_form_field:has(.smw_input.okValor)::after{
+.smw_show_checks .smw_form_field:has(.smw_input.okValor:not(:disabled))::after{
   right: 3% !important;
   top: 35%
 }
-.smw_form_field:has(.smw_tour_display.okValor)::after{
+.smw_show_checks .smw_form_field:has(.smw_tour_display.okValor:not(:disabled))::after{
   right: 0.8% !important;
   top: 35%
 }
@@ -370,7 +378,7 @@
   transition: all var(--tr_m);
   font-weight: 600;
   color: var(--tx);
-  font-size: var(--fz_m1); /* Match other inputs size exactly */
+  font-size: var(--fz_m2); /* Match other inputs size exactly */
   box-sizing: border-box;
   height: 5.2vh;
   position: relative; /* Lock positioning for arrow absolute placement */
@@ -393,7 +401,7 @@
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  font-size: 14px;
+  font-size: var(--fz_s3);
   color: var(--tx1);
 }
 
@@ -631,7 +639,7 @@
   gap: 1vh;
   padding: 0 3vh !important;
   font-weight: 800;
-  font-size: var(--fz_m1);
+  font-size: var(--fz_m2);
   border-radius: 1.5vh;
   transition: all var(--tr_m);
   cursor: pointer;
@@ -666,26 +674,26 @@
   background: var(--bg5);
 }
 
-/* Vista previa de puntos */
-.smw_points_preview {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 1.2vh !important;
-  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
-  color: #ffffff !important;
-  border: none !important;
-  padding: 0 3vh !important;
-  border-radius: 1.5vh !important;
-  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3) !important;
-  height: 5.2vh !important;
-  box-sizing: border-box !important;
-  line-height: 5.2vh !important;
-  transition: all var(--tr_m);
-  cursor: default;
+/* Vista previa de puntos en la cabecera */
+.smw_points_title_preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8vh;
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  color: #ffffff;
+  padding: 0.8vh 1.8vh;
+  border-radius: 1.2vh;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+  font-size: var(--fz_m2);
+  font-weight: 700;
+  cursor: help;
+  line-height: 1 !important;
+  height: auto !important;
+  box-sizing: border-box;
+  user-select: none;
 }
 
-.smw_points_preview i {
+.smw_points_title_preview i {
   color: #FFDA34 !important; /* estrella de oro */
   font-size: var(--fz_m2) !important;
   filter: drop-shadow(0 0 4px rgba(255, 218, 52, 0.8)) !important;
@@ -697,14 +705,8 @@
   to { transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(255, 218, 52, 1)); }
 }
 
-.smw_points_preview span {
-  font-size: var(--fz_m1) !important;
-  font-weight: 700 !important;
-  color: #ffffff !important;
-}
-
-.smw_points_preview strong {
-  font-size: var(--fz_m1) !important;
+.smw_points_title_preview span {
+  font-size: var(--fz_m2) !important;
   font-weight: 900 !important;
   color: #ffffff !important;
   font-family: var(--ff_O) !important;

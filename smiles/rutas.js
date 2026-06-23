@@ -35,7 +35,7 @@ export const NAV = {
       { href: '/gestor',     page: 'gestor',     ico: 'fa-house',           txt: 'Dashboard'    },
       { href: '/registrar', page: 'registrar', ico: 'fa-plus-circle',      txt: 'Registrar Ventas' },
       { href: '/ranking',   page: 'ranking',   ico: 'fa-trophy',           txt: 'Ranking'   },
-      { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Tablero' },
+      { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Historial Ventas' },
       { href: '/tours',     page: 'tours',     ico: 'fa-route',            txt: 'Tours'     },
       { href: '/chat', page: 'chat', ico: 'fa-comments', txt: 'Chat Grupal' },
       ...COMUN,
