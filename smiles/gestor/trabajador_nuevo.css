@@ -1,0 +1,780 @@
+/* ═══════════════════════════════════════════════════════════
+   trabajador_nuevo.css — Nuevo Colaborador
+   Reto del Mes · Gestor Module — v2 Premium
+   fz_ variables + Poppins + Link box grande
+   ═══════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════
+   MODAL BODY — Gestor crea el trabajador
+   ══════════════════════════════════════════════════════════ */
+.tn_modal_body {
+  background: var(--wb, #fff);
+  border-radius: 2vh;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  width: 92%;
+  max-width: 40vw;
+  max-height: 92vh;
+  overflow-y: auto;
+  position: relative;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  animation: tn_pop 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes tn_pop {
+  from { transform: scale(0.93) translateY(12px); opacity: 0; }
+  to   { transform: scale(1)    translateY(0);    opacity: 1; }
+}
+
+/* ── Stripe superior ─────────────────────────────────────── */
+.tn_modal_stripe {
+  height: 4px;
+  background: linear-gradient(135deg, #7C3AED 0%, var(--mco, #1978d7) 100%);
+  border-radius: 2vh 2vh 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* ── Header — sin X extra (widev cierra con backdrop/Escape) ─ */
+.tn_modal_header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.3rem 1.6rem 1rem;
+  border-bottom: 1px solid var(--brd, #e2e8f0);
+}
+
+.tn_modal_icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(25,120,215,0.08));
+  border: 2px solid rgba(124,58,237,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fz_m3, 1.05rem);
+  color: #7C3AED;
+  flex-shrink: 0;
+}
+
+.tn_modal_header_text { flex: 1; }
+
+.tn_modal_title {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_m4, 1rem);
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.tn_modal_subtitle {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s3, 0.78rem);
+  color: var(--tx3, #777);
+  margin: 0.15rem 0 0;
+}
+
+/* ── Step indicators ─────────────────────────────────────── */
+.tn_steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.9rem 1.6rem 0;
+}
+
+.tn_step_dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brd, #e2e8f0);
+  transition: all 0.3s ease;
+}
+.tn_step_dot.active {
+  background: #7C3AED;
+  width: 24px;
+  border-radius: 4px;
+}
+.tn_step_dot.done { background: var(--success, #3cd741); }
+
+/* ── Form container ──────────────────────────────────────── */
+.tn_modal_form {
+  padding: 1rem 1.6rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.tn_form_grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+@media (max-width: 420px) {
+  .tn_form_grid { grid-template-columns: 1fr; }
+}
+
+/* ── Form group ──────────────────────────────────────────── */
+.tn_form_group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tn_form_label {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  font-weight: 600;
+  color: var(--tx2, #444);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.tn_form_label i { color: #7C3AED; font-size: var(--fz_s2, 0.75rem); }
+
+.tn_form_input {
+  width: 100%;
+  padding: 0.65em 0.9em;
+  border: 1.5px solid var(--brd, #e2e8f0);
+  border-radius: 1vh;
+  background: var(--inp, #f8f9ff);
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  color: var(--tx, #111);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.tn_form_input:focus {
+  outline: none;
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+}
+.tn_form_input.is-error { border-color: var(--error, #ff3849); }
+.tn_form_input.is-ok    { border-color: var(--success, #3cd741); }
+.tn_form_input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.tn_form_select {
+  width: 100%;
+  padding: 0.65em 0.9em;
+  border: 1.5px solid var(--brd, #e2e8f0);
+  border-radius: 1vh;
+  background: var(--inp, #f8f9ff);
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  color: var(--tx, #111);
+  cursor: pointer;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.tn_form_select:focus {
+  outline: none;
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+}
+
+/* ── Usuario preview badge ───────────────────────────────── */
+.tn_usuario_preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4em 0.8em;
+  background: var(--bg4, rgba(124,58,237,0.07));
+  border: 1.5px solid rgba(124,58,237,0.15);
+  border-radius: 1vh;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s3, 0.78rem);
+  color: #7C3AED;
+  font-weight: 500;
+  min-height: 2.2em;
+  transition: all 0.2s;
+}
+.tn_usuario_preview i { font-size: var(--fz_s2, 0.75rem); opacity: 0.8; }
+.tn_usuario_preview.ok    { border-color: var(--success,#3cd741); color: var(--success,#3cd741); background: rgba(60,215,65,0.06); }
+.tn_usuario_preview.error { border-color: var(--error,#ff3849);   color: var(--error,#ff3849);   background: rgba(255,56,73,0.06); }
+
+/* ── Modal footer ────────────────────────────────────────── */
+.tn_modal_footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  padding: 1rem 1.6rem 1.5rem;
+  border-top: 1px solid var(--brd, #e2e8f0);
+  margin-top: 0.75rem;
+}
+
+.tn_btn_cancel {
+  padding: 0.6em 1.4em;
+  border-radius: 1vh;
+  border: 1.5px solid var(--brd, #e2e8f0);
+  background: transparent;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  font-weight: 600;
+  color: var(--tx3, #666);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.tn_btn_cancel:hover {
+  background: var(--bg4, rgba(0,0,0,0.04));
+  border-color: var(--tx3, #999);
+  color: var(--tx, #111);
+}
+
+.tn_btn_confirm {
+  padding: 0.6em 1.6em;
+  border-radius: 1vh;
+  border: none;
+  background: linear-gradient(135deg, #7C3AED 0%, var(--mco, #1978d7) 100%);
+  color: #fff;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 3px 12px rgba(124,58,237,0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.tn_btn_confirm:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(124,58,237,0.38);
+}
+.tn_btn_confirm:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   STEP 2 — Link generado (más grande y legible)
+   ══════════════════════════════════════════════════════════ */
+.tn_link_screen {
+  padding: 1.4rem 1.6rem 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  text-align: center;
+}
+
+.tn_success_icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(60,215,65,0.14), rgba(60,215,65,0.04));
+  border: 2px solid rgba(60,215,65,0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fz_l1, 1.5rem);
+  color: var(--success, #3cd741);
+  animation: tn_pop 0.35s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;
+}
+
+.tn_link_title {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_m4, 1rem);
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0;
+}
+
+.tn_link_sub {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  color: var(--tx3, #666);
+  margin: -0.4rem 0 0;
+  line-height: 1.6;
+}
+
+/* ── Link box — más grande y visible ────────────────────── */
+.tn_link_box {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85em 1em;
+  background: var(--bg4, rgba(124,58,237,0.07));
+  border: 2px solid rgba(124,58,237,0.22);
+  border-radius: 1.5vh;
+  box-shadow: 0 2px 10px rgba(124,58,237,0.08);
+}
+
+.tn_link_text {
+  flex: 1;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  font-weight: 500;
+  color: #7C3AED;
+  word-break: break-all;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.tn_btn_copy {
+  flex-shrink: 0;
+  padding: 0.5em 0.95em;
+  border-radius: 0.8vh;
+  border: none;
+  background: #7C3AED;
+  color: #fff;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s3, 0.78rem);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s, background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.tn_btn_copy:hover { opacity: 0.88; transform: scale(1.03); }
+.tn_btn_copy.copied { background: var(--success, #3cd741); }
+
+/* ── Expiry badge ────────────────────────────────────────── */
+.tn_expiry_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35em 0.9em;
+  border-radius: 2em;
+  background: rgba(255,167,38,0.1);
+  border: 1px solid rgba(255,167,38,0.28);
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s3, 0.78rem);
+  color: var(--warning, #ffa726);
+  font-weight: 600;
+}
+
+/* ── Acciones step 2 ─────────────────────────────────────── */
+.tn_link_actions {
+  display: flex;
+  gap: 0.7rem;
+  width: 100%;
+}
+
+.tn_btn_share {
+  flex: 1;
+  padding: 0.7em 1em;
+  border-radius: 1vh;
+  border: 1.5px solid var(--brd, #e2e8f0);
+  background: transparent;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  font-weight: 600;
+  color: var(--tx2, #444);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.tn_btn_share:hover {
+  background: var(--bg4, rgba(0,0,0,0.04));
+  border-color: var(--mco, #1978d7);
+  color: var(--mco, #1978d7);
+}
+
+.tn_btn_otro {
+  flex: 1;
+  padding: 0.7em 1em;
+  border-radius: 1vh;
+  border: none;
+  background: linear-gradient(135deg, #7C3AED 0%, var(--mco, #1978d7) 100%);
+  color: #fff;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.tn_btn_otro:hover { opacity: 0.9; }
+
+/* Botón Cerrar step 2 */
+.tn_btn_cerrar {
+  width: 100%;
+  padding: 0.6em;
+  border-radius: 1vh;
+  border: 1.5px solid var(--brd, #e2e8f0);
+  background: transparent;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  font-weight: 600;
+  color: var(--tx3, #666);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.tn_btn_cerrar:hover {
+  background: var(--bg4, rgba(0,0,0,0.04));
+  color: var(--tx, #111);
+}
+
+/* ══════════════════════════════════════════════════════════
+   PÁGINA DE ACTIVACIÓN — El trabajador abre el link
+   ══════════════════════════════════════════════════════════ */
+.tn_wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  background: var(--bg, #f0f4f8);
+  animation: tn_fadein 0.4s ease;
+}
+
+@keyframes tn_fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.tn_card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--wb, #fff);
+  border-radius: 2.5vh;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+
+.tn_card_stripe {
+  height: 5px;
+  background: linear-gradient(135deg, #7C3AED 0%, var(--mco, #1978d7) 100%);
+}
+
+.tn_card_header {
+  text-align: center;
+  padding: 2rem 1.75rem 1.25rem;
+}
+
+.tn_card_logo {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1rem;
+  display: block;
+  border-radius: 1.5vh;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+
+.tn_card_title {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_l1, 1.5rem);
+  font-weight: 800;
+  color: var(--tx, #111);
+  margin: 0 0 0.3rem;
+  line-height: 1.2;
+}
+
+.tn_card_subtitle {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  color: var(--tx3, #888);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tn_card_body {
+  padding: 0 1.75rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── States ──────────────────────────────────────────────── */
+.tn_state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.85rem;
+  padding: 1.5rem 0;
+}
+.tn_state.active { display: flex; }
+
+.tn_spinner_icon {
+  font-size: var(--fz_l2, 1.8rem);
+  color: #7C3AED;
+  animation: tn_spin 1s linear infinite;
+}
+@keyframes tn_spin {
+  to { transform: rotate(360deg); }
+}
+
+.tn_state_msg {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  color: var(--tx3, #888);
+  margin: 0;
+}
+
+/* ── Error ───────────────────────────────────────────────── */
+.tn_error_icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(255,56,73,0.1);
+  border: 2px solid rgba(255,56,73,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fz_l1, 1.5rem);
+  color: var(--error, #ff3849);
+}
+
+.tn_error_title {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_m2, 1rem);
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0;
+}
+
+.tn_error_msg {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  color: var(--tx3, #888);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Bienvenida banner ───────────────────────────────────── */
+.tn_bienvenida {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(135deg, rgba(124,58,237,0.07), rgba(25,120,215,0.04));
+  border: 1px solid rgba(124,58,237,0.14);
+  border-radius: 1.5vh;
+}
+
+.tn_bienvenida_avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7C3AED, var(--mco, #1978d7));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_m3, 1.05rem);
+  color: #fff;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.tn_bienvenida_nombre {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_m1, 0.92rem);
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.tn_bienvenida_rol {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s3, 0.78rem);
+  color: #7C3AED;
+  font-weight: 600;
+  margin: 0.15rem 0 0;
+  text-transform: capitalize;
+}
+
+/* ── Campos del form de activación ──────────────────────── */
+.tn_field_wrap { width: 100%; }
+
+.tn_act_label {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  font-weight: 600;
+  color: var(--tx2, #444);
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.tn_act_label i { color: #7C3AED; font-size: var(--fz_s2, 0.75rem); }
+
+.tn_act_input {
+  width: 100%;
+  padding: 0.7em 0.95em;
+  border: 1.5px solid var(--brd, #e2e8f0);
+  border-radius: 1.2vh;
+  background: var(--inp, #f8faff);
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  color: var(--tx, #111);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.tn_act_input:focus {
+  outline: none;
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+}
+.tn_act_input:disabled {
+  background: var(--bg5, rgba(0,0,0,0.04));
+  color: var(--tx3, #888);
+  cursor: not-allowed;
+}
+
+/* ── Password eye toggle ─────────────────────────────────── */
+.tn_pass_wrap { position: relative; }
+.tn_pass_wrap .tn_act_input { padding-right: 2.6em; }
+
+.tn_pass_eye {
+  position: absolute;
+  right: 0.75em;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--tx3, #aaa);
+  cursor: pointer;
+  font-size: var(--fz_s4, 0.83rem);
+  padding: 0;
+  transition: color 0.15s;
+}
+.tn_pass_eye:hover { color: #7C3AED; }
+
+/* ── Términos ────────────────────────────────────────────── */
+.tn_terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s3, 0.78rem);
+  color: var(--tx3, #666);
+  line-height: 1.5;
+  cursor: pointer;
+}
+.tn_terms input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin-top: 0.15rem;
+  accent-color: #7C3AED;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.tn_terms a { color: #7C3AED; text-decoration: underline; }
+
+/* ── Botón principal activar ─────────────────────────────── */
+.tn_btn_activar {
+  width: 100%;
+  padding: 0.85em;
+  border-radius: 1.5vh;
+  border: none;
+  background: linear-gradient(135deg, #7C3AED 0%, var(--mco, #1978d7) 100%);
+  color: #fff;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_m1, 0.92rem);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.tn_btn_activar:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(124,58,237,0.38);
+}
+.tn_btn_activar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Success ─────────────────────────────────────────────── */
+.tn_success_big_icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(60,215,65,0.14), rgba(60,215,65,0.04));
+  border: 2px solid rgba(60,215,65,0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fz_l2, 1.8rem);
+  color: var(--success, #3cd741);
+  animation: tn_pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+.tn_success_title {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_m4, 1rem);
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0;
+}
+
+.tn_success_msg {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s4, 0.83rem);
+  color: var(--tx3, #888);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Chip de usuario mostrado en éxito ───────────────────── */
+.tn_usuario_chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55em 1.2em;
+  background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(25,120,215,0.07));
+  border: 2px solid rgba(124,58,237,0.2);
+  border-radius: 2em;
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_m2, 1rem);
+  font-weight: 800;
+  color: #7C3AED;
+  animation: tn_pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.15s both;
+}
+.tn_usuario_chip i { font-size: var(--fz_m1, 0.92rem); }
+
+.tn_success_hint {
+  font-family: var(--ff_P, 'Poppins', sans-serif);
+  font-size: var(--fz_s3, 0.78rem);
+  color: var(--tx3, #888);
+  margin: -0.3rem 0 0;
+}
+
+/* ── Divider ─────────────────────────────────────────────── */
+.tn_divider {
+  height: 1px;
+  background: var(--brd, #e2e8f0);
+  width: 100%;
+  margin: 0.1rem 0;
+}
+
+/* ── Dos columnas en Info de Activación ─────────────────── */
+.tn_grid_info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  width: 100%;
+}
+@media (max-width: 420px) {
+  .tn_grid_info {
+    grid-template-columns: 1fr;
+  }
+}
+

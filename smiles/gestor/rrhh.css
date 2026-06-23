@@ -122,6 +122,34 @@ body.rrhh_no_scroll {
   box-shadow: 0 6px 18px rgba(124,58,237,0.3);
 }
 
+/* ── Nuevo Trabajador button ─────────────────────────────── */
+.rrhh_btn_nuevo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55em 1.15em;
+  border-radius: 0.75rem;
+  border: none;
+  background: linear-gradient(135deg, #7C3AED 0%, var(--mco, #1978d7) 100%);
+  color: #fff;
+  font-size: var(--fz_s4, 0.82rem);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 2px 10px rgba(124,58,237,0.28);
+  white-space: nowrap;
+  font-family: var(--ff_P, sans-serif);
+}
+.rrhh_btn_nuevo:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(124,58,237,0.36);
+}
+
+#modalNuevoTrabajador{
+  background: rgba(0,0,0, 0.4);
+
+}
 /* ── Refresh button ──────────────────────────────────────── */
 .rrhh_refresh_btn {
   width: 42px;

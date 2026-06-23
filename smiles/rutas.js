@@ -14,7 +14,6 @@ export const NAV = {
     nvleft:  [{ href: '/', page: 'inicio', ico: 'fa-house', txt: 'Bienvenido' }, ...COMUN],
     nvright: [
       { isBtn: true, cls: 'bt_auth login',     ico: 'fa-sign-in-alt', txt: 'Iniciar sessión'  },
-      { isBtn: true, cls: 'bt_auth registrar', ico: 'fa-user-plus', txt: 'Registrarme' },
     ],
   },
   smile: {
@@ -107,8 +106,9 @@ export const RUTAS = [
   { path: '/avisar',    area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/chat',      area: 'smile/', roles: ['smile','gestor','admin'] },
   // ── Tours App — gestor ────────────────────────────────────────────────
-  { path: '/rrhh',      area: 'gestor/', roles: ['gestor','admin'] },
-  { path: '/precios',   area: 'gestor/', roles: ['gestor','admin'] },
+  { path: '/rrhh',             area: 'gestor/', roles: ['gestor','admin'] },
+  { path: '/precios',          area: 'gestor/', roles: ['gestor','admin'] },
+  { path: '/trabajador_nuevo', area: 'gestor/', roles: null               }, // Pública — activación de cuenta
 
   // ── Autenticadas (roles superiores) ───────────────────────────────────────────────
   { path: '/gestor',   area: 'gestor/',  roles: ['gestor','admin'] },

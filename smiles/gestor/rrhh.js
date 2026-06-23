@@ -4,6 +4,7 @@ import { db } from '../firebase.js';
 import { collection, getDocs, doc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getls, savels, removels, Notificacion, Capi, Capit, wiAuth } from '../widev.js';
 import { rutas } from '../rutas.js';
+import { iniciarModal as abrirNuevoTrabajador } from './trabajador_nuevo.js';
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let usuarios    = [];
@@ -95,6 +96,9 @@ export const render = () => /* html */`
           <p class="rrhh_subtitle">Administra el equipo, roles, estado y participación en el reto</p>
         </div>
         <div class="rrhh_header_actions">
+          <button class="rrhh_btn_nuevo" id="rrhh_btn_nuevo" title="Agregar nuevo colaborador">
+            <i class="fas fa-user-plus"></i> Agregar nuevo trabajador
+          </button>
           <button class="rrhh_refresh_btn" id="rrhh_refresh" title="Actualizar lista">
             <i class="fas fa-sync-alt"></i>
           </button>
@@ -645,12 +649,14 @@ export const init = async () => {
   // Close panel — overlay click
   $(document).on('click.rrhh', '#rrhh_overlay', _closePanel);
 
+  // Nuevo trabajador
+  $(document).on('click.rrhh', '#rrhh_btn_nuevo', function () {
+    abrirNuevoTrabajador();
+  });
+
   // Close panel — Escape key
   $(document).on('keydown.rrhh', function (e) {
-    if (e.key === 'Escape') {
-      _closePanel();
-      _closeModal();
-    }
+    if (e.key === 'Escape') _closePanel();
   });
 
   // Save edit form

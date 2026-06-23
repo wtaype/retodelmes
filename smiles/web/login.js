@@ -12,10 +12,10 @@ export { auth, signOut };
 
 // ── CONFIG ───────────────────────────────────────────────────────────────────
 const cfg = { db: 'smiles', pagina: 'rol' };
-let modal = 'si', link = 'si', restablecer = 'si', login = 'si', registrar = 'si';
+let modal = 'si', link = 'si', restablecer = 'si', login = 'si', registrar = 'no';
 
 // Ruta por rol
-const ROL_PATH = { smile: '/registrar', gestor: '/gestor', empresa: '/empresa', admin: '/admin' };
+const ROL_PATH = { smile: '/smile', gestor: '/gestor', empresa: '/empresa', admin: '/admin' };
 const SEGMENTO_MAP = { smile: 'creador', gestor: 'negocio', empresa: 'empresa' };
 
 const err = {
@@ -340,7 +340,14 @@ $(document)
       const input = val('email'), pass = val('password');
       const { email, wi: wiPre } = await fetchUser(input);
       await signInWithEmailAndPassword(auth, email, pass);
-      const wi = wiPre ?? (await getDoc(doc(db, 'smiles', auth.currentUser.displayName || input))).data();
+
+      let wi = wiPre;
+      if (!wi) {
+        const q = query(collection(db, cfg.db), where('email', '==', email));
+        const snap = await getDocs(q);
+        if (snap.empty) throw new Error('Usuario no registrado');
+        wi = snap.docs[0].data();
+      }
 
       // Verificar si la cuenta está pendiente de activación
       if (wi.estado === 'pendiente') {
