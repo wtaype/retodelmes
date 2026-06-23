@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    // ── FUNCIONES DE AYUDA (Zero Trust) ──────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+    
+    function isOwner(usuario) {
+      return isAuth() && request.auth.token.name == usuario;
+    }
+    
+    // ── COLECCIÓN SMILES (USUARIOS) ──────────────────────────────────────────
+    match /smiles/{usuario} {
+      // Lectura pública: permite validar usuarios, perfiles, emails, etc. sin restricciones
+      allow read: if true;
+      
+      // Creación: Permitir creación pública, pero protegiendo que NUNCA puedan registrarse con rol 'admin'
+      allow create: if request.resource.data.rol != 'admin';
+      
+      // Actualización: Permitir si están autenticados, protegiendo que no puedan cambiarse su rol a 'admin'
+      allow update: if request.auth != null && (
+        request.resource.data.rol != 'admin' || resource.data.rol == 'admin'
+      );
+      
+      // Eliminación: Solo si está autenticado y su UID coincide con el del documento
+      allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
+    }
+
+    // ── REGISTROS DE VENTAS, LISTA TOURS───────────────────────────────────────────────────
+    match /registrosdb/{document} {
+      allow read:   if isAuth();
+      allow write:  if isAuth();
+    }
+    
+    match /listatours/{document} {
+      allow read:   if isAuth();
+      allow write:  if isAuth();
+    }
+    match /chatSmiles/{document} {
+      allow read:   if isAuth();
+      allow write:  if isAuth();
+    }
+
+    // ── CONFIGURACIÓN GENERAL ─────────────────────────────────────────────────
+    match /configuracion/{document} {
+      allow read:  if isAuth();
+      allow write: if false; // Solo desde Firebase Console o Admin SDK
+    }
+
+    // ── CONFIGWII (Bóveda TOTP por usuario) ──────────────────────────────────
+    // Solo el propio usuario autenticado puede leer/escribir su config de bóveda
+    match /configwii/{usuario} {
+      allow get:    if isAuth() && isOwner(usuario);
+      allow create: if isAuth() && isOwner(usuario);
+      allow update: if isAuth() && isOwner(usuario);
+      allow list:   if false;  // Nadie puede listar todas las configs
+      allow delete: if false;  // Nadie puede eliminar
+    }
+    
+  }
+}
