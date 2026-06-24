@@ -367,7 +367,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 48px 0 16px;
+  padding: 1vh 48px 1vh 16px;
   background: var(--bg) !important; /* Empty background is var(--bg) */
   border: 1px solid var(--brd);
   border-radius: 1.2vh;
@@ -377,7 +377,8 @@
   color: var(--tx);
   font-size: var(--fz_m2); /* Match other inputs size exactly */
   box-sizing: border-box;
-  height: 5.2vh;
+  min-height: 5.2vh;
+  height: auto;
   position: relative; /* Lock positioning for arrow absolute placement */
 }
 
@@ -1041,10 +1042,18 @@
 
   /* Alturas fijas estables en PX para evitar encogimiento por teclado virtual */
   .smw_input,
-  .smw_select,
-  .smw_tour_display {
+  .smw_select {
     height: 48px !important;
     line-height: 48px !important;
+    font-size: 15px !important;
+    border-radius: 12px !important;
+  }
+
+  .smw_tour_display {
+    min-height: 48px !important;
+    height: auto !important;
+    padding: 10px 48px 10px 16px !important;
+    line-height: 1.4 !important;
     font-size: 15px !important;
     border-radius: 12px !important;
   }
