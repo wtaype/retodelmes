@@ -1,0 +1,790 @@
+/* ═══════════════════════════════════════════════════════════
+   ganancias.css — Módulo de Ganancias y Comisiones
+   Reto del Mes · Gestor Module
+   ═══════════════════════════════════════════════════════════ */
+
+.gan_wrap {
+  margin: 0 auto;
+  padding-inline: 1.25rem;
+  padding-block: 1vh;
+  animation: gan_fadeIn 0.35s ease;
+}
+
+@keyframes gan_fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── HEADER CARD ── */
+.gan_header_card {
+  position: relative;
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 2.5vh;
+  padding: 1.6rem 1.75rem 1.4rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.gan_header_card_stripe {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #10B981 0%, var(--mco, #f59e0b) 100%);
+  border-radius: 2.5vh 2.5vh 0 0;
+}
+
+.gan_header_card.smw_loading .gan_header_card_stripe {
+  background: linear-gradient(90deg, #10B981 0%, var(--mco, #f59e0b) 50%, #10B981 100%);
+  background-size: 200% 100%;
+  animation: gan_loader_stripe 1.2s linear infinite;
+}
+
+@keyframes gan_loader_stripe {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.gan_header_inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gan_header_text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.gan_title {
+  font-family: var(--ff_O, sans-serif);
+  font-size: var(--fz_l1, 1.75rem);
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.gan_title i {
+  color: #10B981;
+}
+
+.gan_subtitle {
+  font-size: var(--fz_s2, 0.85rem);
+  color: var(--tx3, #888);
+  margin: 0;
+}
+
+.gan_header_actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.gan_refresh_btn {
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  color: var(--tx2, #555);
+  border-radius: 1.5vh;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.gan_refresh_btn:hover {
+  background: var(--bg, #f8fafc);
+  color: #10B981;
+  border-color: #10B981;
+  transform: rotate(30deg);
+}
+
+.gan_refresh_btn.spinning i {
+  animation: gan_spin 1s linear infinite;
+}
+
+@keyframes gan_spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── MONTH SELECTOR WRAP ── */
+.gan_month_selector_wrap {
+  display: flex;
+  align-items: center;
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 1.8vh;
+  padding: 2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  position: relative;
+}
+
+.gan_month_nav_btn {
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 1.4vh;
+  color: var(--tx2, #555);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.gan_month_nav_btn:hover {
+  background: var(--bg, #f8fafc);
+  color: #10B981;
+}
+
+.gan_month_display {
+  padding: 0 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--tx, #111);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.gan_month_hidden_select_header {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ── STATS BAR (KPIs Globales) ── */
+.gan_stats_bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.gan_stat_card {
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 2.2vh;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gan_stat_card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+
+.gan_stat_ico {
+  width: 48px;
+  height: 48px;
+  border-radius: 1.6vh;
+  background: rgba(var(--c), 0.1);
+  color: rgb(var(--c));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+}
+
+.gan_stat_data {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.gan_stat_label {
+  font-size: 0.78rem;
+  color: var(--tx3, #888);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gan_stat_num {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--tx, #111);
+  font-family: var(--ff_O, sans-serif);
+}
+
+/* ── MASTER-DETAIL GRID ── */
+.gan_grid {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* ── COLUMNA IZQUIERDA: TRABAJADORES ── */
+.gan_sidebar {
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 2.5vh;
+  padding: 1.25rem;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+}
+
+.gan_sidebar_title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--brd, #e2e8f0);
+}
+
+.gan_sidebar_title i {
+  color: var(--mco, #f59e0b);
+}
+
+.gan_workers_list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.gan_worker_card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 1.8vh;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.gan_worker_card:hover {
+  background: var(--bg, #f8fafc);
+  border-color: var(--mco, #f59e0b);
+}
+
+.gan_worker_card.active {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: #10B981;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.08);
+}
+
+.gan_worker_card.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: #10B981;
+}
+
+.gan_avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.gan_avatar_img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Colores de avatar de iniciales */
+.gan_avatar_initials {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.gan_worker_info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.gan_worker_name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--tx, #111);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gan_worker_sub {
+  font-size: 0.74rem;
+  color: var(--tx3, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gan_worker_badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 1vh;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.gan_worker_badge.pendiente {
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+}
+
+.gan_worker_badge.pagado {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+/* ── COLUMNA DERECHA: DETALLE ── */
+.gan_detail_panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gan_empty_state {
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 2.5vh;
+  padding: 5rem 2rem;
+  text-align: center;
+  color: var(--tx3, #888);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+}
+
+.gan_empty_state i {
+  font-size: 3.5rem;
+  color: var(--brd, #cbd5e1);
+  margin-bottom: 1.25rem;
+}
+
+.gan_empty_state h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0 0 0.5rem;
+}
+
+.gan_empty_state p {
+  font-size: 0.88rem;
+  margin: 0;
+  color: var(--tx3, #888);
+}
+
+/* ── INFO HEADER COLLABORATOR ── */
+.gan_colab_header_card {
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 2.5vh;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+  flex-wrap: wrap;
+}
+
+.gan_colab_profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gan_colab_names {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.gan_colab_name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0;
+}
+
+.gan_colab_username {
+  font-size: 0.8rem;
+  color: var(--tx3, #888);
+  margin: 0;
+}
+
+/* ── SECCIÓN CENTRAL: CONFIG LIQUIDACION + BANCO ── */
+.gan_colab_meta_grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* Tarjeta Datos Bancarios */
+.gan_bank_card {
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 2.5vh;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.gan_card_title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--tx, #111);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--brd, #e2e8f0);
+  padding-bottom: 0.6rem;
+}
+
+.gan_card_title i {
+  color: var(--Cielo, #0EA5E9);
+}
+
+.gan_bank_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  gap: 0.5rem;
+}
+
+.gan_bank_label {
+  color: var(--tx3, #888);
+  font-weight: 500;
+}
+
+.gan_bank_value {
+  font-weight: 600;
+  color: var(--tx, #111);
+  text-align: right;
+}
+
+.gan_bank_value.no_data {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--tx3, #aaa);
+}
+
+/* Tarjeta Configuración Comisión */
+.gan_config_card {
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 2.5vh;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.gan_config_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.gan_config_label {
+  font-size: 0.85rem;
+  color: var(--tx2, #555);
+  font-weight: 600;
+}
+
+.gan_input_pct_wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 90px;
+}
+
+.gan_pct_input {
+  width: 100%;
+  padding: 8px 24px 8px 12px;
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 1.2vh;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--tx, #111);
+  outline: none;
+  background: var(--bg, #f8fafc);
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.gan_pct_input:focus {
+  border-color: #10B981;
+  background: var(--wb, #fff);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.gan_pct_symbol {
+  position: absolute;
+  right: 10px;
+  font-weight: 700;
+  color: var(--tx2, #555);
+  font-size: 0.85rem;
+}
+
+/* Selector Toggle de Base de Cálculo */
+.gan_calc_toggle_group {
+  display: flex;
+  background: var(--bg, #f8fafc);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 1.4vh;
+  padding: 2px;
+}
+
+.gan_calc_btn {
+  background: none;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 1vh;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--tx2, #555);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gan_calc_btn.active {
+  background: var(--wb, #fff);
+  color: #10B981;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  border: 1px solid var(--brd, #e2e8f0);
+}
+
+/* ── TOTALS KPI PERSONAL ── */
+.gan_colab_kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.gan_colab_kpi_card {
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 2vh;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.gan_colab_kpi_num {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--tx, #111);
+  font-family: var(--ff_O, sans-serif);
+}
+
+.gan_colab_kpi_num.highlight {
+  color: #10B981;
+}
+
+.gan_colab_kpi_label {
+  font-size: 0.72rem;
+  color: var(--tx3, #888);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* ── LIQUIDAR BUTTON ── */
+.gan_btn_liquidar {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border: none;
+  color: #fff;
+  border-radius: 1.8vh;
+  padding: 0.85rem 1.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+}
+
+.gan_btn_liquidar:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+  filter: brightness(1.05);
+}
+
+.gan_btn_liquidar:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.gan_btn_liquidar:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.gan_btn_liquidar.loading i {
+  animation: gan_spin 1s linear infinite;
+}
+
+/* ── TABLA DE VENTAS DEL TRABAJADOR ── */
+.gan_table_card {
+  background: var(--wb, #fff);
+  border: 1px solid var(--brd, #e2e8f0);
+  border-radius: 2.5vh;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+.gan_table_title {
+  background: var(--bg, #f8fafc);
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid var(--brd, #e2e8f0);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--tx, #111);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gan_table_title i {
+  color: #10B981;
+}
+
+.gan_table_responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.gan_table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.8rem;
+}
+
+.gan_table th {
+  background: var(--wb, #fff);
+  color: var(--tx3, #888);
+  font-weight: 700;
+  padding: 0.8rem 1.25rem;
+  border-bottom: 2px solid var(--brd, #e2e8f0);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gan_table td {
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid var(--brd, #e2e8f0);
+  color: var(--tx2, #555);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.gan_table tbody tr {
+  transition: background 0.15s;
+}
+
+.gan_table tbody tr:hover {
+  background: var(--bg, #f8fafc);
+}
+
+/* Badges de comisión */
+.gan_badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 1vh;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.gan_badge.pendiente {
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+}
+
+.gan_badge.pagado {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+/* Skeletons */
+.gan_sk_row {
+  height: 48px;
+  background: linear-gradient(90deg, var(--bg, #f8fafc) 25%, var(--brd, #cbd5e1) 50%, var(--bg, #f8fafc) 75%);
+  background-size: 200% 100%;
+  animation: gan_sk_anim 1.5s infinite;
+}
+
+@keyframes gan_sk_anim {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Responsive adjustment */
+@media (max-width: 992px) {
+  .gan_grid {
+    grid-template-columns: 1fr;
+  }
+  .gan_stats_bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .gan_stats_bar {
+    grid-template-columns: 1fr;
+  }
+  .gan_colab_meta_grid {
+    grid-template-columns: 1fr;
+  }
+  .gan_colab_kpis {
+    grid-template-columns: 1fr;
+  }
+}

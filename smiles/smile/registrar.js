@@ -79,13 +79,13 @@ export const render = () => `
 
             <!-- Fila 2: Información General del Tour -->
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-user"></i> Cliente o Grupo *</label>
-              <input type="text" id="nombreCliente" class="smw_input" required placeholder="Cliente / calle / grupo">
+              <label><i class="fas fa-calendar-day"></i> Fecha del Tour *</label>
+              <input type="date" id="fechaTour" class="smw_input" required value="${new Date().toISOString().split('T')[0]}">
             </div>
 
             <div class="smw_form_field w_1">
-              <label><i class="fas fa-clock"></i> Hora de Salida *</label>
-              <input type="text" id="horaSalida" class="smw_input" placeholder="Ej: 5PM" required>
+              <label><i class="fas fa-user"></i> Cliente o Grupo *</label>
+              <input type="text" id="nombreCliente" class="smw_input" required placeholder="Cliente / calle / grupo">
             </div>
 
             <div class="smw_form_field w_1">
@@ -100,10 +100,7 @@ export const render = () => `
               </select>
             </div>
 
-            <div class="smw_form_field w_1">
-              <label><i class="fas fa-calendar-day"></i> Fecha del Tour *</label>
-              <input type="date" id="fechaTour" class="smw_input" required value="${new Date().toISOString().split('T')[0]}">
-            </div>
+            <input type="hidden" id="horaSalida" value="—">
 
             <!-- Fila 3: Transacción Financiera del Cliente -->
             <div class="smw_form_field w_1">
@@ -132,16 +129,17 @@ export const render = () => `
 
             <div class="smw_form_field w_1">
               <label>
-                <i class="fas fa-money-check-alt"></i> Pago Cliente *
-                <i class="fas fa-circle-question" data-witip="¿El cliente ya pagó todo el servicio?<br>• Elige 'Nos pagó' si el dinero ya ingresó a caja.<br>• Elige 'Debe' si el cobro queda pendiente" data-wtipo="info"></i>
+                <i class="fas fa-money-check-alt"></i> Pago al Proveedor *
+                <i class="fas fa-circle-question" data-witip="¿Cuál es el estado del pago al proveedor?<br>• Elige 'No aplica (Nosotros)' si el servicio es propio.<br>• Elige 'Sí (Pagado)' si ya se le pagó al operador.<br>• Elige 'No (Deuda)' si el pago queda pendiente." data-wtipo="info"></i>
               </label>
               <select id="estadoPago" class="smw_select" required>
-                <option value="cobrar" selected>Debe</option>
-                <option value="pagado">Nos pagó</option>
+                <option value="pagado2">No aplica (Nosotros)</option>
+                <option value="pagado" selected>Sí (Pagado)</option>
+                <option value="cobrar">No (Deuda)</option>
               </select>
             </div>
 
-            <!-- Fila 4: Liquidación del Operador y Ganancia -->
+            <!-- Fila 4: Liquidación del Operador, Costo y Observaciones -->
             <div class="smw_form_field w_1">
               <label>
                 <i class="fas fa-user-shield"></i> Operador del Tour *
@@ -158,31 +156,13 @@ export const render = () => `
               <input type="number" id="PagoOperador" class="smw_input" step="0.01" placeholder="0.00" required>
             </div>
 
-            <div class="smw_form_field w_1">
-              <label>
-                <i class="fas fa-circle-check"></i> ¿Costo Pagado? *
-                <i class="fas fa-circle-question" data-witip="¿Ya le pagamos al operador su tarifa?<br>• Marca 'Sí' si ya liquidamos cuentas.<br>• Marca 'No' si aún le debemos este dinero al proveedor." data-wtipo="info"></i>
-              </label>
-              <select id="pagoOperadorSiNo" class="smw_select" required>
-                <option value="no">No</option>
-                <option value="si">Sí</option>
-                <option value="na">No aplica</option>
-              </select>
-            </div>
-
-            <div class="smw_form_field w_1">
-              <label>
-                <i class="fas fa-handshake"></i> Ganancia Neta
-                <i class="fas fa-circle-question" data-witip="La ganancia o comisión que nos queda en caja después de restar el costo del operador." data-wtipo="info"></i>
-              </label>
-              <input type="number" id="ganancia" class="smw_input" step="0.01" placeholder="0.00" disabled>
-            </div>
-
-            <!-- Fila 5: Notas (4 cols - Ancho Completo) -->
-            <div class="smw_form_field w_4">
+            <div class="smw_form_field w_3">
               <label><i class="fa-solid fa-comment-dots"></i> Observaciones / Detalles Extra (Opcional)</label>
               <input type="text" id="Comentario" class="smw_input" placeholder="Anotaciones extra...">
             </div>
+
+            <input type="hidden" id="pagoOperadorSiNo" value="no">
+            <input type="hidden" id="ganancia" value="0.00">
 
             <!-- Fila 6: Opciones de Puntos / Excepciones (4 cols - Ancho Completo) -->
             <div class="smw_options_section">
@@ -750,7 +730,6 @@ function _registrarEventos() {
       // Validaciones obligatorias de campos mínimos
       const req = [
         ['#nombreCliente', 'Cliente'],
-        ['#horaSalida', 'Hora'],
         ['#fechaTour', 'Fecha'],
         ['#Operador', 'Operador'],
         ['#metodoPago', 'Pago']
@@ -847,34 +826,39 @@ function calcularTotal() {
 function calcularComision() {
   const estado = $('#estadoPago').val();
   const total = parseFloat($('#importeTotal').val()) || 0;
-  const esPagado = estado === 'pagado' || estado === 'pagado2';
 
   const $pagoOp = $('#PagoOperador');
   const $pagoSiNo = $('#pagoOperadorSiNo');
   const $operador = $('#Operador');
 
-  if (esPagado) {
+  if (estado === 'pagado2') {
+    // No aplica (Nosotros)
     const yaDeshabilitado = $pagoOp.prop('disabled');
     
-    $pagoOp.prop('disabled', true).val('0').attr('placeholder', 'No aplica');
-    $pagoSiNo.prop('disabled', true).val('na');
+    $pagoOp.prop('disabled', true).val('0.00').attr('placeholder', 'No aplica');
+    $pagoSiNo.val('na');
     $operador.prop('disabled', true).val('Nosotros').attr('placeholder', 'Servicio propio');
 
     $('#ganancia').val(total.toFixed(2));
 
-    // Animamos los campos bloqueados para dar feedback visual "pro"
     if (!yaDeshabilitado) {
       aplicarZoom('#Operador');
       aplicarZoom('#PagoOperador');
       aplicarZoom('#pagoOperadorSiNo');
     }
   } else {
+    // Sí (Pagado) o No (Deuda) -> Permitir registrar normal el Operador del Tour
     const yaHabilitado = !$pagoOp.prop('disabled');
 
-    // Si cambian de "Nos pagó" a "Debe", reseteamos los valores de Servicio Propio
     if ($operador.val() === 'Nosotros') $operador.val('');
-    if ($pagoOp.val() === '0') $pagoOp.val('');
-    if ($pagoSiNo.val() === 'na') $pagoSiNo.val('no');
+    if (parseFloat($pagoOp.val()) === 0) $pagoOp.val('');
+    
+    // Asignar el valor correspondiente a pagoOperadorSiNo
+    if (estado === 'pagado') {
+      $pagoSiNo.val('si');
+    } else {
+      $pagoSiNo.val('no');
+    }
 
     $pagoOp.prop('disabled', false).attr('placeholder', 'S/ 0.00');
     $pagoSiNo.prop('disabled', false);
@@ -959,11 +943,12 @@ function limpiarFormulario() {
   // Valores default
   $('#cantidadPax').val(1);
   $('#fechaTour').val(new Date().toISOString().split('T')[0]);
+  $('#estadoPago').val('pagado');
   $('#vistaPreviaLaPuntos').text('0');
   $('#tourSelectedLabel').text('Seleccionar tour...');
   $('.tour-row').removeClass('selected');
   $('#importeTotal, #ganancia').prop('disabled', true);
-  $('#pagoOperadorSiNo').val('no').prop('disabled', false);
+  $('#pagoOperadorSiNo').val('si').prop('disabled', false);
   
   $('#smwRegCardTitle').html('<i class="fas fa-cart-plus"></i> Registrar Nueva Venta');
   

@@ -37,6 +37,7 @@ export const NAV = {
       { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Historial Ventas' },
       { href: '/tours',     page: 'tours',     ico: 'fa-route',            txt: 'Tours'     },
       { href: '/precios',   page: 'precios',   ico: 'fa-tags',           txt: 'Gestionar Trours'   },
+      { href: '/ganancias', page: 'ganancias', ico: 'fa-wallet',         txt: 'Ganancias' },
       ...COMUN,
     ],
     nvright: [
@@ -108,6 +109,7 @@ export const RUTAS = [
   // ── Tours App — gestor ────────────────────────────────────────────────
   { path: '/rrhh',             area: 'gestor/', roles: ['gestor','admin'] },
   { path: '/precios',          area: 'gestor/', roles: ['gestor','admin'] },
+  { path: '/ganancias',        area: 'gestor/', roles: ['gestor','admin'] },
   { path: '/trabajador_nuevo', area: 'gestor/', roles: null               }, // Pública — activación de cuenta
 
   // ── Autenticadas (roles superiores) ───────────────────────────────────────────────
