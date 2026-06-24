@@ -38,7 +38,7 @@ export const NAV = {
       { href: '/historial',  page: 'historial',  ico: 'fa-clipboard-list',   txt: 'Historial Ventas' },
       { href: '/tours',      page: 'tours',      ico: 'fa-route',            txt: 'Tours'     },
       { href: '/precios',    page: 'precios',    ico: 'fa-tags',           txt: 'Gestionar Trours'   },
-      { href: '/more',       page: 'more',       ico: 'fa-cubes',            txt: 'Más' },
+      { href: '/more',       page: 'more',       ico: 'fa-ellipsis',            txt: 'Más' },
       ...COMUN,
     ],
     nvright: [
