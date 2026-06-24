@@ -631,6 +631,37 @@
       transition: color .6s ease-out
     }
 
+    /* Ocultar botón Más por defecto en pantallas de escritorio grandes (>= 1480px) */
+    .nv_item[data-page="more"] {
+      display: none !important;
+    }
+
+    /* En pantallas de laptop/tablets menores a 1480px, reajustamos el menú del header */
+    @media (max-width: 1480px) and (min-width: 769px) {
+      /* Mostrar el botón "Más" */
+      .nv_item[data-page="more"] {
+        display: flex !important;
+      }
+      
+      /* Ocultar las páginas secundarias especificadas para evitar amontonamiento */
+      .winav .nv_item[data-page="ranking"],
+      .winav .nv_item[data-page="tours"],
+      .winav .nv_item[data-page="precios"],
+      .winav .nv_item[data-page="permisos"],
+      .winav .nv_item[data-page="sistema"],
+      .nv_right .nv_item[data-page="mifcm"],
+      .nv_right .nv_item[data-page="word"],
+      .nv_right .nv_item[data-page="nuevo"],
+      .nv_right .nv_item[data-page="notas"] {
+        display: none !important;
+      }
+    }
+
+    /* Evitar que aparezca en el menú móvil lateral (Drawer) ya que el drawer tiene espacio completo */
+    .movil_nav .nv_item[data-page="more"] {
+      display: none !important;
+    }
+
     .nv_right {
       display: flex;
       align-items: center;
