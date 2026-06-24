@@ -1,0 +1,1 @@
+import"./wii-BvK6d7hI.js";import{N as e,w as t,y as n}from"./firebase-D6VL4aaK.js";var r=new Set([`retodelmes.web.app`,`retodelmes.com`,void 0,`localhost`]).has(window.location.hostname)?e({apiKey:void 0,authDomain:void 0,projectId:void 0,storageBucket:void 0,messagingSenderId:void 0,appId:void 0}):null,i=r?t(r):null,a=r?n(r):null;export{a as n,i as t};
