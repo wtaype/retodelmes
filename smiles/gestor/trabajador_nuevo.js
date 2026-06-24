@@ -90,7 +90,7 @@ const _modalHTML = () => /* html */`
                   <i class="fas fa-briefcase"></i> Rol
                 </label>
                 <select class="tn_form_select" id="tn_rol">
-                  <option value="smile">Smile (Vendedor)</option>
+                  <option value="smile">Smile (Trabajador)</option>
                   <option value="gestor">Gestor (Administrador)</option>
                 </select>
               </div>
