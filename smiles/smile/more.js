@@ -8,10 +8,6 @@ const CARDS = [
   { href: '/ranking',   ico: 'fa-trophy',           txt: 'Ranking',           desc: 'Salón de campeones y posiciones de venta del mes.' },
   { href: '/tours',     ico: 'fa-route',            txt: 'Catálogo de Tours', desc: 'Tours oficiales, precios vigentes y puntos asignados.' },
   { href: '/chat',      ico: 'fa-comments',         txt: 'Chat Grupal',       desc: 'Canal de comunicación en vivo con el equipo.' },
-  { href: '/notas',     ico: 'fa-book',             txt: 'Notas Book',        desc: 'Tu libreta de apuntes y recordatorios personales.' },
-  { href: '/word',      ico: 'fa-rocket',           txt: 'Planificar',        desc: 'Editor de documentos y planificación.' },
-  { href: '/agregar',   ico: 'fa-folder-plus',      txt: 'Mis Recursos',      desc: 'Almacena y organiza tus archivos de trabajo.' },
-  { href: '/avisar',    ico: 'fa-bullhorn',         txt: 'Anuncios',          desc: 'Mensajes y notificaciones del equipo.' },
   
   // Módulos de Gestión (gestor & admin)
   { href: '/precios',   ico: 'fa-tags',             txt: 'Gestionar Tours',   desc: 'Configura y modifica el catálogo y precios oficiales.' },

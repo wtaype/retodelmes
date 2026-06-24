@@ -57,7 +57,6 @@ export const render = () => {
           { page: 'ranking',   ico: 'fa-trophy',          col: '#FFDA34', tit: 'Ver Ranking',    sub: 'Puntos del mes' },
           { page: 'historial', ico: 'fa-clipboard-list', col: '#0EBEFF', tit: 'Historial',      sub: 'Mis ventas registradas' },
           { page: 'tours',     ico: 'fa-route',           col: '#29C72E', tit: 'Catálogo Tours', sub: 'Lista de tours and precios' },
-          { page: 'avisar',    ico: 'fa-bell',            col: '#7000FF', tit: 'Anuncios',       sub: 'Noticias del equipo' },
         ].map((a, i) => `
           <a href="/${a.page}" class="smw_qcard nv_item" data-page="${a.page}" style="--qc:${a.col}; animation-delay: ${i * 0.05}s">
             <div class="smw_qcard_ico" style="--qc: ${a.col}"><i class="fas ${a.ico}"></i></div>

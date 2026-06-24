@@ -7,7 +7,7 @@ rutas.registerAll(() => getls('wiSmile')?.rol);
 
 const checkRedirect = (isPre = false) => {
   const u = getls('wiSmile');
-  if (u && !isPre) setTimeout(() => rutas.navigate(({smile:'/smile',gestor:'/gestor',admin:'/admin'})[u.rol]||'/smile'), 0);
+  if (u && !isPre) setTimeout(() => rutas.navigate(({smile:'/registrar',gestor:'/gestor',admin:'/admin'})[u.rol]||'/smile'), 0);
   return rutas.inicio();
 };
 rutas.register('/', checkRedirect);

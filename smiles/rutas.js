@@ -22,11 +22,11 @@ export const NAV = {
       { href: '/historial', page: 'historial', ico: 'fa-clipboard-list',   txt: 'Historial Ventas' },
       { href: '/ranking',   page: 'ranking',   ico: 'fa-trophy',           txt: 'Ranking'   },
       { href: '/tours',     page: 'tours',     ico: 'fa-route',            txt: 'Tours '     },
-      { href: '/chat',      page: 'chat',      ico: 'fa-comments',         txt: 'Chat Grupal' },
-      { href: '/more',      page: 'more',      ico: 'fa-cubes',            txt: 'Más' },
+      { href: '/more',      page: 'more',      ico: 'fa-ellipsis',            txt: 'Más' },
       ...COMUN,
     ],
     nvright: [
+      { href: '/chat',      page: 'chat',      ico: 'fa-comments',         txt: 'Chat Grupal' }, 
       { isPerfil: true }, { isSalir: true },
     ],
   },
@@ -55,13 +55,11 @@ export const NAV = {
       { href: '/permisos', page: 'permisos', ico: 'fa-lock',  txt: 'Permisos'   },
       { href: '/sistema',  page: 'sistema',  ico: 'fa-cogs',  txt: 'Sistema'    },
       { href: '/chat',     page: 'chat',     ico: 'fa-comments', txt: 'Chat Grupal' },
-      { href: '/more',     page: 'more',     ico: 'fa-cubes', txt: 'Más' },
+      { href: '/more',     page: 'more',     ico: 'fa-ellipsis', txt: 'Más' },
     ],
     nvright: [
       { href: '/mifcm',    page: 'mifcm',    ico: 'fa-bell',  txt: 'Mi FCM'     },
-      { href: '/word',      page: 'word',      ico: 'fa-rocket', txt: 'Planificar'     },
       { href: '/nuevo',    page: 'nuevo',    ico: 'fa-plus',        txt: 'Post' },
-      { href: '/notas',    page: 'notas',    ico: 'fa-comments',    txt: 'Book'   },
       { isPerfil: true }, { isSalir: true },
     ],
   },
@@ -94,12 +92,9 @@ export const RUTAS = [
   { path: '/contacto',   area: 'web/acerca/' },
 
   // ── Autenticadas (smile) ───────────────────────────────────────────────
-  { path: '/agregar',  area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/smile',    area: 'smile/', roles: ['smile','gestor','admin'] },
-  { path: '/notas',    area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/perfil',   area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/mensajes', area: 'smile/', roles: ['smile','gestor','admin'] },
-  { path: '/word',     area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/nuevo',    area: 'web/blog/', roles: ['smile','gestor','admin'] },
 
   // ── Tours App — smile ────────────────────────────────────────────────
@@ -107,7 +102,6 @@ export const RUTAS = [
   { path: '/ranking',   area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/historial', area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/tours',     area: 'smile/', roles: ['smile','gestor','admin'] },
-  { path: '/avisar',    area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/chat',      area: 'smile/', roles: ['smile','gestor','admin'] },
   { path: '/more',      area: 'smile/', roles: ['smile','gestor','admin'] },
   // ── Tours App — gestor ────────────────────────────────────────────────
