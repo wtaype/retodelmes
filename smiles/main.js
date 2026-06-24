@@ -5,13 +5,8 @@ import { rutas } from './rutas.js';
 // ── RUTAS PROFESIONAL DE ACUERDO A ROLES  ─────────────────────────────
 rutas.registerAll(() => getls('wiSmile')?.rol);
 
-const checkRedirect = (isPre = false) => {
-  const u = getls('wiSmile');
-  if (u && !isPre) setTimeout(() => rutas.navigate(({smile:'/registrar',gestor:'/gestor',admin:'/admin'})[u.rol]||'/smile'), 0);
-  return rutas.inicio();
-};
-rutas.register('/', checkRedirect);
-rutas.register('/inicio', checkRedirect);
+rutas.register('/', () => rutas.inicio());
+rutas.register('/inicio', () => rutas.inicio());
 rutas.init();
 import('./header.js');
 import('./footer.js')

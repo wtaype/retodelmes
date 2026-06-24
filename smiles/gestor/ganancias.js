@@ -200,9 +200,6 @@ export const render = () => {
 
 // ─── INITIALIZATION ───────────────────────────────────────────────────────────
 export const init = async () => {
-  const user = wiAuth.user;
-  if (!user) return setTimeout(() => rutas.navigate('/login'), 100);
-
   cargando = false;
   vendedorSeleccionado = null;
   busquedaFiltroVendedor = '';

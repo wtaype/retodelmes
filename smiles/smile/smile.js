@@ -74,8 +74,6 @@ export const render = () => {
 
 export const init = async () => {
   const user = wiAuth.user;
-  if (!user) return setTimeout(() => rutas.navigate('/login'), 100);
-
   const nombre = getNombre(user.nombre || user.usuario || '');
   const iniciales = `${(user.nombre || '?')[0]}${(user.apellidos || '')[0] || ''}`.toUpperCase();
 

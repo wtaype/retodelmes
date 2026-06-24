@@ -5,7 +5,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfi
          sendEmailVerification, sendPasswordResetEmail, signOut, GoogleAuthProvider, signInWithPopup, updatePassword } from 'firebase/auth';
 import { setDoc, getDoc, getDocs, doc, collection, query, where, serverTimestamp } from 'firebase/firestore';
 import { wiTip, Mensaje, savels, getls, wiSpin, wiAuth, abrirModal, cerrarTodos } from '../widev.js';
-import { rutas } from '../rutas.js';
+import { rutas, ROL_PATH } from '../rutas.js';
 import { app} from '../wii.js';
 
 export { auth, signOut };
@@ -14,9 +14,7 @@ export { auth, signOut };
 const cfg = { db: 'smiles', pagina: 'rol' };
 let modal = 'si', link = 'si', restablecer = 'si', login = 'si', registrar = 'no';
 
-// Ruta por rol
-const ROL_PATH = { smile: '/registrar', gestor: '/gestor', empresa: '/empresa', admin: '/admin' };
-const SEGMENTO_MAP = { smile: 'creador', gestor: 'negocio', empresa: 'empresa' };
+// ROL_PATH se importa desde rutas.js
 
 const err = {
   'auth/email-already-in-use':'Email ya registrado', 'auth/weak-password':'Contraseña débil (mín. 6)',
@@ -137,8 +135,6 @@ export const render = () => (link !== 'si' || wiAuth.user)
 
 export const init = () => {
   if (link !== 'si') { setTimeout(() => rutas.navigate('/'), 0); return; }
-  const wi = wiAuth.user;
-  if (wi) { setTimeout(() => rutas.navigate(ROL_PATH[wi.rol] || '/'), 0); return; }
   mostrar('login');
 };
 
@@ -319,7 +315,7 @@ $(document)
         avatar:    user.photoURL || '',
         bio:       '',
         plan:      'free',
-        segmento:  SEGMENTO_MAP[rolSeleccionado] || 'creador',
+        segmento:  'general',
         verificado: false,
         registradoPor: 'google'
       };
@@ -408,7 +404,7 @@ $(document)
         avatar:    '',
         bio:       '',
         plan:      'free',
-        segmento:  SEGMENTO_MAP[rolFinal] || 'creador',
+        segmento:  'general',
         verificado: false,
         registradoPor: 'correo',
 

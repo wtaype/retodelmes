@@ -255,10 +255,6 @@ export const render = () => `
 
 // --- INICIALIZACIÓN DE LA SPA ---
 export const init = async () => {
-  // Validación de sesión usando el helper centralizado wiAuth de widev.js
-  const user = wiAuth.user;
-  if (!user) return setTimeout(() => rutas.navigate('/login'), 100);
-
   // Activar estado de carga animado premium
   const $card = $('#smwRegCard');
   $card.addClass('smw_loading');

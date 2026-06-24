@@ -1,7 +1,7 @@
 import './chat.css';
 import $ from 'jquery';
 import { db } from '../firebase.js';
-import { collection, getDocs, addDoc, doc, deleteDoc, query, orderBy, limit, startAfter, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, deleteDoc, query, orderBy, limit, startAfter, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { getls, savels, Notificacion, Capit, wiTiempo, wiAuth, wiSpin } from '../widev.js';
 import { cargarTodosEmpleados } from './zsmile.js';
 
@@ -19,7 +19,7 @@ let mensajes      = [];
 let colaboradores = [];
 let filterText    = '';
 let enviando      = false;
-let refreshTimer  = null;
+let unsubscribeMsgs = null;
 let puedeEnviar   = false;
 let miUsuario     = '';
 let miNombre      = '';
@@ -76,7 +76,7 @@ export const render = () => /* html */`
             </div>
             <div class="chat_header_text">
               <h1 class="chat_title">Chat del Equipo</h1>
-              <p class="chat_subtitle">Canal interno de <em>Smiles</em></p>
+              <p class="chat_subtitle">Canal interno de <em>Reto del Mes</em></p>
             </div>
           </div>
           <div class="chat_header_actions">
@@ -397,68 +397,51 @@ const _updateOnlineCount = (count) => {
   $('#chatOnlineCount').text(count);
 };
 
-// ─── Load messages from Firestore ─────────────────────────────────────────────
-const _loadMensajes = async (forceReload = false) => {
-  if (cargando) return;
-  cargando = true;
-
-  // Try cache first
-  if (!forceReload) {
-    const cached = getls(CACHE_KEY);
-    if (cached && Array.isArray(cached)) {
-      mensajes = cached;
-      tieneMasAnteriores = true;
-      _renderMessages();
-      cargando = false;
-      return;
-    }
-  }
-
-  // Show loading state on refresh
-  if (forceReload) {
-    $('#chatRefresh').addClass('chat_spinning');
+// ─── Escucha Real-Time con onSnapshot ─────────────────────────────────────────
+const _iniciarEscuchaRealtime = () => {
+  if (unsubscribeMsgs) {
+    unsubscribeMsgs();
+    unsubscribeMsgs = null;
   }
 
   $('#chatHeader').addClass('smw_loading');
 
-  try {
-    const q    = query(collection(db, 'chatSmiles'), orderBy('creado', 'desc'), limit(MSG_LIMIT));
-    const snap = await getDocs(q);
-
-    // Reverse so oldest is first
-    const docs = snap.docs.reverse();
+  const q = query(collection(db, 'chatSmiles'), orderBy('creado', 'desc'), limit(MSG_LIMIT));
+  
+  unsubscribeMsgs = onSnapshot(q, (snap) => {
+    // Invertir para que el más antiguo sea el primero en renderizarse
+    const docs = snap.docs.slice().reverse();
     mensajes = docs.map(d => ({ id: d.id, ...d.data() }));
     tieneMasAnteriores = snap.size >= MSG_LIMIT;
 
-    // Cache results
+    // Guardar en caché local
     savels(CACHE_KEY, mensajes, CACHE_TTL);
 
     _renderMessages();
 
-    // Count participants in last messages
+    // Contar participantes en los últimos mensajes
     const uniqueAutors = new Set(mensajes.map(m => m.usuario || m.autor).filter(Boolean));
     _updateOnlineCount(uniqueAutors.size);
 
-  } catch (err) {
-    console.error('[Chat] loadMensajes error:', err);
+    $('#chatHeader').removeClass('smw_loading');
+    $('#chatRefresh').removeClass('chat_spinning');
+  }, (err) => {
+    console.error('[Chat] onSnapshot error:', err);
     if (!mensajes.length) {
       $('#chatMessages').html(/* html */`
         <div class="chat_empty chat_empty_error">
           <div class="chat_empty_icon">⚠️</div>
           <p class="chat_empty_title">Error al cargar</p>
-          <p class="chat_empty_sub">Revisa tu conexión e intenta de nuevo.</p>
+          <p class="chat_empty_sub">Revisa tu conexión o permisos en tiempo real.</p>
           <button class="chat_retry_btn" id="chatRetry">
             <i class="fas fa-redo"></i> Reintentar
           </button>
         </div>
       `);
     }
-    Notificacion('No se pudieron cargar los mensajes', 'error');
-  } finally {
-    cargando = false;
     $('#chatHeader').removeClass('smw_loading');
     $('#chatRefresh').removeClass('chat_spinning');
-  }
+  });
 };
 
 // ─── Load previous messages (pagination) ──────────────────────────────────────
@@ -652,18 +635,19 @@ export const init = async () => {
   // 3. Update input UI
   _updateSendUI();
 
-  // 4. Load messages
-  _loadMensajes(false);
+  // 4. Carga inicial de mensajes desde caché local para velocidad instantánea
+  const cached = getls(CACHE_KEY);
+  if (cached && Array.isArray(cached)) {
+    mensajes = cached;
+    tieneMasAnteriores = true;
+    _renderMessages();
+  }
 
-  // 5. Load collaborators sidebar list
+  // 5. Iniciar escucha en tiempo real con onSnapshot
+  _iniciarEscuchaRealtime();
+
+  // 6. Cargar lista de colaboradores del sidebar
   _loadColaboradores();
-
-  // 6. Auto-refresh every 30s
-  refreshTimer = setInterval(() => {
-    savels(CACHE_KEY, null, 0); // bust cache
-    _loadMensajes(true);
-    _loadColaboradores();
-  }, REFRESH_MS);
 
   // ── Events ────────────────────────────────────────────────────────────────
 
@@ -687,8 +671,10 @@ export const init = async () => {
   // Refresh button
   $(document).on(`click${NS}`, '#chatRefresh', async function () {
     savels(CACHE_KEY, null, 0);
+    savels('todosEmpleadosSmile', null, 0); // Limpiar también la caché de RRHH/Colaboradores
     tieneMasAnteriores = true;
-    await _loadMensajes(true);
+    $('#chatRefresh').addClass('chat_spinning');
+    _iniciarEscuchaRealtime();
     await _loadColaboradores();
     Notificacion('Mensajes actualizados', 'success');
   });
@@ -804,7 +790,7 @@ export const init = async () => {
   $(document).on(`click${NS}`, '#chatRetry', () => {
     $('#chatMessages').html(_skeletons());
     $('#chatSidebarList').html(_sidebarSkeletons());
-    _loadMensajes(true);
+    _iniciarEscuchaRealtime();
     _loadColaboradores();
   });
 
@@ -817,8 +803,10 @@ export const init = async () => {
 // ─── cleanup ──────────────────────────────────────────────────────────────────
 export const cleanup = () => {
   $(document).off(NS);
-  clearInterval(refreshTimer);
-  refreshTimer = null;
+  if (unsubscribeMsgs) {
+    unsubscribeMsgs();
+    unsubscribeMsgs = null;
+  }
 
   // Reset state
   mensajes      = [];

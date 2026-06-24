@@ -159,9 +159,6 @@ export const render = () => `
 
 // --- INICIALIZACIÓN DEL MÓDULO SPA ---
 export const init = async () => {
-  const user = wiAuth.user;
-  if (!user) return setTimeout(() => rutas.navigate('/login'), 100);
-
   // ① Mostrar HTML inmediatamente con animaciones
   $('.wi_fadeUp').addClass('visible wi_visible');
   window.__WIREADY__ = true; // SPA lista para interacción

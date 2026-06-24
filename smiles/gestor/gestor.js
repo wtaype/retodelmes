@@ -138,8 +138,6 @@ export const render = () => `
 
 export const init = async () => {
   const user = wiAuth.user;
-  if (!user) return setTimeout(() => rutas.navigate('/login'), 100);
-
   const wi = getls('wiSmile');
   const nombre = getNombre(wi?.nombre || user.displayName || 'Gerente');
   const iniciales = nombre.substring(0,2).toUpperCase();

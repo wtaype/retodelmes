@@ -129,9 +129,6 @@ export const render = () => `
 `;
 
 export const init = async () => {
-  const user = wiAuth.user;
-  if (!user) return setTimeout(() => rutas.navigate('/login'), 100);
-
   // Load catalogs
   _cargarCatalogo();
 

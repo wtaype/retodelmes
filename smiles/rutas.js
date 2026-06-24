@@ -3,6 +3,13 @@ import { app, titulo, descri, keywii, linkweb } from './wii.js';
 import { Notificacion, wiPath, wiFade } from './widev.js';
 import * as inicioMod from './web/inicio.js';
 
+// ── ROL_PATH — rutas por defecto al iniciar sesión ──────────────────────────
+export const ROL_PATH = {
+  smile:  '/registrar',
+  gestor: '/gestor',
+  admin:  '/admin'
+};
+
 // ── NAV COMUN — rutas compartidas entre todos los roles ────────────────────────
 const COMUN = [
   // { href: '/acerca', page: 'acerca', ico: 'fa-circle-info', txt: 'Acerca' }
@@ -194,12 +201,33 @@ class WiRutas {
     this.cargand = true;
     const norm = wiPath.limpiar(ruta) === '/' ? `/${this.HOME}` : wiPath.limpiar(ruta);
 
-    // ── GUARD ADMIN ───────────────────────────────────────────────────────────
-    if (['/admin','/usuarios','/permisos','/sistema','/mifcm'].includes(norm)) {
-      const { getls } = await import('./widev.js');
-      const wi = getls('wiSmile'), go = r => (this.cargand = false, this.navigate(r, true));
-      const dest = !wi || wi.rol !== 'admin' ? '/' : wi.estado !== 'activo' ? '/registrado' : !sessionStorage.getItem('vault_unlocked') ? '/verificar' : null;
-      if (dest) return go(dest);
+    // ── GUARDIA GLOBAL DE SEGURIDAD ─────────────────────────────────────────────
+    const { getls } = await import('./widev.js');
+    const wi = getls('wiSmile');
+    const configRuta = RUTAS.find(r => r.path === norm);
+    const go = r => (this.cargand = false, this.navigate(r, true));
+
+    if (wi) {
+      // 1. Redirigir si intenta entrar a login, inicio o raíz estando logueado
+      if (['/login', '/', '/inicio'].includes(norm)) {
+        return go(ROL_PATH[wi.rol] || '/smile');
+      }
+      
+      // 2. Verificar permisos de rol para la ruta solicitada
+      if (configRuta && configRuta.roles && !configRuta.roles.includes(wi.rol)) {
+        return go(ROL_PATH[wi.rol] || '/smile');
+      }
+
+      // 3. Guard especial de Administrador
+      if (['/admin','/usuarios','/permisos','/sistema','/mifcm'].includes(norm)) {
+        const dest = wi.rol !== 'admin' ? '/' : wi.estado !== 'activo' ? '/registrado' : !sessionStorage.getItem('vault_unlocked') ? '/verificar' : null;
+        if (dest) return go(dest);
+      }
+    } else {
+      // 4. Si no está logueado e intenta acceder a una ruta privada, al login
+      if (configRuta && configRuta.roles) {
+        return go('/login');
+      }
     }
 
     try {
@@ -255,7 +283,7 @@ class WiRutas {
     this.marcarNav(wiPath.actual === '/' ? `/${this.HOME}` : wiPath.limpiar(wiPath.actual));
 
     $(document)
-      .on('click', '.nv_item', (e) => {
+      .on('click', '.nv_item:not(.bt_salir)', (e) => {
         e.preventDefault();
         const pag = $(e.currentTarget).data('page');
         this.navigate(pag === this.HOME ? '/' : `/${pag}`);

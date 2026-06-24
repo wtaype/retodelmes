@@ -52,7 +52,7 @@ $(document).on('click', '.wimenu', () => $('body').addClass('movil_open'));
 $(document).on('click', '.movil_close, .movil_overlay, .movil_nav .nv_item, .movil_nav button', () => $('body').removeClass('movil_open'));
 
 // ── AUTH LISTENER ─────────────────────────────────────────────────────────────
-wiAuth.on(wi => wi ? renderHeader(wi) : (renderHeader(), rutas.navigate('/')));
+wiAuth.on(wi => wi ? renderHeader(wi) : (renderHeader(), rutas.cargand = false, rutas.navigate('/')));
 const wi = wiAuth.user; wi ? renderHeader(wi) : renderHeader();
 
 // ── ROUTE LISTENER — re-renderiza el nav en cada navegación SPA ───────────────
