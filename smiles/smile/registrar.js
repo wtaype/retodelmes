@@ -255,6 +255,7 @@ export const render = () => `
 
 // --- INICIALIZACIÓN DE LA SPA ---
 export const init = async () => {
+  const user = wiAuth.user;
   // Activar estado de carga animado premium
   const $card = $('#smwRegCard');
   $card.addClass('smw_loading');
