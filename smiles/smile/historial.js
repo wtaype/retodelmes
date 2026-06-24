@@ -118,6 +118,7 @@ export const render = () => {
                 <th><i class="fas fa-credit-card"></i>Pagado</th>
                 <th><i class="fas fa-hand-holding-usd"></i>Ganancia</th>
                 <th><i class="fas fa-user-shield"></i>Vendedor</th>
+                <th><i class="fa-solid fa-comment-dots"></i>Comentario</th>
                 <th><i class="fas fa-star"></i>Puntos</th>
                 <th><i class="fas fa-cogs"></i>Acciones</th>
               </tr>
@@ -406,7 +407,7 @@ async function _cargarTodo(forceRefresh = false) {
     _renderizarTabla();
   } catch (error) {
     console.error('Error en cargar todo:', error);
-    $('#histSalesTableBody').html('<tr><td colspan="12" class="smw_error_cell"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos</td></tr>');
+    $('#histSalesTableBody').html('<tr><td colspan="13" class="smw_error_cell"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos</td></tr>');
   } finally {
     $header.removeClass('smw_loading');
     $btnRefresh.removeClass('spinning');
@@ -528,6 +529,15 @@ function _renderizarTabla() {
         <td><span class="smw_profit_span">S/ ${parseFloat(v.ganancia || 0).toFixed(2)}</span></td>
         <td><span class="smw_reg_label"><i class="fas fa-user"></i> ${quienVende}</span></td>
         <td>
+          ${(() => {
+            const comentario = v.Comentario || '';
+            const tipAttr = comentario ? `data-witip="${comentario.replace(/"/g, '&quot;')}"` : '';
+            return `<span class="smw_reg_label" ${tipAttr} style="${comentario ? 'cursor: help;' : ''}">
+              ${comentario.length > 14 ? comentario.slice(0, 14) + '...' : (comentario || '—')}
+            </span>`;
+          })()}
+        </td>
+        <td>
           <span class="smw_points_box">
             <i class="fas fa-star"></i> ${v.puntos || 0}
           </span>
@@ -543,7 +553,7 @@ function _renderizarTabla() {
   } else {
     tbody.html(`
       <tr>
-        <td colspan="12" class="smw_empty_cell">
+        <td colspan="13" class="smw_empty_cell">
           <i class="fas fa-inbox"></i>
           <strong>No se encontraron registros de ventas</strong>
           <p>Prueba ajustando los filtros o seleccionando otro mes.</p>
@@ -655,6 +665,7 @@ function _generarSkeletonsTabla(cant = 9) {
       <td><span class="smw_sk_el" style="width:72px;height:22px;border-radius:50px"></span></td>
       <td><span class="smw_sk_el" style="width:55px;height:14px"></span></td>
       <td><span class="smw_sk_el" style="width:60px;height:14px"></span></td>
+      <td><span class="smw_sk_el" style="width:50px;height:14px"></span></td>
       <td><span class="smw_sk_el" style="width:52px;height:22px;border-radius:50px"></span></td>
       <td>
         <div style="display:flex;gap:6px;justify-content:center">

@@ -51,7 +51,7 @@ export const render = () => `
     <section class="smw_rank_kpis_grid wi_fadeUp" id="rankKpiGrid">
       
       <div class="smw_rkpi_card" style="--kpi-color: var(--Cielo)">
-        <div class="smw_rkpi_icon"><i class="fas fa-car-side"></i></div>
+        <div class="smw_rkpi_icon"><i class="fas fa-car"></i></div>
         <div class="smw_rkpi_info">
           <span class="smw_rkpi_val" id="rkpiToursHoy"><span class="smw_sk_el" style="width:38px;height:22px;border-radius:6px"></span></span>
           <span class="smw_rkpi_lbl">Tours Hoy</span>

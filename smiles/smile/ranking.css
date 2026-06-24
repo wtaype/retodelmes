@@ -2,6 +2,14 @@
    RANKING.CSS - Estilos Premium del Salón de Campeones & Podio 3D
    ========================================================================== */
 
+/* --- VARIABLES DEL TEMA (Mayúsculas para Ranking) --- */
+:root {
+  --Cielo: #0EBEFF;
+  --Paz: #29C72E;
+  --Mora: #7000FF;
+  --Oro: #FFDA34;
+}
+
 /* --- CONTENEDOR GENERAL --- */
 .smw_rank_view {
   width: 100%;
@@ -161,6 +169,7 @@
   box-shadow: 0 8px 24px rgba(0,0,0,0.02);
   position: relative;
   overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .smw_rkpi_card::before {
   content: '';
@@ -169,17 +178,29 @@
   background: var(--kpi-color);
   border-radius: 4px 0 0 4px;
 }
+.smw_rkpi_card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+  border-color: color-mix(in srgb, var(--kpi-color) 35%, var(--brd));
+}
 
 .smw_rkpi_icon {
-  width: 6.5vh;
-  height: 6.5vh;
-  border-radius: 1.8vh;
-  background: color-mix(in srgb, var(--kpi-color) 12%, transparent);
+  width: 5.8vh;
+  height: 5.8vh;
+  border-radius: 1.6vh;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--kpi-color) 20%, transparent), color-mix(in srgb, var(--kpi-color) 8%, transparent));
   color: var(--kpi-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--fz_m3);
+  font-size: 2.6vh;
+  border: 1.5px solid color-mix(in srgb, var(--kpi-color) 25%, transparent);
+  box-shadow: 0 5px 15px color-mix(in srgb, var(--kpi-color) 10%, transparent);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.smw_rkpi_card:hover .smw_rkpi_icon {
+  transform: scale(1.08) rotate(4deg);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--kpi-color) 20%, transparent);
 }
 
 .smw_rkpi_info {
