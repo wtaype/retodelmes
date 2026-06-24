@@ -998,6 +998,189 @@ body.rrhh_no_scroll {
 /* ══════════════════════════════════════════════════════════
    MOBILE
    ══════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVIDAD Y OPTIMIZACIONES MÓVILES
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .rrhh_search_input {
+    height: 48px !important;
+    line-height: 48px !important;
+    font-size: 15px !important;
+  }
+
+  .rrhh_form_input,
+  .rrhh_form_select {
+    height: 48px !important;
+    line-height: 48px !important;
+    font-size: 15px !important;
+    border-radius: 12px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* --- CONVERSIÓN DE LA TABLA A TARJETAS DINÁMICAS EN MÓVIL --- */
+  .rrhh_table_wrap {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+  
+  .rrhh_table {
+    display: block;
+    min-width: 100% !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .rrhh_table thead {
+    display: none; /* Ocultar cabeceras */
+  }
+
+  .rrhh_table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .rrhh_table tbody tr {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: auto auto auto auto auto auto !important;
+    gap: 8px !important;
+    padding: 16px 16px 16px 68px !important; /* Margen izquierdo para el avatar absoluto */
+    background: var(--wb) !important;
+    border: 1px solid var(--brd) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.015) !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    transition: all 0.25s ease !important;
+  }
+
+  .rrhh_table tbody tr.rrhh_row_inactive {
+    opacity: 0.65;
+  }
+
+  .rrhh_table tbody tr:hover {
+    background: color-mix(in srgb, #7C3AED 4%, var(--wb)) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.03) !important;
+  }
+
+  .rrhh_table tbody td {
+    display: block !important;
+    padding: 0 !important;
+    border: none !important;
+    text-align: left !important;
+  }
+
+  /* Posicionamiento del avatar absoluto */
+  .rrhh_table tbody td:nth-child(1) {
+    position: absolute !important;
+    left: 16px !important;
+    top: 16px !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /* Nombre */
+  .rrhh_table tbody td:nth-child(2) {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: var(--tx) !important;
+    align-self: center;
+  }
+
+  /* Usuario */
+  .rrhh_table tbody td:nth-child(3) {
+    grid-column: 1 / span 2;
+    grid-row: 2;
+    font-size: 13px !important;
+    color: var(--tx2) !important;
+    margin-top: -2px;
+  }
+
+  /* Email */
+  .rrhh_table tbody td:nth-child(4) {
+    grid-column: 1 / span 2;
+    grid-row: 3;
+    font-size: 13px !important;
+    color: var(--tx3) !important;
+    margin-top: 2px;
+  }
+
+  /* Rol Badge */
+  .rrhh_table tbody td:nth-child(5) {
+    grid-column: 1;
+    grid-row: 4;
+    margin-top: 8px;
+    align-self: center;
+  }
+
+  /* Estado Badge */
+  .rrhh_table tbody td:nth-child(7) {
+    grid-column: 2;
+    grid-row: 4;
+    margin-top: 8px;
+    justify-self: end;
+    align-self: center;
+  }
+
+  /* Toggle Participa */
+  .rrhh_table tbody td:nth-child(6) {
+    grid-column: 1 / span 2;
+    grid-row: 5;
+    margin-top: 10px;
+    border-top: 1px dashed var(--brd);
+    padding-top: 10px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .rrhh_table tbody td:nth-child(6)::before {
+    content: "Participa Reto:";
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--tx2);
+  }
+
+  /* Acciones */
+  .rrhh_table tbody td:nth-child(8) {
+    grid-column: 1 / span 2;
+    grid-row: 6;
+    margin-top: 8px;
+    border-top: 1px dashed var(--brd);
+    padding-top: 10px !important;
+  }
+
+  .rrhh_actions_cell {
+    justify-content: flex-end !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+
+  .rrhh_btn_editar {
+    height: 38px !important;
+    line-height: 38px !important;
+    padding: 0 16px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+  }
+
+  .rrhh_btn_approve,
+  .rrhh_btn_reject {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 14px !important;
+  }
+}
+
 @media (max-width: 640px) {
   .rrhh_wrap {
     padding: 1.25rem 0.75rem 4rem;
@@ -1007,34 +1190,43 @@ body.rrhh_no_scroll {
     font-size: var(--fz_m4, 1.35rem);
   }
 
+  /* Cuadrícula organizada 2x2 para las tarjetas de estadísticas */
   .rrhh_stats_bar {
-    gap: 0.6rem;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    margin-bottom: 20px !important;
   }
 
   .rrhh_stat_chip {
-    padding: 0.75rem;
-    flex: 1 1 70px;
+    flex: none !important;
+    width: 100% !important;
+    padding: 12px !important;
+    border-radius: 12px !important;
   }
 
   .rrhh_stat_num {
-    font-size: var(--fz_l1, 1.6rem);
+    font-size: 24px !important;
   }
 
-  .rrhh_table_wrap {
-    border-radius: 1rem;
-  }
-
-  .rrhh_panel {
-    width: 100vw;
-  }
-
+  /* Tabs de filtrado con scroll horizontal estético */
   .rrhh_tabs {
-    gap: 0.4rem;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding-bottom: 8px !important;
+    gap: 8px !important;
+    scrollbar-width: none !important;
+  }
+  
+  .rrhh_tabs::-webkit-scrollbar {
+    display: none !important;
   }
 
   .rrhh_tab {
-    font-size: var(--fz_s1, 0.72rem);
-    padding: 0.4em 0.85em;
+    flex-shrink: 0 !important;
+    font-size: 12px !important;
+    padding: 6px 14px !important;
+    border-radius: 20px !important;
   }
 
   .rrhh_header_card {
@@ -1052,5 +1244,9 @@ body.rrhh_no_scroll {
     border-radius: 50%;
     padding: 0;
     justify-content: center;
+  }
+
+  .rrhh_panel {
+    width: 100vw;
   }
 }

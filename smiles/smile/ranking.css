@@ -1134,29 +1134,292 @@
 @media (max-width: 992px) {
   .smw_rank_bottom_grid {
     grid-template-columns: 1fr;
-    gap: 3.5vh;
+    gap: 24px;
   }
+
+  .smw_rank_sidebar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .smw_winner_card,
+  .smw_notes_card {
+    flex: 1 1 calc(50% - 12px) !important;
+    margin-bottom: 0;
+  }
+
+  .smw_podium_container {
+    gap: 2.5vh;
+    max-width: 100%;
+  }
+
+  .smw_podium_avatar_wrap {
+    width: 9.5vh;
+    height: 9.5vh;
+  }
+
+  .smw_pos_1 .smw_podium_avatar_wrap {
+    width: 11.5vh;
+    height: 11.5vh;
+  }
+
+  .smw_pos_1 .smw_podium_pedestal { height: 90px; }
+  .smw_pos_2 .smw_podium_pedestal { height: 70px; }
+  .smw_pos_3 .smw_podium_pedestal { height: 50px; }
 }
 
 @media (max-width: 768px) {
-  .smw_podium_container {
-    flex-direction: column;
-    align-items: center;
-    gap: 4vh;
-  }
-  .smw_podium_place {
-    width: 80% !important;
-  }
-  .smw_podium_pedestal {
-    height: 6vh !important;
-  }
   .smw_rank_header {
+    padding: 20px 24px;
     flex-direction: column;
     align-items: flex-start;
+    gap: 16px;
+  }
+  .smw_rank_title_row h1 {
+    font-size: 20px !important;
   }
   .smw_rank_controls {
     width: 100%;
+    justify-content: flex-start;
+  }
+  .smw_month_selector_wrap {
+    width: 100%;
     justify-content: space-between;
+  }
+  .smw_month_display {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .smw_rank_kpis_grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 550px) {
+  .smw_rank_kpis_grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .smw_podium_section {
+    padding: 24px 16px;
+  }
+
+  .smw_podium_container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+  }
+
+  /* Transformar puestos del podio a tarjetas de fila horizontal en móvil */
+  .smw_podium_place {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    padding: 14px 16px !important;
+    background: var(--wb) !important;
+    border: 1px solid var(--brd) !important;
+    border-radius: 16px !important;
+    gap: 14px !important;
+    text-align: left !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ajustes de orden para que el primer puesto se mantenga al principio de la lista */
+  .smw_pos_1 { order: 1 !important; }
+  .smw_pos_2 { order: 2 !important; }
+  .smw_pos_3 { order: 3 !important; }
+
+  /* Re-posicionamiento de corona */
+  .smw_crown_icon {
+    position: absolute !important;
+    top: -10px !important;
+    left: 48px !important;
+    font-size: 16px !important;
+    margin: 0 !important;
+    transform: rotate(-10deg) !important;
+  }
+
+  /* Dimensionado de Avatars en Fila */
+  .smw_podium_avatar_wrap {
+    width: 52px !important;
+    height: 52px !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  .smw_pos_1 .smw_podium_avatar_wrap {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .smw_podium_badge {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 9px !important;
+    bottom: -2px !important;
+    right: -2px !important;
+  }
+
+  /* Bloque de Información */
+  .smw_podium_info {
+    flex: 1 !important;
+    text-align: left !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+  }
+  .smw_podium_info h3 {
+    font-size: 14px !important;
+  }
+  .smw_podium_info p {
+    font-size: 11px !important;
+    margin-top: 0 !important;
+  }
+
+  /* Bloque de Puntuación alineado a la derecha */
+  .smw_podium_score {
+    text-align: right !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    min-width: 80px !important;
+  }
+  .smw_podium_pts {
+    font-size: 14px !important;
+  }
+  .smw_podium_tours {
+    font-size: 11px !important;
+  }
+
+  /* Conversión de Pedestal 3D a un badge indicador a la izquierda */
+  .smw_podium_pedestal {
+    order: -1 !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    border: 2px solid var(--ped-color) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: color-mix(in srgb, var(--ped-color) 8%, var(--wb)) !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  .smw_pedestal_num {
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    color: var(--tx) !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+
+  /* --- CONVERSIÓN DE TABLA DE CLASIFICACIÓN A TARJETAS DINÁMICAS EN MÓVIL --- */
+  .smw_vt_responsive {
+    border: none;
+    overflow: visible;
+  }
+  .smw_vt_table {
+    display: block;
+    min-width: 100% !important;
+  }
+  .smw_vt_table thead {
+    display: none; /* Ocultar cabeceras en móviles */
+  }
+  .smw_vt_table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .smw_vt_row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: auto auto auto !important;
+    gap: 10px !important;
+    padding: 14px !important;
+    background: var(--wb) !important;
+    border: 1px solid var(--brd) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.01) !important;
+    margin-bottom: 0 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+  }
+  .smw_vt_row td {
+    display: block !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+  /* Distribución de la celda de la grilla móvil:
+     Fila 1: Fecha (izquierda) | Puntos (derecha)
+     Fila 2: Usuario (izquierda) | Tour (derecha)
+     Fila 3: Total (izquierda) | Ganancia (derecha) (con divisor) */
+  .smw_vt_row td:nth-child(1) { /* Fecha */
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+  }
+  .smw_vt_row td:nth-child(6) { /* Puntos */
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+    justify-self: end;
+  }
+  .smw_vt_row td:nth-child(3) { /* Usuario */
+    grid-column: 1;
+    grid-row: 2;
+    padding-top: 4px !important;
+  }
+  .smw_vt_row td:nth-child(2) { /* Tour */
+    grid-column: 2;
+    grid-row: 2;
+    text-align: right;
+    justify-self: end;
+    padding-top: 4px !important;
+  }
+  .smw_vt_row td:nth-child(4) { /* Total */
+    grid-column: 1;
+    grid-row: 3;
+    padding-top: 10px !important;
+    border-top: 1px dashed var(--brd) !important;
+    margin-top: 4px;
+  }
+  .smw_vt_row td:nth-child(5) { /* Ganancia */
+    grid-column: 2;
+    grid-row: 3;
+    text-align: right;
+    justify-self: end;
+    padding-top: 10px !important;
+    border-top: 1px dashed var(--brd) !important;
+    margin-top: 4px;
+  }
+
+  /* Sidebar a una columna en móviles */
+  .smw_rank_sidebar {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .smw_winner_card,
+  .smw_notes_card {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+  }
+  .smw_winner_content {
+    gap: 16px;
+  }
+  .smw_winner_avatar_wrap {
+    width: 70px;
+    height: 70px;
   }
 }
 

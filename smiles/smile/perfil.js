@@ -20,7 +20,7 @@ export const render = () => {
   const rol       = u.rol       || 'smile';
   const plan      = u.plan      || 'free';
   const estado    = u.estado    || 'activo';
-  const tema      = (u.tema     || 'Por defecto').split('|')[0];
+  const userTema  = (u.tema     || 'cielo|#0EBEFF').toLowerCase();
   const uid       = u.uid       || '';
   const avatar    = u.avatar    || '';
   const fechaNacimiento = u.fechaNacimiento || '';
@@ -96,8 +96,23 @@ export const render = () => {
           </div>
         </div>
         
-        <label>Biografía</label>
-        <textarea id="prf_bio" rows="3" placeholder="Cuéntanos un poco sobre ti...">${bio}</textarea>
+        <div class="prf_form_2col">
+          <div class="prf_form_grp">
+            <label>Biografía</label>
+            <input id="prf_bio" value="${bio}" placeholder="Cuéntanos un poco sobre ti...">
+          </div>
+          <div class="prf_form_grp">
+            <label>Tema de la aplicación</label>
+            <select id="prf_tema">
+              <option value="cielo|#0EBEFF" ${userTema.startsWith('cielo') ? 'selected' : ''}>Cielo</option>
+              <option value="dulce|#FF5C69" ${userTema.startsWith('dulce') ? 'selected' : ''}>Dulce</option>
+              <option value="paz|#29C72E" ${userTema.startsWith('paz') ? 'selected' : ''}>Paz</option>
+              <option value="oro|#ffc107" ${userTema.startsWith('oro') ? 'selected' : ''}>Oro</option>
+              <option value="mora|#7000FF" ${userTema.startsWith('mora') ? 'selected' : ''}>Mora</option>
+              <option value="futuro|#21273B" ${userTema.startsWith('futuro') ? 'selected' : ''}>Futuro</option>
+            </select>
+          </div>
+        </div>
 
         <button id="prf_guardar" class="prf_btn"><i class="fas fa-save"></i> Guardar cambios</button>
       </div>
@@ -156,6 +171,7 @@ export const init = () => {
         genero: $('#prf_genero').val() || '',
         gustos: $('#prf_gustos').val().trim(),
         bio: $('#prf_bio').val().trim(),
+        tema: $('#prf_tema').val(),
       };
 
       if (!updates.nombre) return wiTip(document.getElementById('prf_nombre'), 'Ingresa tu nombre', 'error');
@@ -164,6 +180,7 @@ export const init = () => {
       try {
         await updateDoc(doc(db, 'smiles', u.usuario), updates);
         savels('wiSmile', { ...u, ...updates }, 24);
+        if (updates.tema) localStorage.wiTema = updates.tema;
         
         $('.prf_fullname').text(`${updates.nombre} ${updates.apellidos}`);
         if(updates.avatar) {
@@ -172,7 +189,7 @@ export const init = () => {
           $('.prf_av').attr('src', 'https://ui-avatars.com/api/?name=' + encodeURIComponent(updates.nombre + ' ' + updates.apellidos) + '&background=random&color=fff');
         }
         
-        Mensaje('Perfil actualizado ✅', 'success');
+        Mensaje('Perfil actualizado ', 'success');
       } catch (e) {
         console.error(e);
         Mensaje('Error al guardar', 'error');
@@ -206,6 +223,15 @@ export const init = () => {
       } finally {
         btn.prop('disabled', false).html('<i class="fas fa-key"></i> Actualizar contraseña');
       }
+    })
+    .on('change.prf', '#prf_tema', function () {
+      const val = $(this).val();
+      if (!val) return;
+      const [n, c] = val.split('|');
+      document.documentElement.dataset.theme = n;
+      $('meta[name="theme-color"]').attr('content', c);
+      $('.tema').removeClass('mtha').filter(`[data-ths="${val}"]`).addClass('mtha');
+      localStorage.wiTema = val;
     });
 };
 
