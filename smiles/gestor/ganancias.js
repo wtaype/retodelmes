@@ -616,8 +616,8 @@ function _renderizarDetalle() {
         <div class="gan_config_item" style="display:flex; align-items:center; gap:0.6rem;">
           <span class="gan_config_label">Calcular sobre:</span>
           <div class="gan_calc_toggle_group">
-            <button class="gan_calc_btn ${base === 'neto' ? 'active' : ''}" data-base="neto">Ganancia Neta</button>
-            <button class="gan_calc_btn ${base === 'bruto' ? 'active' : ''}" data-base="bruto">Total Bruto</button>
+            <button class="gan_calc_btn ${base === 'neto' ? 'active' : ''}" data-base="neto" data-witip="Calcula la comisión sobre la ganancia líquida del tour (importe cobrado -  costo del operador)." data-wtipo="info">Ganancia Neta</button>
+            <button class="gan_calc_btn ${base === 'bruto' ? 'active' : ''}" data-base="bruto" data-witip="Calcula la comisión sobre el total bruto cobrado al cliente, sin deducir costos de operación." data-wtipo="info">Total Bruto</button>
           </div>
         </div>
       </div>
@@ -626,15 +626,19 @@ function _renderizarDetalle() {
     <!-- KPIs Personales -->
     <div class="gan_colab_kpis">
       <div class="gan_colab_kpi_card">
-        <span class="gan_colab_kpi_label">Ventas (Total Bruto)</span>
+        <span class="gan_colab_kpi_label" data-witip="Suma total de los importes cobrados al cliente antes de restar costos." data-wtipo="info" style="cursor: help;">Toal Ventas (Bruto)</span>
         <strong class="gan_colab_kpi_num" id="kpiColabVentas">S/ 0.00</strong>
       </div>
       <div class="gan_colab_kpi_card">
-        <span class="gan_colab_kpi_label">Ganancia Empresa</span>
+        <span class="gan_colab_kpi_label" data-witip="Suma total de los costos cobrados por los operadores para realizar los tours." data-wtipo="info" style="cursor: help;">Total Costo del Operador</span>
+        <strong class="gan_colab_kpi_num" id="kpiColabCosto">S/ 0.00</strong>
+      </div>
+      <div class="gan_colab_kpi_card">
+        <span class="gan_colab_kpi_label" data-witip="Ingreso neto final para la empresa (Total Bruto - Costo del Operador)." data-wtipo="info" style="cursor: help;">Total Ganancia Empresa</span>
         <strong class="gan_colab_kpi_num" id="kpiColabNeto">S/ 0.00</strong>
       </div>
       <div class="gan_colab_kpi_card">
-        <span class="gan_colab_kpi_label">Comisión para trabajador</span>
+        <span class="gan_colab_kpi_label" data-witip="Monto correspondiente al colaborador basado en su porcentaje y base de cálculo configurada." data-wtipo="info" style="cursor: help;">Comisión para trabajador</span>
         <strong class="gan_colab_kpi_num highlight" id="kpiColabComision">S/ 0.00</strong>
       </div>
     </div>
@@ -650,11 +654,11 @@ function _renderizarDetalle() {
           <thead>
             <tr>
               <th>Fecha</th>
-              <th>Cliente</th>
               <th>Tour</th>
               <th>PAX</th>
-              <th>Total Venta (Bruto)</th>
-              <th>Ganancia Neta</th>
+              <th>Ventas (Bruto)</th>
+              <th>Costo Operador</th>
+              <th>Ganancia Empresa</th>
               <th>Estado</th>
             </tr>
           </thead>
@@ -689,6 +693,7 @@ function _actualizarKpisPersonales() {
   });
 
   let totalBruto = 0;
+  let totalCosto = 0;
   let totalNeto = 0;
   let totalComision = 0;
   let tienePendiente = false;
@@ -697,6 +702,7 @@ function _actualizarKpisPersonales() {
     // Para KPIs de comisiones a pagar, solo consideramos las que ya están cobradas por caja
     if (esCobrado(v.estadoPago)) {
       totalBruto += parseFloat(v.importeTotal) || 0;
+      totalCosto += parseFloat(v.PagoOperador) || 0;
       totalNeto += parseFloat(v.ganancia) || 0;
       totalComision += v.comisionCalculada;
       if (!v.comisionPagada) tienePendiente = true;
@@ -704,6 +710,7 @@ function _actualizarKpisPersonales() {
   });
 
   $('#kpiColabVentas').text(`S/ ${totalBruto.toFixed(2)}`);
+  $('#kpiColabCosto').text(`S/ ${totalCosto.toFixed(2)}`);
   $('#kpiColabNeto').text(`S/ ${totalNeto.toFixed(2)}`);
   $('#kpiColabComision').text(`S/ ${totalComision.toFixed(2)}`);
 
@@ -735,7 +742,7 @@ function _actualizarTablaDetalle() {
   if (!ventasColab.length) {
     $('#ganColabTableBody').html(`
       <tr>
-        <td colspan="8" style="text-align:center; padding:3rem; color:var(--tx3,#888);">
+        <td colspan="7" style="text-align:center; padding:3rem; color:var(--tx3,#888);">
           <i class="fas fa-receipt" style="font-size:2rem; margin-bottom:0.5rem; display:block;"></i>
           No hay ventas registradas para este colaborador en el mes seleccionado.
         </td>
@@ -782,10 +789,10 @@ function _actualizarTablaDetalle() {
     return `
       <tr>
         <td><strong>${fechaStr}</strong></td>
-        <td>${Capit(v.nombreCliente || '—')}</td>
         <td><span class="smw_rol_badge rrhh_rol_smile" style="background:#f1f5f9; color:#475569; border: 1px solid #cbd5e1;">${v.tipoTour || 'Tour'}</span></td>
         <td><strong style="font-family:var(--ff_O);">${v.cantidadPax || v.pax || 1}</strong></td>
         <td>S/ ${(parseFloat(v.importeTotal) || 0).toFixed(2)}</td>
+        <td>S/ ${(parseFloat(v.PagoOperador) || 0).toFixed(2)}</td>
         <td>S/ ${(parseFloat(v.ganancia) || 0).toFixed(2)}</td>
         <td>
           <span class="gan_badge ${badgeCls}" ${badgeStyle}>
