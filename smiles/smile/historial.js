@@ -132,42 +132,42 @@ export const render = () => {
         <div class="smw_pagination_container" id="histPagination"></div>
       </section>
 
-      <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
-      <div id="modalConfirmarEliminacion" class="wiModal">
-        <div class="modalBody smw_del_modal_body">
-          <button class="modalX" id="btnCancelDelX">&times;</button>
-          <div class="smw_del_modal_icon">
-            <i class="fas fa-exclamation-triangle"></i>
-          </div>
-          <h3>¿Eliminar venta?</h3>
-          <p class="smw_del_modal_desc">Esta acción no se puede deshacer. Por favor confirma los detalles del registro:</p>
-          
-          <div class="smw_del_modal_details">
-            <div class="smw_del_detail_row">
-              <span class="smw_del_detail_label">Cliente:</span>
-              <span class="smw_del_detail_val" id="txtDelCliente">...</span>
-            </div>
-            <div class="smw_del_detail_row">
-              <span class="smw_del_detail_label">Tour:</span>
-              <span class="smw_del_detail_val" id="txtDelTour">...</span>
-            </div>
-            <div class="smw_del_detail_row">
-              <span class="smw_del_detail_label">Importe:</span>
-              <span class="smw_del_detail_val" id="txtDelImporte">...</span>
-            </div>
-          </div>
+    </div>
 
-          <div class="smw_del_modal_acts">
-            <button class="smw_del_btn smw_del_btn_cancel" id="btnCancelDelVenta">
-              <i class="fas fa-times"></i> Cancelar
-            </button>
-            <button class="smw_del_btn smw_del_btn_confirm" id="btnConfirmDelVenta">
-              <i class="fas fa-trash-alt"></i> Confirmar
-            </button>
+    <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
+    <div id="modalConfirmarEliminacion" class="wiModal">
+      <div class="modalBody smw_del_modal_body">
+        <button class="modalX" id="btnCancelDelX">&times;</button>
+        <div class="smw_del_modal_icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3>¿Eliminar venta?</h3>
+        <p class="smw_del_modal_desc">Esta acción no se puede deshacer. Por favor confirma los detalles del registro:</p>
+        
+        <div class="smw_del_modal_details">
+          <div class="smw_del_detail_row">
+            <span class="smw_del_detail_label">Cliente:</span>
+            <span class="smw_del_detail_val" id="txtDelCliente">...</span>
+          </div>
+          <div class="smw_del_detail_row">
+            <span class="smw_del_detail_label">Tour:</span>
+            <span class="smw_del_detail_val" id="txtDelTour">...</span>
+          </div>
+          <div class="smw_del_detail_row">
+            <span class="smw_del_detail_label">Importe:</span>
+            <span class="smw_del_detail_val" id="txtDelImporte">...</span>
           </div>
         </div>
-      </div>
 
+        <div class="smw_del_modal_acts">
+          <button class="smw_del_btn smw_del_btn_cancel" id="btnCancelDelVenta">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button class="smw_del_btn smw_del_btn_confirm" id="btnConfirmDelVenta">
+            <i class="fas fa-trash-alt"></i> Confirmar
+          </button>
+        </div>
+      </div>
     </div>
   `;
 };

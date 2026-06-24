@@ -881,6 +881,15 @@
   to { transform: rotate(360deg); }
 }
 
+/* ── Modal Backdrop Blur & Darkening ─────────────────────────────────── */
+#modalConfirmarEliminacion {
+  position: fixed !important;
+  z-index: 10000 !important;
+  backdrop-filter: blur(10px) saturate(110%);
+  background: rgba(15, 23, 42, 0.4) !important;
+  transition: all 0.3s ease;
+}
+
 /* ==================== DELETE MODAL PREMIUM ==================== */
 .smw_del_modal_body {
   background: var(--wb) !important;

@@ -698,41 +698,41 @@ export const init = async () => {
     }
   });
 
-  // Confirm deletion click with wiSpin and blocking execution
-  $(document).on(`click${NS}`, '#chatConfirmDeleteBtn', async function () {
+  // Confirm deletion click (Optimistic & Background)
+  $(document).on(`click${NS}`, '#chatConfirmDeleteBtn', function () {
     if (!msgIdAEliminar) return;
-    const btn = this;
-    wiSpin(btn, true, 'Eliminando...');
+    const id = msgIdAEliminar;
 
-    try {
-      const id = msgIdAEliminar;
-      await deleteDoc(doc(db, 'chatSmiles', id));
-      Notificacion('Mensaje eliminado permanentemente', 'success');
+    // 1. Cerrar el modal e iniciar la eliminación visual optimista
+    $('#chatEliminarModal').removeClass('show');
+    msgIdAEliminar = null;
 
-      // Close modal and clean up state
-      $('#chatEliminarModal').removeClass('show');
-      msgIdAEliminar = null;
-
-      // Premium fadeOut animation of the bubble
-      const $bubbleWrap = $(`.chat_bubble_wrap[data-id="${id}"]`);
-      if ($bubbleWrap.length) {
-        $bubbleWrap.fadeOut(300, function () {
-          $(this).remove();
-          mensajes = mensajes.filter(m => m.id !== id);
-          savels(CACHE_KEY, mensajes, CACHE_TTL);
-        });
-      } else {
-        // Fallback in case element isn't found
+    // 2. Animación de fadeOut y filtrado local inmediato
+    const $bubbleWrap = $(`.chat_bubble_wrap[data-id="${id}"]`);
+    if ($bubbleWrap.length) {
+      $bubbleWrap.fadeOut(200, function () {
+        $(this).remove();
         mensajes = mensajes.filter(m => m.id !== id);
         savels(CACHE_KEY, mensajes, CACHE_TTL);
-        _renderMessages(true);
-      }
-    } catch (err) {
-      console.error('[Chat] deleteDoc error:', err);
-      Notificacion('Error al eliminar mensaje', 'error');
-    } finally {
-      wiSpin(btn, false, 'Eliminar');
+        // Si ya no quedan mensajes, redibujar para mostrar estado vacío
+        if (mensajes.length === 0) {
+          _renderMessages();
+        }
+      });
+    } else {
+      mensajes = mensajes.filter(m => m.id !== id);
+      savels(CACHE_KEY, mensajes, CACHE_TTL);
+      _renderMessages(true);
     }
+
+    // 3. Borrado asíncrono en segundo plano
+    deleteDoc(doc(db, 'chatSmiles', id)).then(() => {
+      Notificacion('Mensaje eliminado permanentemente', 'success');
+    }).catch((err) => {
+      console.error('[Chat] deleteDoc error:', err);
+      Notificacion('No se pudo borrar el mensaje en el servidor', 'error');
+      // Al fallar, el listener de onSnapshot volverá a recibir el mensaje y se restaurará solo
+    });
   });
 
   // Sidebar search input keyup
